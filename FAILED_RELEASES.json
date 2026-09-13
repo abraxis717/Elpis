@@ -12,6 +12,19 @@
       "release_tag": "Elpis2.1.24",
       "tag_object": "3c422b52f28048f19ce998b2deab25720dcf6f8a",
       "version": "2.1.24"
+    },
+    {
+      "disposition": "SEALED_TAGGED_CI_PASSED_RELEASE_INFORMATION_COHERENCE_FAILED_NOT_PUBLISHED",
+      "failure_classes": [
+        "README_RELEASE_SUMMARY_STALE_2_1_27",
+        "PRESEAL_RELEASE_INFORMATION_COHERENCE_GATE_INSUFFICIENT"
+      ],
+      "manifest_path": "manifests/Elpis2.2.0.RELEASE_MANIFEST.json",
+      "manifest_sha256": "1558ea7c4ee5187f28ca177eddaf16e755aadb2b53a1cbd68536148fa700c593",
+      "peeled_commit": "51ab542b01fdbb30dd4342effab2cdeaa9040f51",
+      "release_tag": "Elpis2.2.0",
+      "tag_object": "ba77eaf59d633c33aa1c0006d47a0020a40296dd",
+      "version": "2.2.0"
     }
   ],
   "schema": "elpis.failed-releases.v1"

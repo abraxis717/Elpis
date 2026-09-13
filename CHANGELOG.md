@@ -1,3 +1,18 @@
+## Elpis2.2.2 — README contract corrective successor
+
+- Preserve the sealed-but-failed local Elpis2.2.1 manifest; do not rewrite it.
+- Restore every long-lived README negative-boundary marker required by the paper contract.
+- Retain the substantive 2.2 qualification/status rewrite and component-registry hyperlinks.
+- Run the README paper contract before sealing so human-facing coherence is proven before the write-once 2.2.2 manifest exists.
+
+## Elpis2.2.1 — Release-information coherence corrective successor
+
+- Preserve immutable Elpis2.2.0 as tagged/qualified but not published after stale README release-summary discovery.
+- Rewrite README against current qualification/admission authority.
+- Add source/documentation hyperlinks to all 16 public component-registry entries without changing membership or runtime admission.
+- Document qualified Grid81 writer chain, E0R3, ECS topology projection/analysis, DurableApplicationLedger v2, bounded ingress, portability and release-integrity hardening.
+- Repair stale lifecycle tests and add permanent README/registry/qualification coherence tests.
+
 ## Elpis2.2.0 — Portability, release-integrity, and bounded internal capability successor
 
 - Harden release exactness against packageable untracked/ignored files and require PyPI builds from immutable tag archives.

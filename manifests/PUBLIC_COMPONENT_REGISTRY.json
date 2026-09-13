@@ -9,7 +9,10 @@
       "public_path": "native/hacf",
       "runtime_admission": false,
       "active_status": "ACTIVE",
-      "dependencies": []
+      "dependencies": [],
+      "documentation_path": "native/hacf/README.md",
+      "source_url": "https://github.com/abraxis717/Elpis/tree/main/native/hacf",
+      "documentation_url": "https://github.com/abraxis717/Elpis/blob/main/native/hacf/README.md"
     },
     {
       "component_id": "Semantic_Structural_Spine_V1",
@@ -19,7 +22,10 @@
       "active_status": "ACTIVE",
       "dependencies": [
         "HACF_R3"
-      ]
+      ],
+      "documentation_path": "native/semantic-spine/README.md",
+      "source_url": "https://github.com/abraxis717/Elpis/tree/main/native/semantic-spine",
+      "documentation_url": "https://github.com/abraxis717/Elpis/blob/main/native/semantic-spine/README.md"
     },
     {
       "component_id": "Grid81_Structural_Semantics",
@@ -27,7 +33,10 @@
       "public_path": "components/Grid81StructuralSemantics",
       "runtime_admission": false,
       "active_status": "ACTIVE",
-      "dependencies": []
+      "dependencies": [],
+      "documentation_path": "components/Grid81StructuralSemantics/README.md",
+      "source_url": "https://github.com/abraxis717/Elpis/tree/main/components/Grid81StructuralSemantics",
+      "documentation_url": "https://github.com/abraxis717/Elpis/blob/main/components/Grid81StructuralSemantics/README.md"
     },
     {
       "component_id": "Grid81_Typed_Projection_Compiler",
@@ -37,7 +46,10 @@
       "active_status": "ACTIVE",
       "dependencies": [
         "Grid81_Structural_Semantics"
-      ]
+      ],
+      "documentation_path": "components/Grid81TypedProjectionCompiler/COMPONENT_MANIFEST.json",
+      "source_url": "https://github.com/abraxis717/Elpis/tree/main/components/Grid81TypedProjectionCompiler",
+      "documentation_url": "https://github.com/abraxis717/Elpis/blob/main/components/Grid81TypedProjectionCompiler/COMPONENT_MANIFEST.json"
     },
     {
       "component_id": "G50b_Structural_Group_Projection_Compiler",
@@ -47,7 +59,10 @@
       "active_status": "ACTIVE",
       "dependencies": [
         "Grid81_Structural_Semantics"
-      ]
+      ],
+      "documentation_path": "components/Grid81StructuralGroupProjectionCompiler/README.md",
+      "source_url": "https://github.com/abraxis717/Elpis/tree/main/components/Grid81StructuralGroupProjectionCompiler",
+      "documentation_url": "https://github.com/abraxis717/Elpis/blob/main/components/Grid81StructuralGroupProjectionCompiler/README.md"
     },
     {
       "component_id": "Grid81_Canonical_Substrate",
@@ -55,7 +70,10 @@
       "public_path": "components/Grid81",
       "runtime_admission": false,
       "active_status": "ACTIVE",
-      "dependencies": []
+      "dependencies": [],
+      "documentation_path": "components/Grid81/README.md",
+      "source_url": "https://github.com/abraxis717/Elpis/tree/main/components/Grid81",
+      "documentation_url": "https://github.com/abraxis717/Elpis/blob/main/components/Grid81/README.md"
     },
     {
       "component_id": "TRMFractalSpine_Structural_Modules",
@@ -63,7 +81,10 @@
       "public_path": "components/TRMFractalSpine",
       "runtime_admission": false,
       "active_status": "ACTIVE",
-      "dependencies": []
+      "dependencies": [],
+      "documentation_path": "components/TRMFractalSpine/README.md",
+      "source_url": "https://github.com/abraxis717/Elpis/tree/main/components/TRMFractalSpine",
+      "documentation_url": "https://github.com/abraxis717/Elpis/blob/main/components/TRMFractalSpine/README.md"
     },
     {
       "component_id": "G51b_Deterministic_Structural_Adjudicator",
@@ -73,7 +94,10 @@
       "active_status": "ACTIVE",
       "dependencies": [
         "Grid81_Structural_Semantics"
-      ]
+      ],
+      "documentation_path": "components/Grid81DeterministicStructuralAdjudicator/README.md",
+      "source_url": "https://github.com/abraxis717/Elpis/tree/main/components/Grid81DeterministicStructuralAdjudicator",
+      "documentation_url": "https://github.com/abraxis717/Elpis/blob/main/components/Grid81DeterministicStructuralAdjudicator/README.md"
     },
     {
       "component_id": "DarwinianMatrix",
@@ -81,7 +105,10 @@
       "public_path": "components/DarwinianMatrix",
       "runtime_admission": false,
       "active_status": "ACTIVE",
-      "dependencies": []
+      "dependencies": [],
+      "documentation_path": "components/DarwinianMatrix/README.md",
+      "source_url": "https://github.com/abraxis717/Elpis/tree/main/components/DarwinianMatrix",
+      "documentation_url": "https://github.com/abraxis717/Elpis/blob/main/components/DarwinianMatrix/README.md"
     },
     {
       "component_id": "P0ControlProtocol",
@@ -91,7 +118,10 @@
       "active_status": "ACTIVE",
       "dependencies": [
         "TRMFractalSpine_Structural_Modules"
-      ]
+      ],
+      "documentation_path": "components/Pipeline/P0ControlProtocol/README.md",
+      "source_url": "https://github.com/abraxis717/Elpis/tree/main/components/Pipeline/P0ControlProtocol",
+      "documentation_url": "https://github.com/abraxis717/Elpis/blob/main/components/Pipeline/P0ControlProtocol/README.md"
     },
     {
       "component_id": "elpis_header",
@@ -101,7 +131,10 @@
       "active_status": "ACTIVE",
       "dependencies": [
         "Grid81_Canonical_Substrate"
-      ]
+      ],
+      "documentation_path": "native/elpis-header/src/elpis_header/observer/README.md",
+      "source_url": "https://github.com/abraxis717/Elpis/tree/main/native/elpis-header",
+      "documentation_url": "https://github.com/abraxis717/Elpis/blob/main/native/elpis-header/src/elpis_header/observer/README.md"
     },
     {
       "component_id": "G52b_Capability_Authority_Evaluator",
@@ -109,7 +142,10 @@
       "public_path": "components/Grid81DeterministicCapabilityAuthorityEvaluator",
       "runtime_admission": false,
       "active_status": "ACTIVE",
-      "dependencies": []
+      "dependencies": [],
+      "documentation_path": "components/Grid81DeterministicCapabilityAuthorityEvaluator/COMPONENT_MANIFEST.json",
+      "source_url": "https://github.com/abraxis717/Elpis/tree/main/components/Grid81DeterministicCapabilityAuthorityEvaluator",
+      "documentation_url": "https://github.com/abraxis717/Elpis/blob/main/components/Grid81DeterministicCapabilityAuthorityEvaluator/COMPONENT_MANIFEST.json"
     },
     {
       "component_id": "G53b_Capability_Consumption_Compiler",
@@ -119,7 +155,10 @@
       "active_status": "ACTIVE",
       "dependencies": [
         "G52b_Capability_Authority_Evaluator"
-      ]
+      ],
+      "documentation_path": "components/Grid81DeterministicCapabilityConsumptionCompiler/COMPONENT_MANIFEST.json",
+      "source_url": "https://github.com/abraxis717/Elpis/tree/main/components/Grid81DeterministicCapabilityConsumptionCompiler",
+      "documentation_url": "https://github.com/abraxis717/Elpis/blob/main/components/Grid81DeterministicCapabilityConsumptionCompiler/COMPONENT_MANIFEST.json"
     },
     {
       "component_id": "G53c_Capability_Application_Executor",
@@ -129,7 +168,10 @@
       "active_status": "ACTIVE",
       "dependencies": [
         "G53b_Capability_Consumption_Compiler"
-      ]
+      ],
+      "documentation_path": "components/Grid81DeterministicCapabilityApplicationExecutor/COMPONENT_MANIFEST.json",
+      "source_url": "https://github.com/abraxis717/Elpis/tree/main/components/Grid81DeterministicCapabilityApplicationExecutor",
+      "documentation_url": "https://github.com/abraxis717/Elpis/blob/main/components/Grid81DeterministicCapabilityApplicationExecutor/COMPONENT_MANIFEST.json"
     },
     {
       "component_id": "G53e_Canonical_Promotion_Planner",
@@ -139,7 +181,10 @@
       "active_status": "ACTIVE",
       "dependencies": [
         "G53c_Capability_Application_Executor"
-      ]
+      ],
+      "documentation_path": "components/Grid81DeterministicCanonicalPromotionPlanner/COMPONENT_MANIFEST.json",
+      "source_url": "https://github.com/abraxis717/Elpis/tree/main/components/Grid81DeterministicCanonicalPromotionPlanner",
+      "documentation_url": "https://github.com/abraxis717/Elpis/blob/main/components/Grid81DeterministicCanonicalPromotionPlanner/COMPONENT_MANIFEST.json"
     },
     {
       "component_id": "CNumPyCortex",
@@ -147,7 +192,11 @@
       "public_path": "components/CNumPyCortex",
       "runtime_admission": false,
       "active_status": "OPTIONAL",
-      "dependencies": []
+      "dependencies": [],
+      "documentation_path": "components/CNumPyCortex/README.md",
+      "source_url": "https://github.com/abraxis717/Elpis/tree/main/components/CNumPyCortex",
+      "documentation_url": "https://github.com/abraxis717/Elpis/blob/main/components/CNumPyCortex/README.md"
     }
-  ]
+  ],
+  "documentation_index": "README.md#21-canonical-public-component-registry"
 }

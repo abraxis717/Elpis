@@ -113,7 +113,7 @@ def test_failed_sealed_candidates_are_not_published():
         entry["release_tag"]
         for entry in data["published_releases"]
     }
-    for tag in ("Elpis2.1.13", "Elpis2.1.14", "Elpis2.1.24"):
+    for tag in ("Elpis2.1.13", "Elpis2.1.14", "Elpis2.1.24", "Elpis2.2.0"):
         assert (
             ROOT / "manifests" / f"{tag}.RELEASE_MANIFEST.json"
         ).is_file()
@@ -151,3 +151,21 @@ def test_current_release_is_published():
         for entry in data["published_releases"]
     }
     assert "Elpis2.1.16" in tags
+
+
+def test_failed_release_2_2_0_is_bound_to_immutable_authority():
+    payload = _failed_payload()
+    entries = {item["release_tag"]: item for item in payload["failed_releases"]}
+    item = entries["Elpis2.2.0"]
+    assert item["version"] == "2.2.0"
+    assert item["disposition"] == (
+        "SEALED_TAGGED_CI_PASSED_RELEASE_INFORMATION_COHERENCE_"
+        "FAILED_NOT_PUBLISHED"
+    )
+    assert item["tag_object"] == "ba77eaf59d633c33aa1c0006d47a0020a40296dd"
+    assert item["peeled_commit"] == "51ab542b01fdbb30dd4342effab2cdeaa9040f51"
+    assert _git("rev-parse", "Elpis2.2.0^{tag}") == item["tag_object"]
+    assert _git("rev-parse", "Elpis2.2.0^{}") == item["peeled_commit"]
+    manifest = ROOT / item["manifest_path"]
+    assert manifest.is_file()
+    assert hashlib.sha256(manifest.read_bytes()).hexdigest() == item["manifest_sha256"]

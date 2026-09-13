@@ -38,7 +38,7 @@
     }
   ],
   "graph_id": "GRID81_WRITER_CHAIN_SUCCESSOR_DEPENDENCY_GRAPH_R0",
-  "graph_self_hash": "dd55326d8e9024dca815cbf53b213770a5f3001c935ecde79488bef8a7e5f6d5",
+  "graph_self_hash": "3d2e3c19731daa73a3144eebedd38bd5912257b2fb22a429daac342b30b697ed",
   "graph_self_hash_contract": "sha256(canonical-json(graph without graph_self_hash))",
   "legacy_assembly_bindings": [
     {
@@ -48,8 +48,8 @@
     },
     {
       "path": "manifests/PUBLIC_COMPONENT_REGISTRY.json",
-      "sha256": "125af908252a6029e4b22e645f09aca43de5f04f590cf94487e13b53553c863c",
-      "size": 4534
+      "sha256": "67bef85dac088c98c7d0af45508c5f2491154fd93c476c3830b6db702676ba73",
+      "size": 9751
     },
     {
       "path": "manifests/PUBLIC_DEPENDENCY_GRAPH.json",

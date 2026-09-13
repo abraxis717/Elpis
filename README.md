@@ -2,7 +2,7 @@
 
 **A deterministic structural-reasoning architecture for bounded learned proposals, explicit authority, and falsifiable runtime composition.**
 
-**Release line: Elpis2.2.0**
+**Release line: Elpis2.2.2**
 
 Elpis is a systems-research project about a narrow question: can learned components contribute useful structural proposals while deterministic machinery retains ownership of representation, admissibility, authority, validation, and terminal action?
 
@@ -14,9 +14,36 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 ## Release Notes
 
-**Elpis2.1.27** is a bounded maintenance successor to Elpis2.1.26. It repairs two Python AST-policy admission defects, makes a previously vacuous canonical-planner immutability test falsifiable, codifies the distinction between whole-runtime admission and component-registry admission, and adds a dedicated PyPI Trusted Publishing workflow for the canonical `abraxis717/Elpis` repository. It does not broaden model authority, terminal execution authority, component runtime admission, ECS scope, Publisher R1 semantics, Regex V2 semantics, or closed scientific claims.
+**Elpis2.2.2** is the README/public-release-information contract corrective successor to the
+immutable tagged-but-unpublished Elpis2.2.0 object. It does not reinterpret the
+qualified 2.2.0 mechanisms or widen runtime authority. It repairs the public
+description of what the repository already contains, makes component
+qualification/admission states explicit, adds machine-readable component
+documentation links, and hardens release tests so stale human-facing release
+claims cannot pass merely because version tokens and hyperlinks are present.
 
-- Current notes: [`RELEASE_NOTES/Elpis2.2.0.md`](RELEASE_NOTES/Elpis2.2.0.md)
+The 2.2.x line includes:
+
+- physical-tree-aware release manifests and immutable-tag `git archive` build provenance;
+- lifecycle-aware repository identity and full-history hosted ancestry proofs;
+- portable root/package-derived inter-code bindings with Git-less relocation qualification;
+- E0R3 whole-column participation referents;
+- qualified ECS topology projection and topology analysis;
+- DurableApplicationLedger schema v2;
+- the explicit Grid81 canonical writer chain: planner -> promotion authority -> isolated candidate constructor -> durable/atomic publisher;
+- bounded Regex/HACF/query-local proposal ingress;
+- current secret/private-path and runtime-boundary hardening;
+- Branch36-40 science artifacts retained as evidence, not promoted to runtime API.
+
+The immutable `Elpis2.2.0` tag is retained as evidence but classified
+`FAILED_NOT_PUBLISHED` because its sealed README still carried the stale
+Elpis2.1.27 release-summary paragraph.
+
+- Current notes: [`RELEASE_NOTES/Elpis2.2.2.md`](RELEASE_NOTES/Elpis2.2.2.md)
+- 2.2.0 qualification notes: [`RELEASE_NOTES/Elpis2.2.0.md`](RELEASE_NOTES/Elpis2.2.0.md)
+- Public component registry: [`manifests/PUBLIC_COMPONENT_REGISTRY.json`](manifests/PUBLIC_COMPONENT_REGISTRY.json)
+- Qualified writer-chain registry: [`manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json`](manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json)
+- 2.2 qualified-internal adoption policy: [`manifests/ELPIS_2_2_0_ADOPTION_POLICY_R0.json`](manifests/ELPIS_2_2_0_ADOPTION_POLICY_R0.json)
 - Release-note archive: [`RELEASE_NOTES/`](RELEASE_NOTES/)
 - ECS authority and science: [`ECS/`](ECS/)
 
@@ -195,65 +222,103 @@ The current public repository should not be read as one monolithic agent loop. I
 
 ### 2.1 Canonical public component registry
 
-`manifests/PUBLIC_COMPONENT_REGISTRY.json` is the repository's public registry for the current canonical assembly surface. It lists 16 public components and marks their component-level `runtime_admission` false. That field must not be silently converted into a stronger whole-system deployment claim.
+[`manifests/PUBLIC_COMPONENT_REGISTRY.json`](manifests/PUBLIC_COMPONENT_REGISTRY.json)
+is the canonical 16-component public assembly registry. Every entry now carries
+a machine-readable source URL plus documentation path/URL.
 
-The registered public components are:
+**Status vocabulary is explicit:**
 
-| Component | Public path | Role / boundary |
-|---|---|---|
-| [`HACF_R3`](native/hacf/README.md) | `native/hacf/` | Native deterministic HACF substrate. |
-| [`Semantic_Structural_Spine_V1`](native/semantic-spine/README.md) | `native/semantic-spine/` | Native semantic/structural spine over HACF. |
-| [`Grid81_Structural_Semantics`](components/Grid81StructuralSemantics/README.md) | `components/Grid81StructuralSemantics/` | Typed structural semantics for the Grid81 family. |
-| [`Grid81_Typed_Projection_Compiler`](components/Grid81TypedProjectionCompiler/COMPONENT_MANIFEST.json) | `components/Grid81TypedProjectionCompiler/` | Deterministic typed projection. |
-| [`G50b_Structural_Group_Projection_Compiler`](components/Grid81StructuralGroupProjectionCompiler/README.md) | `components/Grid81StructuralGroupProjectionCompiler/` | Structural group projection. |
-| [`Grid81_Canonical_Substrate`](components/Grid81/README.md) | `components/Grid81/` | Read-only canonical Grid81 generation substrate. |
-| [`TRMFractalSpine_Structural_Modules`](components/TRMFractalSpine/README.md) | `components/TRMFractalSpine/` | Structural TRM contracts/refinement surfaces. |
-| [`G51b_Deterministic_Structural_Adjudicator`](components/Grid81DeterministicStructuralAdjudicator/README.md) | `components/Grid81DeterministicStructuralAdjudicator/` | Deterministic structural adjudication. |
-| [`DarwinianMatrix`](components/DarwinianMatrix/README.md) | `components/DarwinianMatrix/` | Structural clamp, Projector, and bounded refinement mechanisms. |
-| [`P0ControlProtocol`](components/Pipeline/P0ControlProtocol/README.md) | `components/Pipeline/P0ControlProtocol/` | P0 control, Semantic IR, projection, and validation contracts. |
-| [`elpis_header`](native/elpis-header/src/elpis_header/observer/README.md) | `native/elpis-header/` | Native/header-side Grid81 runtime observation contract. |
-| [`G52b_Capability_Authority_Evaluator`](components/Grid81DeterministicCapabilityAuthorityEvaluator/COMPONENT_MANIFEST.json) | `components/Grid81DeterministicCapabilityAuthorityEvaluator/` | Capability authority evaluation. |
-| [`G53b_Capability_Consumption_Compiler`](components/Grid81DeterministicCapabilityConsumptionCompiler/COMPONENT_MANIFEST.json) | `components/Grid81DeterministicCapabilityConsumptionCompiler/` | Capability-consumption compilation. |
-| [`G53c_Capability_Application_Executor`](components/Grid81DeterministicCapabilityApplicationExecutor/COMPONENT_MANIFEST.json) | `components/Grid81DeterministicCapabilityApplicationExecutor/` | Bounded capability application. |
-| [`G53e_Canonical_Promotion_Planner`](components/Grid81DeterministicCanonicalPromotionPlanner/COMPONENT_MANIFEST.json) | `components/Grid81DeterministicCanonicalPromotionPlanner/` | Canonical promotion planning; not an in-repository canonical-state writer. |
-| [`CNumPyCortex`](components/CNumPyCortex/README.md) | `components/CNumPyCortex/` | Optional telemetry-to-Grid81 transport/recursion surface. |
+- **public-registry admitted**: one of these 16 canonical public assembly entries;
+- **qualified**: bounded implementation/evidence exists for the stated mechanism;
+- **runtime admitted**: a separate property, still false for every public-registry component.
 
-The internal canonical manifest also retains historical/canonical identities that are not all physically shipped as public components. Public repository descriptions should use the public registry when stating what is actually shipped.
+| Component | Source / docs | Qualification disposition | Admission | Role / boundary |
+|---|---|---|---|---|
+| [`HACF_R3`](native/hacf/README.md) | [`native/hacf/`](native/hacf/) | `SEALED_AND_PROMOTABLE` | `runtime_admission=false` | Native deterministic HACF substrate. |
+| [`Semantic_Structural_Spine_V1`](native/semantic-spine/README.md) | [`native/semantic-spine/`](native/semantic-spine/) | `SEALED_AND_PROMOTABLE` | `runtime_admission=false` | Native semantic/structural spine over HACF. |
+| [`Grid81_Structural_Semantics`](components/Grid81StructuralSemantics/README.md) | [`components/Grid81StructuralSemantics/`](components/Grid81StructuralSemantics/) | `QUALIFIED` | `runtime_admission=false` | Typed structural semantics for the Grid81 family. |
+| [`Grid81_Typed_Projection_Compiler`](components/Grid81TypedProjectionCompiler/COMPONENT_MANIFEST.json) | [`components/Grid81TypedProjectionCompiler/`](components/Grid81TypedProjectionCompiler/) | `QUALIFIED` | `runtime_admission=false` | Deterministic typed projection. |
+| [`G50b_Structural_Group_Projection_Compiler`](components/Grid81StructuralGroupProjectionCompiler/README.md) | [`components/Grid81StructuralGroupProjectionCompiler/`](components/Grid81StructuralGroupProjectionCompiler/) | `QUALIFIED` | `runtime_admission=false` | Structural group projection. |
+| [`Grid81_Canonical_Substrate`](components/Grid81/README.md) | [`components/Grid81/`](components/Grid81/) | `QUALIFIED` | `runtime_admission=false` | Canonical Grid81 generation substrate and production reader. |
+| [`TRMFractalSpine_Structural_Modules`](components/TRMFractalSpine/README.md) | [`components/TRMFractalSpine/`](components/TRMFractalSpine/) | `QUALIFIED` | `runtime_admission=false` | Structural TRM contracts and refinement surfaces. |
+| [`G51b_Deterministic_Structural_Adjudicator`](components/Grid81DeterministicStructuralAdjudicator/README.md) | [`components/Grid81DeterministicStructuralAdjudicator/`](components/Grid81DeterministicStructuralAdjudicator/) | `QUALIFIED` | `runtime_admission=false` | Deterministic structural adjudication. |
+| [`DarwinianMatrix`](components/DarwinianMatrix/README.md) | [`components/DarwinianMatrix/`](components/DarwinianMatrix/) | `QUALIFIED` | `runtime_admission=false` | Structural clamp, Projector, and bounded refinement mechanisms. |
+| [`P0ControlProtocol`](components/Pipeline/P0ControlProtocol/README.md) | [`components/Pipeline/P0ControlProtocol/`](components/Pipeline/P0ControlProtocol/) | `QUALIFIED` | `runtime_admission=false` | P0 control, Semantic IR, projection, and validation contracts. |
+| [`elpis_header`](native/elpis-header/src/elpis_header/observer/README.md) | [`native/elpis-header/`](native/elpis-header/) | `QUALIFIED` | `runtime_admission=false` | Header/runtime-side Grid81 observation contract. |
+| [`G52b_Capability_Authority_Evaluator`](components/Grid81DeterministicCapabilityAuthorityEvaluator/COMPONENT_MANIFEST.json) | [`components/Grid81DeterministicCapabilityAuthorityEvaluator/`](components/Grid81DeterministicCapabilityAuthorityEvaluator/) | `QUALIFIED` | `runtime_admission=false` | Capability-authority evaluation. |
+| [`G53b_Capability_Consumption_Compiler`](components/Grid81DeterministicCapabilityConsumptionCompiler/COMPONENT_MANIFEST.json) | [`components/Grid81DeterministicCapabilityConsumptionCompiler/`](components/Grid81DeterministicCapabilityConsumptionCompiler/) | `QUALIFIED` | `runtime_admission=false` | Capability-consumption compilation. |
+| [`G53c_Capability_Application_Executor`](components/Grid81DeterministicCapabilityApplicationExecutor/COMPONENT_MANIFEST.json) | [`components/Grid81DeterministicCapabilityApplicationExecutor/`](components/Grid81DeterministicCapabilityApplicationExecutor/) | `QUALIFIED` | `runtime_admission=false` | Bounded capability application and ledger surfaces. |
+| [`G53e_Canonical_Promotion_Planner`](components/Grid81DeterministicCanonicalPromotionPlanner/COMPONENT_MANIFEST.json) | [`components/Grid81DeterministicCanonicalPromotionPlanner/`](components/Grid81DeterministicCanonicalPromotionPlanner/) | `QUALIFIED` | `runtime_admission=false` | Advisory canonical promotion planning. |
+| [`CNumPyCortex`](components/CNumPyCortex/README.md) | [`components/CNumPyCortex/`](components/CNumPyCortex/) | `QUALIFIED` | `runtime_admission=false` | Optional telemetry-to-Grid81 transport/recursion surface. |
+
+The registry count remains **16**. Later qualified writer-chain components are
+not silently inserted here because their manifests explicitly declare
+`public_registry_admission=false`.
 
 ### 2.2 Additional qualified ingress components
 
-The repository also contains qualified successor components that are not represented as entries in the 16-component public registry and therefore should be described separately rather than smuggled into the canonical assembly claim.
+These are qualified public repository surfaces but not entries in the 16-component
+canonical public registry:
 
-`StreamingRegexIngress` provides a bounded native lexical producer with a stable C-compatible ABI. Its successful v1 profile requires `carry_bytes >= 256` and `data_len <= carry_bytes`; it does not claim arbitrary-length incremental-regex completeness. Output remains `PROPOSED_UNADMITTED`.
+| Component | Surface | Qualified claim | Boundary |
+|---|---|---|---|
+| [`StreamingRegexIngress`](components/StreamingRegexIngress/) | Native bounded Regex producer | Stable bounded lexical ingress under the qualified carry/data profile. | Output remains `PROPOSED_UNADMITTED`; not arbitrary incremental-regex completeness. |
+| [`RegexHACFQueryIngress`](components/RegexHACFQueryIngress/) | Regex + HACF query composition | Bounded lexical ingress, HACF lookup, provenance-bound proposal construction, and query-local publication. | No persistent Semantic Fabric mutation, semantic truth, Grid81 mapping, or execution authority. |
+| [`QueryLocalProposalIngress`](components/QueryLocalProposalIngress/) | Query-private proposal overlay | Provenance-bound proposal envelopes publish atomically to a private query overlay. | Semantic/admission/execution authority remains zero. |
 
-`RegexHACFQueryIngress` composes bounded Regex ingress, native HACF lookup, provenance-bound proposal construction, and query-local publication. It does not mutate the persistent Semantic Fabric, admit semantic truth, map semantics to Grid81, or authorize execution.
+### 2.3 Post-2.1.16 canonical-writer engineering successor — qualified chain
 
-`QueryLocalProposalIngress` materializes provenance-bound proposal envelopes into an atomic private query overlay. Failure publishes neither overlay nor receipt. Proposal material remains `PROPOSED_UNADMITTED`; semantic, admission, execution, and runtime authority remain zero.
+The repository now contains a **qualified in-repository Grid81 canonical writer
+chain**. This corrects the older README claim that no such qualified writer existed.
 
-These components are useful evidence of bounded composition, but their presence does not imply general runtime admission.
+The three qualified successor writer components are **not yet entries** in the
+16-component canonical public registry. Their separate successor registry
+retains `public_registry_admission=false` and `runtime_admission=false`.
 
+The publisher path includes a **durable publication-ledger reservation** before
+the canonical namespace visibility exchange. That reservation is not itself the
+filesystem exchange and does not make publication ambient runtime behavior.
 
-### 2.3 Post-2.1.16 canonical-writer engineering successor
+Machine-readable authority:
+[`GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0`](manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json)
 
-The released **Elpis2.1.16** public component registry remains the 16-component
-surface above. The following components were qualified later on the local
-successor engineering lineage and are **not yet entries** in
-`manifests/PUBLIC_COMPONENT_REGISTRY.json`:
+| Component | Source / docs | Qualification | Admission | Qualified boundary |
+|---|---|---|---|---|
+| [`Grid81_Canonical_Promotion_Authority`](components/Grid81DeterministicCanonicalPromotionAuthority/README.md) | [`components/Grid81DeterministicCanonicalPromotionAuthority/`](components/Grid81DeterministicCanonicalPromotionAuthority/) | `QUALIFIED_LOCAL_SUCCESSOR` | `public_registry_admission=false`; `runtime_admission=false` | Issues one-use promotion authority from explicit external approval binding. |
+| [`Grid81_Canonical_Candidate_Constructor`](components/Grid81DeterministicCanonicalCandidateConstructor/README.md) | [`components/Grid81DeterministicCanonicalCandidateConstructor/`](components/Grid81DeterministicCanonicalCandidateConstructor/) | `QUALIFIED_LOCAL_SUCCESSOR` | `public_registry_admission=false`; `runtime_admission=false` | Builds a complete isolated immediate-successor candidate. |
+| [`Grid81_Atomic_Canonical_Publisher`](components/Grid81DeterministicCanonicalPublisher/README.md) | [`components/Grid81DeterministicCanonicalPublisher/`](components/Grid81DeterministicCanonicalPublisher/) | `QUALIFIED_LOCAL_SUCCESSOR` | `public_registry_admission=false`; `runtime_admission=false` | Reserves and atomically publishes an authority-gated candidate with monotonic recovery. |
 
-- [`Grid81DeterministicCanonicalPromotionAuthority`](components/Grid81DeterministicCanonicalPromotionAuthority/README.md) — converts an advisory promotion decision plus explicit external operator-approval binding into a deterministic one-use `ATOMIC_GRID81_CANONICAL_PROMOTION` capability. The approval digest is a binding, not a digital-signature or human-authentication claim.
-- [`Grid81DeterministicCanonicalCandidateConstructor`](components/Grid81DeterministicCanonicalCandidateConstructor/README.md) — constructs a complete isolated immediate-successor canonical candidate while leaving live canonical state and the publication ledger untouched.
-- [`Grid81DeterministicCanonicalPublisher`](components/Grid81DeterministicCanonicalPublisher/README.md) — performs authority-gated atomic publication with durable publication-ledger reservation, exact replay handling, historical-generation preservation, and production-reader post-verification.
+The explicit flow is:
 
-The application-executor component also now contains a durable SQLite-backed
-application ledger used for cross-process publication reservation. The
-repository-level writer-chain regression composes promotion authority,
-candidate construction, durable reservation, atomic publication, and the
-production reader in one bounded transaction.
+```text
+G53e advisory planner
+  -> promotion authority + external approval binding
+  -> one-use ATOMIC_GRID81_CANONICAL_PROMOTION
+  -> isolated candidate constructor
+  -> durable reservation + namespace lock
+  -> atomic canonical publisher
+  -> production-reader verification
+```
 
-These successor components do not broaden model authority, do not authorize
-ECS world mutation, and do not make canonical mutation a background runtime
-behavior. Canonical publication remains an explicitly authorized transaction.
+Normal consumers remain read-only. The writer chain is not public-registry
+admitted, not runtime-admitted, not self-authorizing, and not background ECS or
+canonical mutation.
 
+### 2.4 Qualified internal modules shipped by the 2.2 line
+
+The 2.2 adoption policy ships four **qualified internal** modules without
+promoting them to stable package-root API and without changing runtime admission:
+
+| Internal qualification | Source | Disposition | API/admission boundary | Qualified mechanism |
+|---|---|---|---|---|
+| `E0R3_PARTICIPATION_REFERENT` | [`src/elpis_reference/structural_guidance/e0r3_participation.py`](src/elpis_reference/structural_guidance/e0r3_participation.py) | `SHIP_INTERNAL_QUALIFIED` | `stable_package_root_api=false`; `runtime_admission_change=false` | Deterministic whole-column participation referents, reverse binding, and R0 delegated disable/restore. |
+| `ECS_TOPOLOGY_PROJECTION` | [`ECS/runtime/elpis_ecs/topology.py`](ECS/runtime/elpis_ecs/topology.py) | `SHIP_INTERNAL_QUALIFIED` | `stable_package_root_api=false`; `runtime_admission_change=false` | Deterministic ECS topology projection. |
+| `ECS_TOPOLOGY_ANALYSIS` | [`ECS/runtime/elpis_ecs/topology_analysis.py`](ECS/runtime/elpis_ecs/topology_analysis.py) | `SHIP_INTERNAL_QUALIFIED` | `stable_package_root_api=false`; `runtime_admission_change=false` | Deterministic topology analysis without ECS mutation/payload semantics/persistence. |
+| `DURABLE_APPLICATION_LEDGER_V2` | [`components/Grid81DeterministicCapabilityApplicationExecutor/src/elpis_grid81_application_executor/durable_ledger_v2.py`](components/Grid81DeterministicCapabilityApplicationExecutor/src/elpis_grid81_application_executor/durable_ledger_v2.py) | `SHIP_INTERNAL_QUALIFIED` | `stable_package_root_api=false`; `runtime_admission_change=false` | Durable schema-v2 CAS/replay exclusion with artifact binding. |
+
+---
+
+## 3. Structural-control path
 
 ---
 
@@ -275,56 +340,25 @@ The earlier C2R6-P0 greedy rank/locus allocator was independently shown incomple
 
 The successor allocator also carries a deterministic search-entry budget. `SEARCH_BUDGET_EXHAUSTED` is distinct from UNSAT or decomposition. The bounded qualification is not a theorem of universal Grid81 satisfiability.
 
-### 3.3 Canonical Grid81 runtime remains read-only; promotion is explicit
+### 3.3 Canonical Grid81 reader is read-only; explicit writer chain is qualified
 
-The released **Elpis2.1.16** public runtime boundary remains read-only: it ships
-canonical generation `000001`, a production reader, and a runtime reducer, and
-it does not ship the post-2.1.16 writer-chain components described above.
+The released **Elpis2.1.16** public runtime boundary remains read-only; the
+2.2.x repository adds a qualified explicit writer transaction without making
+that writer a normal runtime path. Repository coexistence does not imply runtime
+integration. Canonical publication remains an explicitly authorized transaction.
 
-On the successor engineering lineage, a qualified in-repository canonical
-writer chain now exists, but it is deliberately separated from normal runtime
-consumption:
+The planner is non-executable and non-authoritative. Promotion authority binds
+explicit external operator approval into one-use write authority. The candidate
+constructor builds the successor outside live canonical state. The publisher
+uses durable reservation, a project-root-derived namespace lock, Linux/POSIX
+filesystem primitives, atomic directory exchange, monotonic recovery metadata,
+and production-reader verification.
 
-```text
-G5.3B/C/D evidence
-        |
-        v
-G5.3E advisory promotion plan
-        |
-        v
-explicit promotion authority
-        |
-        v
-one-use ATOMIC_GRID81_CANONICAL_PROMOTION capability
-        |
-        v
-isolated candidate constructor
-        |
-        v
-durable publication-ledger reservation
-        |
-        v
-atomic canonical publisher
-        |
-        v
-production-reader verification
-```
-
-The promotion planner remains non-executable and non-authoritative. The
-promotion-authority component requires an explicit external operator-approval
-digest and does not claim that the digest authenticates a human or constitutes
-a digital signature. The candidate constructor does not mutate live canonical
-state or consume the publication ledger. The publisher requires the exact
-promotion capability, rejects stale or mismatched authority, preserves prior
-generation bytes, reserves durable one-use publication state, performs atomic
-directory exchange, and verifies the committed result through the production
-reader.
-
-The historical `.authority_audit.json` remains historical evidence rather than
-independent proof of its own claims. Likewise, the original process-local
-`ApplicationLedger` should not be confused with the later durable publication
-ledger.
-
+The guarantees are bounded: SQLite reservation and filesystem exchange are not
+one atomic transaction; hostile filesystem replacement, mixed incompatible
+publisher versions, and stronger operator authentication remain outside the
+claim. The writer chain is not public-registry/runtime admitted and is not a
+background mutation loop.
 
 ### 3.4 Bounded learned structural guidance
 
@@ -447,19 +481,26 @@ AUTHORITY_ROOT_REQUIRED
 
 Repository-owned tests/tools bind repository authority explicitly. The package must not invent authority or rely on broad source-tree `PYTHONPATH` compensation to make installed-package tests pass.
 
-### 5.2 E0R2 diagnostic
+### 5.2 E0R2 diagnosis and E0R3 referent closure
 
-The bounded executable E0R2 diagnostic is closed at:
+E0R2 correctly closed at `SEMANTIC_IR_INSUFFICIENT`, identifying the missing
+executable writable referent for one frozen whole-column participation primitive.
 
-```text
-SEMANTIC_IR_INSUFFICIENT
-```
+Elpis2.2 subsequently qualified E0R3. E0R3 provides deterministic participation
+referents bound to the verified R0 candidate digest and gauge slot, validates
+the complete reverse binding, rejects stale/forged address tables, resolves a
+referent to the exact R0 `EditAddress`, and delegates only `DISABLE_COLUMN` /
+`RESTORE_COLUMN` to the existing R0 mutation authority.
 
-The unresolved object is one writable whole-column participation primitive: a binary structural referent bound to the external frozen sidecar and operational gauge slot with deterministic DISABLE/RESTORE semantics while exact-zero slots remain frozen.
+This closes the bounded missing-referent mechanism. It does **not** claim general
+`SemanticOperationV1` representation of ECS participation, and E1/E2 remain
+unauthorized.
 
-This result does **not** invalidate the Structural Authority R0 ontology. It says the existing Semantic IR does not yet provide the required executable writable referent.
+E1 and E2 have not executed.
 
-E1 and E2 have not executed. Learned, Darwinian, and scientific execution are not authorized by this result.
+---
+
+## 6. Native semantic and retrieval surfaces
 
 ---
 
@@ -557,69 +598,71 @@ Installed-artifact qualification must distinguish source-tree imports from packa
 
 ## 10. Qualified claim surface
 
-“Qualified” below means that the repository carries an implementation and bounded evidence for the stated mechanism. It does not widen the claim beyond that mechanism.
+“Qualified” means bounded implementation/evidence exists for the stated
+mechanism. It is not synonymous with public-registry or runtime admission.
 
 | Capability | Qualified claim | Boundary |
 |---|---|---|
 | Canonical relational Semantic IR | Typed relational requests can be validated, canonicalized, and digest-bound. | No trusted natural-language parser. |
-| Semantic identity propagation | Relational semantic-request identity can propagate as a bound sidecar through the structural path. | Does not establish a complete graph-to-Grid81 semantic mapping. |
-| Semantic -> Grid81 projection | Supported structure is deterministically projected under pinned rules with typed outcomes and replay evidence. | No universal Grid81 satisfiability theorem. |
-| Joint rank/locus allocator | The repaired allocator matches the frozen Furyan oracle over the bounded 44,005-case canonical core. | Bounded audited model only; budget exhaustion remains distinct. |
-| Structural TRM guidance | A pinned model can influence bounded proposal/search ordering when explicitly admitted. | Gate defaults OFF; model authority remains zero. |
-| Deterministic adjudication | Candidate legality and transition ownership remain in deterministic machinery. | Does not imply arbitrary task correctness. |
-| APW R0 | Repeated proposal quality can improve in the closed witness while proposer/feedback authority remains zero. | Not autonomous self-improvement or execution authority. |
-| Materialization / planning / decoding | Bound stage transitions can carry structural results through explicit one-shot authority objects. | Stage authority is not ambient or reusable. |
-| Static Python validation | Source can be checked against the canonical bounded AST policy. | AST validity is not functional correctness, sandboxing, or execution permission. |
-| Terminal validated-source result | The structural-guidance composition emits digest-bound authority-zero terminal results. | Generated source does not execute. |
-| FuryanLocusOracle R0 | A frozen independent finite-placement oracle can decide the admitted bounded model and produce checkable certificates. | Not a general Grid81 solver and not runtime authority. |
-| ECS Structural Authority R0 | Whole-column ACTIVE/DISABLED/FROZEN_ZERO participation and exact restore semantics are publicly specified and executable. | No Grid81/Semantic-IR representability or efficacy claim. |
-| E0R2 | The existing Semantic IR is insufficient for the required ECS writable-participation primitive. | Bounded diagnostic; E1/E2 remain unexecuted. |
-| Native Regex/HACF query ingress | Bounded lexical/retrieval/proposal composition can preserve provenance while retaining zero admission/execution authority. | Not semantic truth or runtime admission. |
-| Public FPRM reference path | A pinned model can be fetched, verified, loaded, and used for real CPU Sudoku inference. | Sudoku evidence only. |
-| Release integrity | Release declarations, manifests, mutation guards, public verification, CI, tag, and release gates can bind exact public artifacts. | A development tree is not a sealed release. |
+| Semantic identity propagation | Relational semantic identity can propagate as a bound sidecar. | Not complete graph-to-Grid81 semantics. |
+| Semantic -> Grid81 projection | Supported structure is deterministically projected under pinned rules. | No universal satisfiability theorem. |
+| Joint rank/locus allocator | Repaired allocator matches the frozen Furyan oracle over the qualified 44,005-case core. | Bounded audited model only. |
+| Structural TRM guidance | Pinned model may influence bounded proposal/search ordering when explicitly admitted. | Gate defaults OFF; model authority zero. |
+| Deterministic adjudication | Candidate legality and transition ownership remain deterministic. | Not arbitrary task correctness. |
+| APW R0 | Proposal quality improves in the closed witness while proposer/feedback authority remains zero. | Not autonomous self-improvement. |
+| Static Python validation | Source can be checked against the bounded AST policy. | Not correctness, sandboxing, or execution permission. |
+| Generated-source boundary | Generated source does not execute. No generated source is executed by this path. | Validation and terminal result materialization do not grant execution authority. |
+| Terminal validated-source result | Digest-bound authority-zero terminal results are emitted. | Generated source does not execute. |
+| FuryanLocusOracle R0 | Independent bounded finite-placement oracle with checkable certificates. | Not a general Grid81 solver. |
+| ECS Structural Authority R0 | Whole-column participation/restore semantics are specified and executable. | No intrinsic column identity or efficacy claim. |
+| E0R3 participation referents | Verified referents/reverse binding make the bounded R0 participation primitive addressable. | Not general SemanticOperationV1 integration; E1/E2 remain unauthorized. |
+| ECS topology projection | Qualified internal deterministic topology projection ships. | No topology ledger/federation/transport. |
+| ECS topology analysis | Qualified internal deterministic topology analysis ships. | No mutation, payload semantics, or persistence. |
+| DurableApplicationLedger v2 | Durable schema-v2 CAS/replay exclusion binds artifact digest. | No silent v1 migration or whole-database rollback protection. |
+| Canonical writer chain | Explicit promotion authority, isolated construction, durable reservation, atomic publication, recovery and reader verification compose. | Not public-registry/runtime admission; filesystem/operator-auth boundaries remain. |
+| Regex/HACF/query-local ingress | Bounded lexical/retrieval/proposal composition preserves provenance. | Not semantic truth or execution authority. |
+| FPRM reference path | Pinned model fetch/verify/load and CPU Sudoku inference. | Sudoku evidence only. |
+| Release integrity | Physical-tree manifests, immutable archive builds, repository identity, CI/tag gates, path/secret hygiene and registry projections are checked. | Documentation coherence is now a first-class release gate. |
 
-Negative results are part of the claim surface. A neighboring mechanism becoming green does not promote another mechanism to a stronger claim.
-
----
+Negative results remain part of the claim surface.
 
 ## 11. Known limitations and explicit nonclaims
 
 Elpis currently makes no claim of:
 
 - trusted natural-language -> Semantic IR compilation;
-- a complete semantic mapping from relational Semantic IR into every Grid81 structural degree of freedom;
-- executable Semantic-IR representation of the ECS R0 writable participation primitive;
-- E1 or E2 execution under the ECS program;
-- general autonomous implementation synthesis;
-- generated-source execution authority;
+- complete mapping from relational Semantic IR into every Grid81 degree of freedom;
+- general SemanticOperationV1 ECS participation merely because E0R3 exists;
+- E1 or E2 execution;
+- general autonomous implementation synthesis or generated-source execution authority;
 - arbitrary autonomous tool execution;
-- general Grid81 satisfiability;
-- universal allocator completeness outside the qualified bounded model;
-- a qualified in-repository writer for canonical Grid81 generations/HEAD;
-- cross-process one-time capability consumption;
-- cross-process or asymmetric receipt attestation;
+- general Grid81 satisfiability or universal allocator completeness;
+- public-registry/runtime admission of writer-chain successors;
+- background or self-authorized canonical mutation;
+- general cross-process one-time capability consumption outside specifically qualified durable mechanisms;
+- cross-process/asymmetric receipt attestation;
 - hostile same-process isolation;
 - unrestricted learned-model authority;
 - runtime admission merely because a component appears in the repository;
 - generalized held-out competence unless separately qualified;
-- learned/Darwinian/scientific efficacy from the existence of the ECS structural contract;
+- learned/Darwinian/scientific efficacy from ECS structural/topology contracts;
+- whole-database rollback protection from DurableApplicationLedger v2;
 - solved alignment;
-- AGI or ASI; or
-- performance improvement not demonstrated by qualification.
-
-These are architectural boundaries, not rhetorical disclaimers attached after the fact.
-
----
+- AGI or ASI.
 
 ## 12. Current research frontier
 
 The current frontier is defined by unresolved mechanisms, not by old defects that have already been repaired.
 
-### 12.1 ECS writable-participation semantics
+### 12.1 E0R3 closes the writable-referent gap
 
-The immediate bounded ECS architectural blocker is E0R2's `SEMANTIC_IR_INSUFFICIENT` result. A future successor must introduce or qualify the missing writable whole-column participation referent without silently changing frozen ECS authority, inventing graph semantics, or treating `S3` as edit identity.
+The E0R2 `SEMANTIC_IR_INSUFFICIENT` diagnosis is no longer the immediate
+mechanical blocker it was when the older README was written. E0R3 now provides
+the qualified bounded participation referent, complete reverse binding, and
+R0-delegated disable/restore operation.
 
-Any Semantic-IR <-> ECS binding must preserve the R0 operational-gauge equivalence and exact frozen-sidecar semantics.
+The remaining boundary is integration/science: E0R3 is deliberately not a
+general SemanticOperationV1 extension, and E1/E2 remain separately gated.
 
 ### 12.2 E1 / E2 remain gated
 
@@ -671,7 +714,10 @@ The repository contains several distinct authority and implementation roots:
 | `components/Grid81DeterministicCapabilityAuthorityEvaluator/` | Capability authority evaluation. |
 | `components/Grid81DeterministicCapabilityConsumptionCompiler/` | Capability consumption compilation. |
 | `components/Grid81DeterministicCapabilityApplicationExecutor/` | Capability application boundary. |
-| `components/Grid81DeterministicCanonicalPromotionPlanner/` | Canonical promotion planning; not a qualified canonical-state writer. |
+| `components/Grid81DeterministicCanonicalPromotionPlanner/` | Advisory canonical promotion planning; non-executable and non-authoritative. |
+| [`components/Grid81DeterministicCanonicalPromotionAuthority/`](components/Grid81DeterministicCanonicalPromotionAuthority/) | Qualified explicit promotion-authority bridge; not public-registry/runtime admitted. |
+| [`components/Grid81DeterministicCanonicalCandidateConstructor/`](components/Grid81DeterministicCanonicalCandidateConstructor/) | Qualified isolated canonical successor construction. |
+| [`components/Grid81DeterministicCanonicalPublisher/`](components/Grid81DeterministicCanonicalPublisher/) | Qualified durable/atomic canonical publisher with bounded recovery guarantees. |
 | `components/CNumPyCortex/` | Optional telemetry-first Grid81 transport/recursion component. |
 | `components/FuryanLocusOracle/` | Frozen independent finite-placement oracle and certificate machinery. |
 | `components/StreamingRegexIngress/` | Bounded native Regex lexical ingress. |
@@ -684,6 +730,10 @@ The repository contains several distinct authority and implementation roots:
 | `runtime/R0/` | Historical deterministic offline structural transaction integration. |
 | `runtime/R1/` | Historical bounded HACF retrieval + R0 integration. |
 | `ECS/ECS_AUTHORITY/STRUCTURAL_R0/` | Normative public ECS Structural Authority R0 contract. |
+| [`ECS/runtime/elpis_ecs/topology.py`](ECS/runtime/elpis_ecs/topology.py) | Qualified internal ECS topology projection. |
+| [`ECS/runtime/elpis_ecs/topology_analysis.py`](ECS/runtime/elpis_ecs/topology_analysis.py) | Qualified internal ECS topology analysis. |
+| [`src/elpis_reference/structural_guidance/e0r3_participation.py`](src/elpis_reference/structural_guidance/e0r3_participation.py) | Qualified E0R3 participation referent/reverse-binding adapter. |
+| [`manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json`](manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json) | Qualified writer-chain successor registry. |
 | `ECS/science/` | Closed Branch35–40 scientific evidence and adjudication lineage; evidence bytes remain authority-bound. |
 | `tests/` | Mechanism, determinism, integration, mutation, adversarial, and release tests. |
 | `manifests/` | Versioned release manifests and public component registry. |
