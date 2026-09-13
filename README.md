@@ -2,7 +2,7 @@
 
 **A deterministic structural-reasoning architecture for bounded learned proposals, explicit authority, and falsifiable runtime composition.**
 
-**Release line: Elpis2.1.27**
+**Release line: Elpis2.2.0**
 
 Elpis is a systems-research project about a narrow question: can learned components contribute useful structural proposals while deterministic machinery retains ownership of representation, admissibility, authority, validation, and terminal action?
 
@@ -16,7 +16,7 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 **Elpis2.1.27** is a bounded maintenance successor to Elpis2.1.26. It repairs two Python AST-policy admission defects, makes a previously vacuous canonical-planner immutability test falsifiable, codifies the distinction between whole-runtime admission and component-registry admission, and adds a dedicated PyPI Trusted Publishing workflow for the canonical `abraxis717/Elpis` repository. It does not broaden model authority, terminal execution authority, component runtime admission, ECS scope, Publisher R1 semantics, Regex V2 semantics, or closed scientific claims.
 
-- Current notes: [`RELEASE_NOTES/Elpis2.1.27.md`](RELEASE_NOTES/Elpis2.1.27.md)
+- Current notes: [`RELEASE_NOTES/Elpis2.2.0.md`](RELEASE_NOTES/Elpis2.2.0.md)
 - Release-note archive: [`RELEASE_NOTES/`](RELEASE_NOTES/)
 - ECS authority and science: [`ECS/`](ECS/)
 

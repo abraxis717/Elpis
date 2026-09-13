@@ -49,11 +49,22 @@ SECRET_DETECTORS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r'(?:secret|api_key|apikey|secret_key)\s*=\s*["\'][^"\']{8,}["\']', re.IGNORECASE), "SECRET_ASSIGN"),
 ]
 
-# Private-path detectors
-PRIVATE_PATHS: list[str] = [
-    "/mnt/primesauce",
-    "/home/joe",
-]
+# Host-specific absolute-path detectors. Generic only: never embed a
+# contributor workstation root in the public scanner.
+PRIVATE_PATH_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(
+        r"(?<![A-Za-z0-9._-])/mnt/[A-Za-z0-9._-]+"
+        r"(?:/[^\s\"<>]*)?"
+    ),
+    re.compile(
+        r"(?<![A-Za-z0-9._-])/(?:home|Users)/[A-Za-z0-9._-]+"
+        r"(?:/[^\s\"<>]*)?"
+    ),
+    re.compile(
+        r"(?i)(?<![A-Za-z0-9_])[A-Z]:\\Users\\[A-Za-z0-9._-]+"
+        r"(?:\\[^\s\"<>]*)?"
+    ),
+)
 
 # Binary/artifact extensions
 BINARY_EXTENSIONS: set[str] = {
@@ -109,9 +120,12 @@ def _contract_private_path_findings(repo_root: Path):
         except (OSError, UnicodeError) as exc:
             errors.append(f"TEXT_SCAN_DECODE_FAILED: {rel}: {exc}")
             continue
-        for literal in PRIVATE_PATHS:
-            literal_digest = hashlib.sha256(literal.encode("utf-8")).hexdigest()
-            for _ in re.finditer(re.escape(literal), text):
+        for pattern in PRIVATE_PATH_PATTERNS:
+            for match in pattern.finditer(text):
+                literal = match.group(0)
+                literal_digest = hashlib.sha256(
+                    literal.encode("utf-8")
+                ).hexdigest()
                 findings[(rel, "PRIVATE_PATH", literal_digest)] += 1
     return findings, errors
 
@@ -194,10 +208,10 @@ def scan_private_paths(repo_root: Path) -> list[str]:
             content = f.read_text(errors="replace")
         except Exception:
             continue
-        for path in PRIVATE_PATHS:
-            if path in content:
+        for pattern in PRIVATE_PATH_PATTERNS:
+            if pattern.search(content):
                 rel = f.relative_to(repo_root)
-                findings.append(f"PRIVATE PATH '{path}' in {rel}")
+                findings.append(f"PRIVATE HOST PATH in {rel}")
     return findings
 
 

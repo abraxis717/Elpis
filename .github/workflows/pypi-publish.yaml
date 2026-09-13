@@ -27,24 +27,58 @@ jobs:
       - name: Install packaging tools
         run: python -m pip install --upgrade build twine
 
-      - name: Verify tag/version and public release
+      - name: Verify checked-out tag identity
         shell: bash
         run: |
           set -euo pipefail
           test "Elpis$(cat VERSION)" = "${{ github.event.release.tag_name }}"
+          test "$(git rev-parse HEAD)" = "$(git rev-list -n 1 "${{ github.event.release.tag_name }})"
+
+      - name: Verify repository release identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tools/verify_public_release.py --verify-repository-identity
+
+      - name: Export immutable release tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          release_tree="${RUNNER_TEMP}/elpis-release-tree"
+          rm -rf "${release_tree}"
+          mkdir -p "${release_tree}"
+          git archive --format=tar "${{ github.event.release.tag_name }}" |
+            tar -xf - -C "${release_tree}"
+          test ! -e "${release_tree}/.git"
+          test "Elpis$(cat "${release_tree}/VERSION")" = "${{ github.event.release.tag_name }}"
+
+      - name: Verify exported public release
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "${RUNNER_TEMP}/elpis-release-tree"
           python tools/verify_public_release.py
 
-      - name: Build distributions
-        run: python -m build
+      - name: Build distributions from immutable export
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf "${RUNNER_TEMP}/python-package-distributions"
+          mkdir -p "${RUNNER_TEMP}/python-package-distributions"
+          cd "${RUNNER_TEMP}/elpis-release-tree"
+          python -m build --outdir "${RUNNER_TEMP}/python-package-distributions"
 
       - name: Check distributions
-        run: python -m twine check dist/*
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m twine check "${RUNNER_TEMP}"/python-package-distributions/*
 
       - name: Upload distributions for isolated publish job
         uses: actions/upload-artifact@v4
         with:
           name: python-package-distributions
-          path: dist/
+          path: ${{ runner.temp }}/python-package-distributions/
           if-no-files-found: error
           retention-days: 1
 

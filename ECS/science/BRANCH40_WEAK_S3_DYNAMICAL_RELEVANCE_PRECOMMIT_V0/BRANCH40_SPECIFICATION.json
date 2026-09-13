@@ -105,7 +105,7 @@
     "integrated eval-function divergence"
   ],
   "source_binding": {
-    "source_dir": "/mnt/primesauce/Geometric_Reasoning/source/BRANCH40_WEAK_S3_DYNAMICAL_RELEVANCE_V0_SOURCE_94e3cced2c48/BRANCH40_WEAK_S3_DYNAMICAL_RELEVANCE_V0_SOURCE",
+    "source_dir": "elpis-authority://Geometric_Reasoning/source/BRANCH40_WEAK_S3_DYNAMICAL_RELEVANCE_V0_SOURCE_94e3cced2c48/BRANCH40_WEAK_S3_DYNAMICAL_RELEVANCE_V0_SOURCE",
     "source_file_sha256": "94e3cced2c486744baef042710917d36f7c9162847063c61bb9a40d813a23908",
     "source_manifest_sha256": "e3a477f49a74381daf6e5f9e0804882b2b820c62a1f6bd2372b87fa33a84638b"
   },

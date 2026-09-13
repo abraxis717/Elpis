@@ -52,8 +52,8 @@ VERIFIER_REL = "tools/verify_public_release.py"
 SEALER_REL = "tools/seal_release.py"
 
 FAKE_AWS_KEY = "AKIA" + "ABCDEFGHIJKLMNOP"
-FAKE_PRIVATE_PATH_ROOT = "/mnt/" + "primesauce"
-FAKE_PRIVATE_PATH = FAKE_PRIVATE_PATH_ROOT + "/Elpis_Canon"
+FAKE_PRIVATE_PATH_ROOT = "/mnt/" + "example_volume"
+FAKE_PRIVATE_PATH = FAKE_PRIVATE_PATH_ROOT + "/example_project"
 
 IGNORE = shutil.ignore_patterns(
     ".git", "__pycache__", ".pytest_cache", ".mypy_cache",
@@ -189,11 +189,12 @@ def m1c_new_secret_beside_allowlisted_findings(root: Path) -> None:
 
 
 def m1d_extra_occurrence_of_allowlisted_literal(root: Path) -> None:
-    """B2: allowlist entries bind an occurrence COUNT. Duplicating an already
-    allowlisted literal changes the count and must fire."""
-    rel = "tools/ci_secret_scan.py"
+    """B2: allowlist entries bind an occurrence COUNT. Duplicate an already
+    allowlisted synthetic secret; the extra occurrence must still fire."""
+    rel = "tests/test_ci_secret_scan.py"
     target = root / rel
-    target.write_text(target.read_text() + f"\n# {FAKE_PRIVATE_PATH_ROOT}\n")
+    literal = "AKIA" + "IOSFODNN7EXAMPLE"
+    target.write_text(target.read_text() + f"\n# {literal}\n")
     _reseal(root, rel)
     _rebind_allowlist_containing_file(root, rel)
 
@@ -201,10 +202,15 @@ def m1d_extra_occurrence_of_allowlisted_literal(root: Path) -> None:
 def m1e_stale_allowlist_entry(root: Path) -> None:
     """B2: removing an allowlisted literal must fire too. A permanently
     over-broad allowlist is a silent re-opening of the hole."""
-    rel = "tools/ci_secret_scan.py"
+    rel = "tests/test_ci_secret_scan.py"
     target = root / rel
+    literal = "AKIA" + "IOSFODNN7EXAMPLE"
     text = target.read_text()
-    target.write_text(text.replace(FAKE_PRIVATE_PATH_ROOT, "/redacted", 1))
+    if text.count(literal) != 1:
+        raise AssertionError(
+            f"{rel}: expected exactly one allowlisted AWS fixture"
+        )
+    target.write_text(text.replace(literal, "REDACTED_AWS_FIXTURE", 1))
     _reseal(root, rel)
     _rebind_allowlist_containing_file(root, rel)
 
@@ -286,7 +292,11 @@ def m11b_raw_invalid_byte_in_declared_text(root: Path) -> None:
 def m12_new_finding_kind(root: Path) -> None:
     rel = "tests/test_ci_secret_scan.py"
     target = root / rel
-    target.write_text(target.read_text() + "\n# BEGIN " + "PRIVATE KEY\n")
+    target.write_text(
+        target.read_text()
+        + "\n# -----BEGIN "
+        + "PRIVATE KEY-----\n"
+    )
     _reseal(root, rel)
     _rebind_allowlist_containing_file(root, rel)
 

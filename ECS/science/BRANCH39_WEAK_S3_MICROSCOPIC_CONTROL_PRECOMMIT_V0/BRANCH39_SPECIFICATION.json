@@ -77,7 +77,7 @@
     "scientific_world_finite_nonconvergence_or_rank_gate_failure": "SCIENTIFIC_GATE_FAIL"
   },
   "source_binding": {
-    "source_dir": "/mnt/primesauce/Geometric_Reasoning/source/BRANCH39_WEAK_S3_MICROSCOPIC_CONTROL_V0_SOURCE_2febdc53a03f/BRANCH39_WEAK_S3_MICROSCOPIC_CONTROL_V0_SOURCE",
+    "source_dir": "elpis-authority://Geometric_Reasoning/source/BRANCH39_WEAK_S3_MICROSCOPIC_CONTROL_V0_SOURCE_2febdc53a03f/BRANCH39_WEAK_S3_MICROSCOPIC_CONTROL_V0_SOURCE",
     "source_file_sha256": "2febdc53a03fb9af9b85d186b618de9792f1fd8094ea7b6c56431d0466de63c2",
     "source_manifest_sha256": "e7d2570849d1f6e2f6f6f8189a2aa50d6aa457fad4643fc74e4e0117a59d3375"
   },

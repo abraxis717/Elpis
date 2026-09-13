@@ -174,6 +174,13 @@ RELEASE_IDENTITIES = {
         # Original Elpis2.0.0 distribution baseline, not immediate predecessor.
         "base_release_commit": "c911af22e01ee35c441d65e8dbcad18694bdcb2a",
     },
+    "2.2.0": {
+        # Release-integrity, portability, and qualified internal-capability
+        # successor; primitive closure remains the ratified Elpis2.0.0 baseline.
+        "primitive_closure_commit": "482d4064321392108b87124cd47343d9c748f5bc",
+        # Original Elpis2.0.0 distribution baseline, not immediate predecessor.
+        "base_release_commit": "c911af22e01ee35c441d65e8dbcad18694bdcb2a",
+    },
 }
 RELEASE_MANIFEST_REL = Path(f"manifests/Elpis{RELEASE_VERSION}.RELEASE_MANIFEST.json")
 DISTRIBUTION_MANIFEST_REL = Path(f"manifests/Elpis{RELEASE_VERSION}.DISTRIBUTION_MANIFEST.json")
@@ -185,6 +192,10 @@ PUBLICATION_REGISTRY_REL = Path("PUBLISHED_RELEASES.json")
 IGNORE_PARTS = {".git"}
 EPHEMERAL_PARTS = {"build", "dist", "__pycache__", ".venv",
                    ".pytest_cache", ".mypy_cache", ".ruff_cache"}
+# Clone-local Astra command-runner scaffolding is not release authority.
+# This is a narrow manifest-membership exemption only; physical safety scans
+# still traverse it through release_paths().
+MANIFEST_LOCAL_EXEMPT_PARTS = {".astra_tmp"}
 ALLOWLIST_REL = Path("tools/public_scan_allowlist.json")
 
 
@@ -215,13 +226,58 @@ TEXT_SUFFIXES = {
 }
 
 SECRET_PATTERNS = (
-    (r"BEGIN " + "PRIVATE KEY", "private key"),
-    (r"ghp_[A-Za-z0-9]{36}", "GitHub PAT"),
-    (r"github_pat_[A-Za-z0-9_]{20,}", "GitHub PAT"),
-    (r"sk-[A-Za-z0-9]{48,}", "OpenAI-style key"),
-    (r"AKIA[A-Z0-9]{16}", "AWS key"),
-    (r"AIza[A-Za-z0-9_-]{35}", "Google API key"),
+    (
+        r"-----BEGIN (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----",
+        "private key",
+    ),
+    (
+        r"(?<![A-Za-z0-9_])ghp_[A-Za-z0-9]{36}(?![A-Za-z0-9_])",
+        "GitHub PAT",
+    ),
+    (
+        r"(?<![A-Za-z0-9_])github_pat_[A-Za-z0-9_]{20,}"
+        r"(?![A-Za-z0-9_])",
+        "GitHub PAT",
+    ),
+    (
+        r"(?<![A-Za-z0-9_])sk-(?:proj|svcacct|admin)-"
+        r"[A-Za-z0-9_-]{20,}(?![A-Za-z0-9_])",
+        "OpenAI-style key",
+    ),
+    (
+        r"(?<![A-Za-z0-9_])sk-[A-Za-z0-9]{48,}"
+        r"(?![A-Za-z0-9_])",
+        "OpenAI-style key",
+    ),
+    (
+        r"(?<![A-Z0-9])(?:AKIA|ASIA)[A-Z0-9]{16}(?![A-Z0-9])",
+        "AWS key",
+    ),
+    (
+        r"(?<![A-Za-z0-9_])AIza[A-Za-z0-9_-]{35}"
+        r"(?![A-Za-z0-9_])",
+        "Google API key",
+    ),
+    (
+        r"(?<![A-Za-z0-9_])glpat-[A-Za-z0-9_-]{20,}"
+        r"(?![A-Za-z0-9_])",
+        "GitLab PAT",
+    ),
+    (
+        r"(?<![A-Za-z0-9_])xox[baprs]-[A-Za-z0-9-]{20,}"
+        r"(?![A-Za-z0-9_])",
+        "Slack token",
+    ),
 )
+PRIVATE_PATH_PATTERNS = (
+    r"(?<![A-Za-z0-9._-])/mnt/[A-Za-z0-9._-]+"
+    r"(?:/[^\s\"<>]*)?",
+    r"(?<![A-Za-z0-9._-])/(?:home|Users)/[A-Za-z0-9._-]+"
+    r"(?:/[^\s\"<>]*)?",
+    r"(?i)(?<![A-Za-z0-9_])[A-Z]:\\Users\\[A-Za-z0-9._-]+"
+    r"(?:\\[^\s\"<>]*)?",
+)
+
 
 
 def digest(path: Path) -> str:
@@ -243,9 +299,11 @@ def release_paths() -> list[Path]:
 
 
 def actual_files() -> set[str]:
-    # Manifest exactness uses tracked-tree membership in real Git checkouts.
-    # Physical safety scans still use release_paths(). Git-less mutation copies
-    # retain the historical physical-tree behavior.
+    # In a Git checkout, tracked membership is still validated first so a
+    # tracked-but-missing path fails closed exactly as before. Manifest
+    # exactness then unions the physical filesystem that can feed build tools.
+    # Therefore an untracked or Git-ignored packageable source cannot vanish
+    # merely because Git does not enumerate it.
     if (REPO / ".git").exists():
         proc = subprocess.run(
             ["git", "-C", str(REPO), "ls-files", "-z"],
@@ -273,12 +331,29 @@ def actual_files() -> set[str]:
                 raise RuntimeError(
                     f"tracked release path missing from working tree: {rel.as_posix()}"
                 )
+
+        for path in release_paths():
+            rel = path.relative_to(REPO)
+            if (
+                ignored(rel)
+                or ephemeral(rel)
+                or bool(set(rel.parts) & MANIFEST_LOCAL_EXEMPT_PARTS)
+                or rel in {MANIFEST_REL, PUBLICATION_REGISTRY_REL}
+            ):
+                continue
+            if path.is_file() or path.is_symlink():
+                out.add(rel.as_posix())
         return out
 
     out: set[str] = set()
     for path in release_paths():
         rel = path.relative_to(REPO)
-        if ignored(rel) or rel in {MANIFEST_REL, PUBLICATION_REGISTRY_REL}:
+        if (
+            ignored(rel)
+            or ephemeral(rel)
+            or bool(set(rel.parts) & MANIFEST_LOCAL_EXEMPT_PARTS)
+            or rel in {MANIFEST_REL, PUBLICATION_REGISTRY_REL}
+        ):
             continue
         if path.is_file() or path.is_symlink():
             out.add(rel.as_posix())
@@ -511,6 +586,142 @@ def constant_assignment(path: Path, name: str):
     )
 
 
+_RUNTIME_FORBIDDEN_IMPORT_ROOTS = {
+    "subprocess",
+    "importlib",
+    "ctypes",
+    "runpy",
+}
+_RUNTIME_FORBIDDEN_BUILTIN_CALLS = {
+    "compile",
+    "eval",
+    "exec",
+    "__import__",
+}
+
+
+def _runtime_static_string(node):
+    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        return node.value
+    if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
+        left = _runtime_static_string(node.left)
+        right = _runtime_static_string(node.right)
+        if left is not None and right is not None:
+            return left + right
+    return None
+
+
+def _runtime_policy_findings(path: Path):
+    tree = ast.parse(
+        path.read_text(encoding="utf-8"),
+        filename=str(path),
+    )
+    module_aliases = {}
+    symbol_aliases = {}
+    findings = set()
+
+    def add(kind, detail):
+        findings.add(f"{kind}:{detail}")
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                bound = alias.asname or alias.name.split(".", 1)[0]
+                module_aliases[bound] = alias.name
+                root_name = alias.name.split(".", 1)[0]
+                if root_name in _RUNTIME_FORBIDDEN_IMPORT_ROOTS:
+                    add("execution_import", alias.name)
+
+        if isinstance(node, ast.ImportFrom):
+            module = node.module or ""
+            root_name = module.split(".", 1)[0] if module else ""
+            if root_name in _RUNTIME_FORBIDDEN_IMPORT_ROOTS:
+                add("execution_import", module)
+            for alias in node.names:
+                if alias.name == "*":
+                    continue
+                bound = alias.asname or alias.name
+                target = f"{module}.{alias.name}" if module else alias.name
+                symbol_aliases[bound] = target
+
+                if module == "os" and alias.name == "system":
+                    add("execution_import", "os.system")
+                if (
+                    module == "builtins"
+                    and alias.name in _RUNTIME_FORBIDDEN_BUILTIN_CALLS
+                ):
+                    add("execution_import", f"builtins.{alias.name}")
+
+    def resolve_name(name):
+        if name in symbol_aliases:
+            return symbol_aliases[name]
+        if name in module_aliases:
+            return module_aliases[name]
+        return name
+
+    def resolve_object(node):
+        if isinstance(node, ast.Name):
+            return resolve_name(node.id)
+        return None
+
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+
+        target = None
+        if isinstance(node.func, ast.Name):
+            target = resolve_name(node.func.id)
+        elif (
+            isinstance(node.func, ast.Attribute)
+            and isinstance(node.func.value, ast.Name)
+        ):
+            base = resolve_name(node.func.value.id)
+            target = f"{base}.{node.func.attr}"
+
+        if target in _RUNTIME_FORBIDDEN_BUILTIN_CALLS:
+            add("execution_call", target)
+        if target in {
+            f"builtins.{name}"
+            for name in _RUNTIME_FORBIDDEN_BUILTIN_CALLS
+        }:
+            add("execution_call", target)
+        if target == "os.system":
+            add("execution_call", target)
+
+        if target is not None:
+            root_name = target.split(".", 1)[0]
+            if root_name in _RUNTIME_FORBIDDEN_IMPORT_ROOTS:
+                add("execution_call", target)
+
+        if target in {"getattr", "builtins.getattr"} and len(node.args) >= 2:
+            object_name = resolve_object(node.args[0])
+            attribute = _runtime_static_string(node.args[1])
+            if attribute is None:
+                continue
+
+            if (
+                object_name in {"__builtins__", "builtins"}
+                and attribute in _RUNTIME_FORBIDDEN_BUILTIN_CALLS
+            ):
+                add(
+                    "dynamic_execution_lookup",
+                    f"{object_name}.{attribute}",
+                )
+
+            if object_name == "os" and attribute == "system":
+                add("dynamic_execution_lookup", "os.system")
+
+            if object_name is not None:
+                root_name = object_name.split(".", 1)[0]
+                if root_name in _RUNTIME_FORBIDDEN_IMPORT_ROOTS:
+                    add(
+                        "dynamic_execution_lookup",
+                        f"{object_name}.{attribute}",
+                    )
+
+    return sorted(findings)
+
+
 def check_runtime_boundary():
     errors = []
 
@@ -560,6 +771,22 @@ def check_runtime_boundary():
             "guidance request gate default != False"
         )
 
+    for source in sorted(root.rglob("*.py")):
+        try:
+            findings = _runtime_policy_findings(source)
+        except (OSError, UnicodeError, SyntaxError) as exc:
+            errors.append(
+                "runtime boundary source invalid: "
+                f"{source.relative_to(root).as_posix()}: {exc}"
+            )
+            continue
+
+        relative = source.relative_to(root).as_posix()
+        for finding in findings:
+            errors.append(
+                f"RUNTIME_POLICY:{relative}:{finding}"
+            )
+
     runtime = root / "runtime.py"
     tree = ast.parse(
         runtime.read_text(),
@@ -571,15 +798,6 @@ def check_runtime_boundary():
 
     for node in ast.walk(tree):
         if isinstance(node, ast.Call):
-            if (
-                isinstance(node.func, ast.Name)
-                and node.func.id
-                in {"compile", "eval", "exec"}
-            ):
-                errors.append(
-                    f"execution call {node.func.id}"
-                )
-
             for kw in node.keywords:
                 if (
                     kw.arg == "execution_authorized"
@@ -595,29 +813,6 @@ def check_runtime_boundary():
                 ):
                     validation_false = True
 
-        if isinstance(node, ast.Import):
-            for alias in node.names:
-                if alias.name in {
-                    "subprocess",
-                    "importlib",
-                }:
-                    errors.append(
-                        f"execution import {alias.name}"
-                    )
-
-        if isinstance(node, ast.ImportFrom):
-            if node.module in {
-                "subprocess",
-                "importlib",
-            }:
-                errors.append(
-                    f"execution import {node.module}"
-                )
-
-    # `_terminal_result()` builds the terminal fields in a literal
-    # dictionary and then splats that dictionary into the dataclass.
-    # Recognize that real construction shape rather than requiring
-    # direct constructor keyword arguments.
     terminal_fn = next(
         (
             node
@@ -657,8 +852,6 @@ def check_runtime_boundary():
                 if key.value == "validation_authorized":
                     validation_false = True
 
-    # Independently require the terminal dataclass validator to
-    # fail closed if either bit is ever forged true.
     result_class = next(
         (
             node
@@ -782,8 +975,8 @@ def scan_findings():
             errors.append(f"TEXT_SCAN_DECODE_FAILED: {rel}: {exc}")
             continue
         patterns = list(SECRET_PATTERNS) + [
-            (re.escape("/mnt/" + "primesauce"), "PRIVATE_PATH"),
-            (re.escape("/home/" + "joe"), "PRIVATE_PATH"),
+            (pattern, "PRIVATE_PATH")
+            for pattern in PRIVATE_PATH_PATTERNS
         ]
         for pattern, desc in patterns:
             kind = desc if desc == "PRIVATE_PATH" else f"SECRET:{desc}"
@@ -852,6 +1045,104 @@ def check_artifacts():
 
     return not errors, errors
 
+def _git_repository_command(args):
+    return subprocess.run(
+        ["git", "-C", str(REPO), *args],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+
+
+def _git_resolve_commit(ref):
+    proc = _git_repository_command(
+        ["rev-parse", "--verify", f"{ref}^{{commit}}"]
+    )
+    if proc.returncode != 0:
+        return None
+    value = proc.stdout.strip()
+    if not re.fullmatch(r"[0-9a-f]{40}", value):
+        return None
+    return value
+
+
+def _git_is_ancestor(ancestor, descendant):
+    proc = _git_repository_command(
+        ["merge-base", "--is-ancestor", ancestor, descendant]
+    )
+    return proc.returncode == 0
+
+
+def check_repository_identity(require_git=False):
+    errors = []
+
+    if not (REPO / ".git").exists():
+        if require_git:
+            errors.append("REPOSITORY_GIT_REQUIRED")
+        return not errors, errors
+
+    try:
+        identity = release_identity()
+    except Exception as exc:
+        return False, [f"REPOSITORY_IDENTITY_TABLE:{exc}"]
+
+    expected_tag = f"Elpis{RELEASE_VERSION}"
+    tag_commit = _git_resolve_commit(
+        f"refs/tags/{expected_tag}"
+    )
+    if tag_commit is None:
+        errors.append(
+            f"RELEASE_TAG_COMMIT_MISSING:{expected_tag}"
+        )
+
+    head_commit = _git_resolve_commit("HEAD")
+    if head_commit is None:
+        errors.append("HEAD_COMMIT_UNRESOLVED")
+
+    for field in (
+        "primitive_closure_commit",
+        "base_release_commit",
+    ):
+        commit = identity.get(field)
+        if not (
+            isinstance(commit, str)
+            and re.fullmatch(r"[0-9a-f]{40}", commit)
+        ):
+            errors.append(
+                f"RELEASE_IDENTITY_INVALID:{field}"
+            )
+            continue
+
+        resolved = _git_resolve_commit(commit)
+        if resolved != commit:
+            errors.append(
+                f"RELEASE_IDENTITY_COMMIT_MISSING:"
+                f"{field}:{commit}"
+            )
+            continue
+
+        if (
+            tag_commit is not None
+            and not _git_is_ancestor(commit, tag_commit)
+        ):
+            errors.append(
+                f"RELEASE_IDENTITY_NOT_ANCESTOR:"
+                f"{field}:{commit}:{expected_tag}"
+            )
+
+    if (
+        tag_commit is not None
+        and head_commit is not None
+        and not _git_is_ancestor(tag_commit, head_commit)
+    ):
+        errors.append(
+            f"RELEASE_TAG_NOT_ANCESTOR_OF_HEAD:"
+            f"{expected_tag}:{tag_commit}:{head_commit}"
+        )
+
+    return not errors, errors
+
 
 def main() -> int:
     if "--print-manifest" in sys.argv:
@@ -860,9 +1151,21 @@ def main() -> int:
     if "--emit-allowlist" in sys.argv:
         print(json.dumps(emitted_allowlist(), indent=2) )
         return 0
+    if "--verify-repository-identity" in sys.argv:
+        ok, errors = check_repository_identity(
+            require_git=True
+        )
+        print(
+            f"[{'PASS' if ok else 'FAIL'}] "
+            "Repository identity"
+        )
+        for error in errors:
+            print(f"  -> {error}")
+        return 0 if ok else 1
     checks = (
         ("Elpis2 manifest", check_manifest),
         ("Package identity", check_package),
+        ("Repository identity", check_repository_identity),
         ("Declared-text version", check_declared_text_version),
         ("Runtime boundary", check_runtime_boundary),
         ("Portable public boundary", check_public_boundary),

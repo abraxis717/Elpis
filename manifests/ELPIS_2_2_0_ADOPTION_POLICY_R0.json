@@ -1,0 +1,95 @@
+{
+  "api_principle": "Qualified internal modules may ship in the distribution without becoming stable package-root public API. Public API admission requires a separate explicit successor decision.",
+  "candidates": [
+    {
+      "claims_not_made": [
+        "does not authorize E1",
+        "does not authorize E2",
+        "does not write canonical Grid81 state"
+      ],
+      "disposition": "SHIP_INTERNAL_QUALIFIED",
+      "id": "E0R3_PARTICIPATION_REFERENT",
+      "runtime_admission_change": false,
+      "source": "src/elpis_reference/structural_guidance/e0r3_participation.py",
+      "stable_package_root_api": false,
+      "tests": [
+        "tests/test_ecs_r0_e0r3.py"
+      ],
+      "tool": "tools/ecs_r0_e0r3.py"
+    },
+    {
+      "claims_not_made": [
+        "does not create a topology ledger",
+        "does not add cross-process transport",
+        "does not add federation"
+      ],
+      "disposition": "SHIP_INTERNAL_QUALIFIED",
+      "id": "ECS_TOPOLOGY_PROJECTION",
+      "runtime_admission_change": false,
+      "source": "ECS/runtime/elpis_ecs/topology.py",
+      "stable_package_root_api": false,
+      "tests": [
+        "ECS/tests/test_topology_projection.py"
+      ]
+    },
+    {
+      "claims_not_made": [
+        "does not mutate ECS state",
+        "does not inspect payload semantics",
+        "does not persist analysis state"
+      ],
+      "disposition": "SHIP_INTERNAL_QUALIFIED",
+      "id": "ECS_TOPOLOGY_ANALYSIS",
+      "runtime_admission_change": false,
+      "source": "ECS/runtime/elpis_ecs/topology_analysis.py",
+      "stable_package_root_api": false,
+      "tests": [
+        "ECS/tests/test_topology_analysis.py"
+      ]
+    },
+    {
+      "claims_not_made": [
+        "does not silently migrate v1 ledgers",
+        "does not provide whole-database rollback protection",
+        "does not imply publisher adoption"
+      ],
+      "disposition": "SHIP_INTERNAL_QUALIFIED",
+      "id": "DURABLE_APPLICATION_LEDGER_V2",
+      "runtime_admission_change": false,
+      "source": "components/Grid81DeterministicCapabilityApplicationExecutor/src/elpis_grid81_application_executor/durable_ledger_v2.py",
+      "stable_package_root_api": false,
+      "tests": [
+        "components/Grid81DeterministicCapabilityApplicationExecutor/tests/test_durable_ledger_v2.py"
+      ]
+    }
+  ],
+  "next_gate": "materialize 2.2.0 documentation/version/release manifests against this policy; no tag/release/PyPI publication until separately authorized",
+  "policy_id": "ELPIS_2_2_0_ADOPTION_POLICY_R0",
+  "portability_invariant": "Inter-code binding may depend on paths internal to the Elpis tree when derived from the current Elpis root/package location; foreign host-specific filesystem paths are forbidden as binding authority.",
+  "predecessor_release": "2.1.27",
+  "release_hardening": [
+    "C1_RELEASE_MANIFEST_GIT_BOUNDARY",
+    "C1B_IMMUTABLE_GIT_ARCHIVE_BUILD",
+    "C2A_CANONICAL_ASSEMBLY_RECOMPUTE",
+    "C3_RUNTIME_BOUNDARY_EXPANSION",
+    "C4_REPOSITORY_IDENTITY",
+    "C5_SECRET_SCANNER_MODERNIZATION",
+    "C5_5_PUBLIC_PATH_DELOCALIZATION",
+    "C6_RELOCATION_AND_ROOT_PYTEST_BOOTSTRAP"
+  ],
+  "release_materialization_authorized": false,
+  "schema": "elpis.release-adoption-policy.v1",
+  "science_evidence_disposition": {
+    "branches": [
+      36,
+      37,
+      38,
+      39,
+      40
+    ],
+    "disposition": "SHIP_EVIDENCE_NOT_RUNTIME_API",
+    "historical_release_manifests_mutated": false,
+    "host_specific_paths_allowed": false
+  },
+  "target_release": "2.2.0"
+}

@@ -1,3 +1,14 @@
+## Elpis2.2.0 — Portability, release-integrity, and bounded internal capability successor
+
+- Harden release exactness against packageable untracked/ignored files and require PyPI builds from immutable tag archives.
+- Recompute canonical assembly authority from shipped inventories, identifiers, dependency edges, runtime flags, and byte pins.
+- Expand structural-guidance runtime-policy scanning and add repository commit/tag ancestry verification.
+- Modernize secret scanning and eliminate host-specific filesystem paths and private-path allowlist debt from the shipping tree.
+- Make root package binding repository-relative so relocated Elpis does not require externally prepared `PYTHONPATH`; isolate Git requirements to explicit provenance tests.
+- Ship qualified E0R3 participation referents, ECS topology projection/analysis, and DurableApplicationLedger v2 as internal capabilities without stable package-root API promotion or runtime-admission change.
+- Preserve Branch36–40 as scientific evidence, with portable authority references and consistent checksum closure.
+- Keep `PUBLISHED_RELEASES.json` unchanged until immutable tag admission and preserve all historical release manifests byte-for-byte.
+
 ## Elpis2.1.27 — Bounded AST-policy and release-infrastructure maintenance
 
 - Admit only the existing `_EXCEPTION_NAMES` as typed `except` handlers while rejecting bare and non-admitted handlers under the existing `BANNED_CALL` decision ABI.

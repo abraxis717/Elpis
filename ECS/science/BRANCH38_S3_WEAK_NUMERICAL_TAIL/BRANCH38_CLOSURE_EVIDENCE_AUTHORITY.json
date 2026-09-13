@@ -17,7 +17,7 @@
   "scientific_adjudication_digest": "feeab57c40b2751b472d2101423d3997cf7e450b8a66a0043c149c65033a9ec8",
   "scientific_evidence_digest": "b631cb889bf4d973533d43f906da433344df1e57221309b767fa4c68c60f83f4",
   "source_binding": {
-    "source_dir": "/mnt/primesauce/Geometric_Reasoning/source/BRANCH38_S3_WEAK_NUMERICAL_TAIL_FULL_EXECUTION_V0_SOURCE_ebcde2ffaefd/BRANCH38_S3_WEAK_NUMERICAL_TAIL_FULL_EXECUTION_V0_SOURCE",
+    "source_dir": "elpis-authority://Geometric_Reasoning/source/BRANCH38_S3_WEAK_NUMERICAL_TAIL_FULL_EXECUTION_V0_SOURCE_ebcde2ffaefd/BRANCH38_S3_WEAK_NUMERICAL_TAIL_FULL_EXECUTION_V0_SOURCE",
     "source_file_sha256": "ebcde2ffaefde77328f428ad09418465e01a5d753ed6283b19b4eca7a9456d63",
     "source_manifest_sha256": "8a08973fabf0847dc6ce95f2372fd7a71236bcfd4babd1656efa0de32913974c"
   },

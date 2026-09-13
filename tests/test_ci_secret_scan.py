@@ -81,17 +81,25 @@ POSITIVE_SECRET = '''
 secret_key = "a_long_secret_value_here_123"
 '''
 
-POSITIVE_PRIVATE_PATH_JSON = '''
-{
-    "canonical_root": "/mnt/primesauce/Elpis_Canon/Elpis",
-    "build_dir": "/home/joe/projects/build"
-}
-'''
+def _fixture_mount(suffix: str = "") -> str:
+    return "/" + "mnt/" + "example_volume" + suffix
 
-POSITIVE_PRIVATE_PATH_PY = '''
-CANON = "/mnt/primesauce/Elpis_Canon/Elpis"
-HOME = "/home/joe/some/path"
-'''
+
+def _fixture_home(suffix: str = "") -> str:
+    return "/" + "home/" + "example_user" + suffix
+
+
+POSITIVE_PRIVATE_PATH_JSON = json.dumps(
+    {
+        "canonical_root": _fixture_mount("/project/root"),
+        "build_dir": _fixture_home("/projects/build"),
+    }
+)
+
+POSITIVE_PRIVATE_PATH_PY = (
+    f'CANON = "{_fixture_mount("/project/root")}"\n'
+    f'HOME = "{_fixture_home("/some/path")}"\n'
+)
 
 
 def _write_fixture(tmp: Path, name: str, content: str) -> Path:
@@ -181,12 +189,12 @@ class TestPositiveFixtures:
     def test_private_path_mnt_detected(self, tmp_path):
         _write_fixture(tmp_path, "paths.json", POSITIVE_PRIVATE_PATH_JSON)
         findings = scan_private_paths(tmp_path)
-        assert any("/mnt/primesauce" in f for f in findings), f"No /mnt/primesauce detection: {findings}"
+        assert any("PRIVATE HOST PATH" in f for f in findings), f"No mount-path detection: {findings}"
 
     def test_private_path_home_detected(self, tmp_path):
         _write_fixture(tmp_path, "paths.py", POSITIVE_PRIVATE_PATH_PY)
         findings = scan_private_paths(tmp_path)
-        assert any("/home/joe" in f for f in findings), f"No /home/joe detection: {findings}"
+        assert any("PRIVATE HOST PATH" in f for f in findings), f"No home-path detection: {findings}"
 
 
 # ---------------------------------------------------------------------------
@@ -257,7 +265,7 @@ class TestBoundedPrivatePathAllowlist:
         tools.mkdir()
         evidence = tmp_path / "evidence.md"
         evidence.write_text(content, encoding="utf-8")
-        literal = "/mnt/primesauce"
+        literal = content.strip()
         entry = {
             "path": "evidence.md",
             "kind": "PRIVATE_PATH",
@@ -269,26 +277,26 @@ class TestBoundedPrivatePathAllowlist:
         return evidence
 
     def test_exact_bound_private_path_is_accepted(self, tmp_path):
-        self._write_bound_repo(tmp_path, "/mnt/primesauce/closed/evidence\n")
+        self._write_bound_repo(tmp_path, _fixture_mount("/closed/evidence") + "\n")
         result = run_scan(str(tmp_path))
         assert result["clean"] is True, result
 
     def test_containing_file_digest_drift_is_rejected(self, tmp_path):
-        evidence = self._write_bound_repo(tmp_path, "/mnt/primesauce/closed/evidence\n")
+        evidence = self._write_bound_repo(tmp_path, _fixture_mount("/closed/evidence") + "\n")
         evidence.write_text(evidence.read_text() + "changed\n")
         result = run_scan(str(tmp_path))
         assert result["clean"] is False
         assert any("INVALID ALLOWLIST" in x for x in result["private_paths"])
 
     def test_stale_count_is_rejected(self, tmp_path):
-        self._write_bound_repo(tmp_path, "/mnt/primesauce/closed/evidence\n", count=2)
+        self._write_bound_repo(tmp_path, _fixture_mount("/closed/evidence") + "\n", count=2)
         result = run_scan(str(tmp_path))
         assert result["clean"] is False
         assert any("STALE ALLOWLIST ENTRY" in x for x in result["private_paths"])
 
     def test_unallowlisted_private_path_is_rejected(self, tmp_path):
-        self._write_bound_repo(tmp_path, "/mnt/primesauce/closed/evidence\n")
-        (tmp_path / "other.md").write_text("/home/joe/new/path\n")
+        self._write_bound_repo(tmp_path, _fixture_mount("/closed/evidence") + "\n")
+        (tmp_path / "other.md").write_text(_fixture_home("/new/path") + "\n")
         result = run_scan(str(tmp_path))
         assert result["clean"] is False
         assert any("not allowlisted" in x for x in result["private_paths"])

@@ -1,6 +1,6 @@
 [project]
 name = "elpisai"
-version = "2.1.27"
+version = "2.2.0"
 description = "Elpis structural-guidance primitive with an end-to-end validated-source runtime"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -83,3 +83,25 @@ elpis_reference = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+pythonpath = [
+  "ECS/runtime",
+  "src",
+  "components",
+  "components/Pipeline/P0ControlProtocol/src",
+  "components/TRMFractalSpine/src",
+  "components/Grid81StructuralSemantics/src",
+  "components/Grid81TypedProjectionCompiler/src",
+  "components/Grid81StructuralGroupProjectionCompiler/src",
+  "components/Grid81DeterministicStructuralAdjudicator/src",
+  "components/Grid81DeterministicCapabilityAuthorityEvaluator/src",
+  "components/Grid81DeterministicCapabilityConsumptionCompiler/src",
+  "components/Grid81DeterministicCapabilityApplicationExecutor/src",
+  "components/Grid81DeterministicCanonicalPromotionPlanner/src",
+  "components/CNumPyCortex/src",
+  "native/elpis-header/src",
+  "runtime/R0/src",
+  "runtime/R1/src",
+]
+markers = [
+  "requires_git: repository provenance/sealing tests requiring a live Git checkout",
+]

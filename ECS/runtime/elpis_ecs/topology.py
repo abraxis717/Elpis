@@ -1,0 +1,322 @@
+"""Elpis ECS M1A — interaction-derived topology projection (read-only).
+
+This module establishes ONE narrow capability:
+
+    A canonical directed topology view can be DETERMINISTICALLY DERIVED from
+    already-committed, kernel-verifiable interaction history.
+
+It does NOT create a second mutable state authority. The projection is a pure
+function of (genesis authority, committed event history, mailbox capacity):
+it re-runs the EXISTING authoritative replay/validation path
+(``replay_from_events``) and then folds the validated committed facts into a
+frozen, versioned, canonical graph record. No new mutable state is created,
+no existing state is mutated, and no self-reported topology observation is
+accepted as an edge.
+
+Edge semantics (exact)
+----------------------
+* A NODE is every entity identity ever founded in the validated history
+  (every ``ENTITY_FOUNDED`` event). Isolated entities (no interactions) are
+  represented as nodes with no edges.
+* A DIRECTED EDGE ``sender -> receiver`` arises ONLY from a committed
+  ``MESSAGE_ENQUEUED`` fact whose envelope attribution was validated by the
+  replay path (kernel-owned sender attribution; sender ACTIVE at commit;
+  receiver deliverable; envelope clock == event clock; watermark admitted).
+  The edge is derived from the committed envelope's ``sender_entity_id`` and
+  ``receiver_entity_id`` fields — NEVER from arbitrary application payload
+  text. A payload that says "I am connected to X" has no effect unless an
+  actual qualifying committed interaction fact independently establishes the
+  edge.
+* Repeated sender->receiver interactions AGGREGATE into one edge with a
+  deterministic count and first/last commit-clock provenance. Opposite
+  directions are DISTINCT directed edges.
+* Self-interaction (sender == receiver) is represented as a self-loop edge
+  when the kernel legally permits it (it does: an ACTIVE entity may propose
+  to itself; the receiver is deliverable and the mailbox is bounded).
+
+Nonclaims (preserved, explicit)
+-------------------------------
+* topology does NOT grant mutation authority;
+* topology is NOT semantic truth;
+* edge existence is NOT authentication or trust;
+* topology does NOT authorize Structural R0;
+* topology does NOT authorize Grid81;
+* topology does NOT establish federation;
+* topology does NOT establish cross-process identity;
+* topology does NOT establish learned efficacy;
+* topology is NOT an independent durable authority.
+
+Determinism: the projection depends only on the validated committed facts.
+It does not depend on dictionary insertion order, set iteration order, the
+Python hash seed, object address, filesystem path, wall-clock time, or
+process ID. All ordering is explicit (sorted by entity ID / commit clock).
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Any, Mapping, Sequence
+
+from . import canonical
+from .errors import EcsError
+from .replay import KernelState, replay_from_events
+
+# ---------------------------------------------------------------------------
+# Schema / domain constants (explicit, versioned)
+# ---------------------------------------------------------------------------
+
+# The projection schema version. Bumped only on canonical-form change.
+TOPOLOGY_SCHEMA = "ecs.topology.v1"
+
+# Domain tag for the topology digest. Distinct from every other domain so the
+# same payload under two domains yields two different digests.
+DOMAIN_TOPOLOGY = "ecs.topology.v1"
+
+# The event kind that establishes a directed interaction edge.
+_EDGE_KIND = "MESSAGE_ENQUEUED"
+
+
+class TopologyError(EcsError):
+    """A topology projection precondition failed (fail-closed)."""
+
+
+@dataclass(frozen=True)
+class TopologyNode:
+    """One founded entity identity (a node in the topology).
+
+    ``entity_id`` is the stable domain-separated founding digest (an
+    identifier, NOT authentication). ``founding_index`` is the kernel-assigned
+    monotonic founding counter. ``lifecycle`` is the entity's lifecycle at the
+    END of the validated history (a projection fact, not an authority).
+    """
+
+    entity_id: str
+    founding_index: int
+    lifecycle: str
+
+    def to_dict(self) -> dict:
+        return {
+            "entity_id": self.entity_id,
+            "founding_index": self.founding_index,
+            "lifecycle": self.lifecycle,
+        }
+
+
+@dataclass(frozen=True)
+class TopologyEdge:
+    """One directed interaction edge, aggregated over repeated interactions.
+
+    ``sender_entity_id`` -> ``receiver_entity_id``. ``count`` is the number of
+    committed ``MESSAGE_ENQUEUED`` facts for this directed pair.
+    ``first_commit_clock`` / ``last_commit_clock`` are the logical clocks of
+    the first and last committed enqueues for this pair (deterministic
+    provenance; the clock is the commit clock of the enqueue event).
+    ``self_loop`` is True iff sender == receiver.
+    """
+
+    sender_entity_id: str
+    receiver_entity_id: str
+    count: int
+    first_commit_clock: int
+    last_commit_clock: int
+    self_loop: bool
+
+    def to_dict(self) -> dict:
+        return {
+            "sender_entity_id": self.sender_entity_id,
+            "receiver_entity_id": self.receiver_entity_id,
+            "count": self.count,
+            "first_commit_clock": self.first_commit_clock,
+            "last_commit_clock": self.last_commit_clock,
+            "self_loop": self.self_loop,
+        }
+
+
+@dataclass(frozen=True)
+class TopologyProjection:
+    """The frozen, versioned, canonical topology projection.
+
+    ``schema`` is the projection schema version. ``genesis_digest`` and
+    ``mailbox_capacity`` bind the projection to the exact authority it was
+    derived from (so two histories with different genesis/capacity cannot
+    silently share a topology). ``event_count`` is the number of committed
+    events in the validated history. ``nodes`` and ``edges`` are tuples in
+    deterministic order (nodes by entity_id; edges by
+    (sender_entity_id, receiver_entity_id)). ``topology_digest`` is the
+    domain-separated canonical digest of the projection record.
+    """
+
+    schema: str
+    genesis_digest: str
+    mailbox_capacity: int
+    event_count: int
+    nodes: tuple
+    edges: tuple
+    topology_digest: str
+
+    def to_dict(self) -> dict:
+        return {
+            "schema": self.schema,
+            "genesis_digest": self.genesis_digest,
+            "mailbox_capacity": self.mailbox_capacity,
+            "event_count": self.event_count,
+            "nodes": [n.to_dict() for n in self.nodes],
+            "edges": [e.to_dict() for e in self.edges],
+        }
+
+    def canonical_bytes(self) -> bytes:
+        return canonical.canonical_bytes(self.to_dict())
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, TopologyProjection):
+            return NotImplemented
+        return self.to_dict() == other.to_dict()
+
+    def __hash__(self) -> int:
+        return hash(self.topology_digest)
+
+
+# ---------------------------------------------------------------------------
+# Projection construction (pure: validated history -> frozen projection)
+# ---------------------------------------------------------------------------
+
+
+def _fold_edges(events: Sequence[Mapping[str, Any]]) -> tuple:
+    """Fold the validated committed interaction facts into directed edges.
+
+    Reads ONLY the committed ``MESSAGE_ENQUEUED`` events' envelope
+    attribution (``sender_entity_id`` / ``receiver_entity_id``) — NEVER the
+    application payload text. These events have already passed the
+    authoritative replay/validation path (kernel-owned sender attribution,
+    sender ACTIVE at commit, receiver deliverable, envelope clock == event
+    clock, watermark admitted), so the envelope fields are the committed
+    attribution. Edges are aggregated per directed (sender, receiver) pair
+    and returned in deterministic order.
+
+    Deriving from the EVENT HISTORY (not the live mailbox) is essential:
+    processed messages are popped from the mailbox, so the mailbox would lose
+    edges. The committed event history is the authoritative source.
+    """
+    # Aggregate per directed pair. Use a plain dict keyed by (sender,
+    # receiver); the FINAL order is determined by an explicit sort, so dict
+    # insertion order is irrelevant.
+    agg: dict = {}
+    for ev in events:
+        if ev["event_kind"] != _EDGE_KIND:
+            continue
+        env = ev["payload"]["envelope"]
+        sender = env["sender_entity_id"]
+        receiver = env["receiver_entity_id"]
+        # The envelope clock is the commit clock of the enqueue event
+        # (verified equal to the event clock by replay).
+        clock = env["logical_clock"]
+        key = (sender, receiver)
+        slot = agg.get(key)
+        if slot is None:
+            agg[key] = {"count": 1, "first": clock, "last": clock}
+        else:
+            slot["count"] += 1
+            # The commit clock is monotonic per event, so the first observed
+            # is the minimum and the last observed is the maximum. (Explicit
+            # min/max for clarity and safety.)
+            if clock < slot["first"]:
+                slot["first"] = clock
+            if clock > slot["last"]:
+                slot["last"] = clock
+    edges = []
+    for (sender, receiver) in sorted(agg):
+        slot = agg[(sender, receiver)]
+        edges.append(TopologyEdge(
+            sender_entity_id=sender,
+            receiver_entity_id=receiver,
+            count=slot["count"],
+            first_commit_clock=slot["first"],
+            last_commit_clock=slot["last"],
+            self_loop=(sender == receiver),
+        ))
+    return tuple(edges)
+
+
+def _fold_nodes(state: KernelState) -> tuple:
+    """Fold the validated founded entities into nodes (deterministic order)."""
+    nodes = []
+    for eid in state.registry.ids_sorted():
+        rec = state.registry.get(eid)
+        nodes.append(TopologyNode(
+            entity_id=eid,
+            founding_index=rec.founding_index,
+            lifecycle=rec.lifecycle,
+        ))
+    return tuple(nodes)
+
+
+def project_topology(
+    genesis_digest: str,
+    events: Sequence[Mapping[str, Any]],
+    mailbox_capacity: int,
+) -> TopologyProjection:
+    """Derive the canonical topology projection from committed history.
+
+    This is a PURE, READ-ONLY projection. It:
+      1. re-runs the EXISTING authoritative replay/validation path
+         (``replay_from_events``) so that wrong genesis, wrong capacity,
+         malformed transitions, broken sequence/clock/root linkage, invalid
+         lifecycle behavior, or corrupted events retain their EXISTING
+         failure semantics (fail-closed);
+      2. folds the validated committed facts into a frozen, versioned,
+         canonical graph record;
+      3. computes a domain-separated topology digest.
+
+    It does NOT mutate the supplied events or any kernel state. It does NOT
+    create a second mutable state authority. It does NOT accept self-reported
+    topology as an edge.
+
+    Raises:
+        WrongAuthorityError / BrokenChainError / CorruptEventError /
+        ReplayError / ... : the existing replay failure classes, propagated
+            unchanged (fail-closed).
+        TopologyError: a topology-specific precondition failed.
+    """
+    if not isinstance(genesis_digest, str) or len(genesis_digest) != 64:
+        raise TopologyError("TOPOLOGY_GENESIS_INVALID: must be a 64-hex digest")
+    if isinstance(mailbox_capacity, bool) or not isinstance(mailbox_capacity, int) \
+            or not 1 <= mailbox_capacity:
+        raise TopologyError("TOPOLOGY_CAPACITY_INVALID: must be a positive int")
+    if not isinstance(events, Sequence) or isinstance(events, (str, bytes)):
+        raise TopologyError("TOPOLOGY_EVENTS_INVALID: must be a sequence of events")
+
+    # Step 1: the EXISTING authoritative replay/validation path. This is the
+    # ONLY validation used; no weaker duplicate validator is invented.
+    state = replay_from_events(genesis_digest, events, mailbox_capacity)
+
+    # Step 2: fold the validated committed facts (read-only).
+    nodes = _fold_nodes(state)
+    edges = _fold_edges(events)
+
+    # Step 3: canonical record + domain-separated digest.
+    record = {
+        "schema": TOPOLOGY_SCHEMA,
+        "genesis_digest": genesis_digest,
+        "mailbox_capacity": mailbox_capacity,
+        "event_count": len(events),
+        "nodes": [n.to_dict() for n in nodes],
+        "edges": [e.to_dict() for e in edges],
+    }
+    topology_digest = canonical.domain_digest(DOMAIN_TOPOLOGY, record)
+
+    return TopologyProjection(
+        schema=TOPOLOGY_SCHEMA,
+        genesis_digest=genesis_digest,
+        mailbox_capacity=mailbox_capacity,
+        event_count=len(events),
+        nodes=nodes,
+        edges=edges,
+        topology_digest=topology_digest,
+    )
+
+
+def topology_digest(projection: TopologyProjection) -> str:
+    """Return the projection's domain-separated topology digest."""
+    if not isinstance(projection, TopologyProjection):
+        raise TopologyError("TOPOLOGY_PROJECTION_INVALID: not a TopologyProjection")
+    return projection.topology_digest
