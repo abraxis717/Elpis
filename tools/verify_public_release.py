@@ -1074,8 +1074,15 @@ def _git_is_ancestor(ancestor, descendant):
     return proc.returncode == 0
 
 
-def check_repository_identity(require_git=False):
+def check_repository_identity(
+    require_git=False,
+    require_tag=False,
+    require_tag_at_head=False,
+):
     errors = []
+
+    if require_tag_at_head and not require_tag:
+        return False, ["REPOSITORY_IDENTITY_MODE_INVALID"]
 
     if not (REPO / ".git").exists():
         if require_git:
@@ -1091,14 +1098,15 @@ def check_repository_identity(require_git=False):
     tag_commit = _git_resolve_commit(
         f"refs/tags/{expected_tag}"
     )
-    if tag_commit is None:
+    head_commit = _git_resolve_commit("HEAD")
+
+    if head_commit is None:
+        errors.append("HEAD_COMMIT_UNRESOLVED")
+
+    if tag_commit is None and require_tag:
         errors.append(
             f"RELEASE_TAG_COMMIT_MISSING:{expected_tag}"
         )
-
-    head_commit = _git_resolve_commit("HEAD")
-    if head_commit is None:
-        errors.append("HEAD_COMMIT_UNRESOLVED")
 
     for field in (
         "primitive_closure_commit",
@@ -1123,6 +1131,15 @@ def check_repository_identity(require_git=False):
             continue
 
         if (
+            head_commit is not None
+            and not _git_is_ancestor(commit, head_commit)
+        ):
+            errors.append(
+                f"RELEASE_IDENTITY_NOT_ANCESTOR_OF_HEAD:"
+                f"{field}:{commit}:{head_commit}"
+            )
+
+        if (
             tag_commit is not None
             and not _git_is_ancestor(commit, tag_commit)
         ):
@@ -1131,15 +1148,17 @@ def check_repository_identity(require_git=False):
                 f"{field}:{commit}:{expected_tag}"
             )
 
-    if (
-        tag_commit is not None
-        and head_commit is not None
-        and not _git_is_ancestor(tag_commit, head_commit)
-    ):
-        errors.append(
-            f"RELEASE_TAG_NOT_ANCESTOR_OF_HEAD:"
-            f"{expected_tag}:{tag_commit}:{head_commit}"
-        )
+    if tag_commit is not None and head_commit is not None:
+        if require_tag_at_head and tag_commit != head_commit:
+            errors.append(
+                f"RELEASE_TAG_NOT_HEAD:"
+                f"{expected_tag}:{tag_commit}:{head_commit}"
+            )
+        elif not _git_is_ancestor(tag_commit, head_commit):
+            errors.append(
+                f"RELEASE_TAG_NOT_ANCESTOR_OF_HEAD:"
+                f"{expected_tag}:{tag_commit}:{head_commit}"
+            )
 
     return not errors, errors
 
@@ -1151,9 +1170,30 @@ def main() -> int:
     if "--emit-allowlist" in sys.argv:
         print(json.dumps(emitted_allowlist(), indent=2) )
         return 0
-    if "--verify-repository-identity" in sys.argv:
+    identity_flags = {
+        "--verify-candidate-repository-identity",
+        "--verify-repository-identity",
+    } & set(sys.argv[1:])
+    if len(identity_flags) > 1:
+        print("[FAIL] Repository identity")
+        print("  -> REPOSITORY_IDENTITY_MODE_CONFLICT")
+        return 1
+    if "--verify-candidate-repository-identity" in identity_flags:
         ok, errors = check_repository_identity(
-            require_git=True
+            require_git=True,
+        )
+        print(
+            f"[{'PASS' if ok else 'FAIL'}] "
+            "Repository identity"
+        )
+        for error in errors:
+            print(f"  -> {error}")
+        return 0 if ok else 1
+    if "--verify-repository-identity" in identity_flags:
+        ok, errors = check_repository_identity(
+            require_git=True,
+            require_tag=True,
+            require_tag_at_head=True,
         )
         print(
             f"[{'PASS' if ok else 'FAIL'}] "

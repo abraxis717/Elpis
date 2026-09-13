@@ -51,6 +51,18 @@ In particular:
 
 Branch36–40 successor evidence remains evidence rather than runtime API. This release changes portability and checksum representation where required by repository hygiene; it does not manufacture new scientific results or reinterpret historical published release authority.
 
+## Release lifecycle ordering
+
+Repository identity is now lifecycle-aware rather than circular:
+
+- an untagged Git candidate proves that ratified identity commits exist and are ancestors of the candidate `HEAD`;
+- the absence of the future `Elpis2.2.0` tag does not make the pre-tag candidate invalid;
+- strict tagged identity requires the VERSION-selected tag to exist and resolve exactly to checked-out `HEAD`;
+- main-push CI runs fast lifecycle-contract tests before release publication;
+- the immutable-tag PyPI path retains strict repository identity before `git archive` export.
+
+This preserves the required order: qualify locally, push exact candidate SHA, require hosted main CI green, create the annotated tag at that SHA, require tag qualification, then publish the GitHub Release/PyPI artifact.
+
 ## Publication boundary
 
 `PUBLISHED_RELEASES.json` remains unchanged in the pre-tag candidate.

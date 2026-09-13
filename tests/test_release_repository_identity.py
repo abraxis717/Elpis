@@ -33,7 +33,7 @@ def _fixture(tmp_path: Path):
     repo = tmp_path / "repo"
     repo.mkdir()
     _git(repo, "init", "-q")
-    _git(repo, "config", "user.name", "C4 Probe")
+    _git(repo, "config", "user.name", "Lifecycle Probe")
     _git(repo, "config", "user.email", "probe@example.invalid")
 
     base = _commit(repo, "base")
@@ -61,10 +61,84 @@ def _fixture(tmp_path: Path):
     }
 
 
-def test_valid_git_release_identity_is_proven(tmp_path: Path) -> None:
+def test_candidate_mode_accepts_valid_tagged_successor_head(
+    tmp_path: Path,
+) -> None:
     _, check, _, _ = _fixture(tmp_path)
     ok, errors = check(require_git=True)
     assert ok, errors
+
+
+def test_strict_mode_requires_release_tag_at_checked_out_head(
+    tmp_path: Path,
+) -> None:
+    repo, check, _, commits = _fixture(tmp_path)
+
+    ok, errors = check(
+        require_git=True,
+        require_tag=True,
+        require_tag_at_head=True,
+    )
+    assert not ok
+    assert any(
+        error.startswith("RELEASE_TAG_NOT_HEAD:Elpis9.9.9:")
+        for error in errors
+    )
+
+    _git(repo, "checkout", "-q", commits["release"])
+    ok, errors = check(
+        require_git=True,
+        require_tag=True,
+        require_tag_at_head=True,
+    )
+    assert ok, errors
+
+
+def test_pretag_candidate_passes_but_strict_mode_fails(
+    tmp_path: Path,
+) -> None:
+    repo, check, _, _ = _fixture(tmp_path)
+    _git(repo, "tag", "-d", "Elpis9.9.9")
+
+    ok, errors = check(require_git=True)
+    assert ok, errors
+
+    ok, errors = check(
+        require_git=True,
+        require_tag=True,
+        require_tag_at_head=True,
+    )
+    assert not ok
+    assert errors == ["RELEASE_TAG_COMMIT_MISSING:Elpis9.9.9"]
+
+
+def test_pretag_candidate_still_binds_identity_ancestry_to_head(
+    tmp_path: Path,
+) -> None:
+    repo, check, g, commits = _fixture(tmp_path)
+    _git(repo, "tag", "-d", "Elpis9.9.9")
+
+    _git(repo, "checkout", "-q", "--orphan", "unrelated")
+    for child in list(repo.iterdir()):
+        if child.name != ".git" and child.is_file():
+            child.unlink()
+    unrelated = _commit(repo, "unrelated")
+    _git(repo, "checkout", "-q", commits["successor"])
+
+    g["RELEASE_IDENTITIES"]["9.9.9"][
+        "primitive_closure_commit"
+    ] = unrelated
+
+    ok, errors = check(require_git=True)
+
+    assert not ok
+    assert any(
+        error.startswith(
+            "RELEASE_IDENTITY_NOT_ANCESTOR_OF_HEAD:"
+            "primitive_closure_commit:"
+        )
+        for error in errors
+    )
 
 
 def test_missing_ratified_commit_fails_closed(tmp_path: Path) -> None:
@@ -85,22 +159,12 @@ def test_missing_ratified_commit_fails_closed(tmp_path: Path) -> None:
     )
 
 
-def test_missing_release_tag_fails_closed(tmp_path: Path) -> None:
-    repo, check, _, _ = _fixture(tmp_path)
-    _git(repo, "tag", "-d", "Elpis9.9.9")
-
-    ok, errors = check(require_git=True)
-
-    assert not ok
-    assert "RELEASE_TAG_COMMIT_MISSING:Elpis9.9.9" in errors
-
-
 def test_identity_commit_must_be_ancestor_of_release_tag(
     tmp_path: Path,
 ) -> None:
     repo, check, g, commits = _fixture(tmp_path)
 
-    _git(repo, "checkout", "--orphan", "unrelated")
+    _git(repo, "checkout", "-q", "--orphan", "unrelated")
     for child in list(repo.iterdir()):
         if child.name != ".git" and child.is_file():
             child.unlink()
@@ -128,7 +192,7 @@ def test_release_tag_must_be_ancestor_of_checked_out_head(
 ) -> None:
     repo, check, _, _ = _fixture(tmp_path)
 
-    _git(repo, "checkout", "--orphan", "other")
+    _git(repo, "checkout", "-q", "--orphan", "other")
     for child in list(repo.iterdir()):
         if child.name != ".git" and child.is_file():
             child.unlink()
@@ -146,7 +210,7 @@ def test_release_tag_must_be_ancestor_of_checked_out_head(
     )
 
 
-def test_gitless_archive_is_nonapplicable_unless_strict(
+def test_gitless_archive_is_nonapplicable_unless_git_required(
     tmp_path: Path,
 ) -> None:
     repo = tmp_path / "gitless"
@@ -156,14 +220,21 @@ def test_gitless_archive_is_nonapplicable_unless_strict(
     check = ns["check_repository_identity"]
     check.__globals__["REPO"] = repo
 
-    assert check(require_git=False) == (True, [])
+    assert check() == (True, [])
     assert check(require_git=True) == (
         False,
         ["REPOSITORY_GIT_REQUIRED"],
     )
 
 
-def test_pypi_workflow_proves_git_identity_before_archive() -> None:
+def test_cli_exposes_candidate_and_strict_repository_modes() -> None:
+    text = VERIFIER.read_text(encoding="utf-8")
+    assert "--verify-candidate-repository-identity" in text
+    assert "--verify-repository-identity" in text
+    assert "require_tag_at_head=True" in text
+
+
+def test_pypi_workflow_proves_strict_git_identity_before_archive() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
 
     identity = text.index(

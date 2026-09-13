@@ -22,7 +22,7 @@
     },
     {
       "path": ".github/workflows/ci.yml",
-      "sha256": "aa665ee124ab1f78f066afa2bcb3105605a3cfa5cf10b66739646924c0611079"
+      "sha256": "3a9b39972701eb88b9b5add60dffa1cad5dc24404bbd028192831e1b3cd2c3e2"
     },
     {
       "path": ".github/workflows/component-attribution.yml",
@@ -50,7 +50,7 @@
     },
     {
       "path": "CHANGELOG.md",
-      "sha256": "d841994912dc6957540a5cce0c555343427eae250cb852ad40b4b524b40cd09e"
+      "sha256": "7e2f1e850193a618d2cec37de3a67928b480277cdf3ece51d12532d2c94e676f"
     },
     {
       "path": "CITATION.cff",
@@ -614,7 +614,7 @@
     },
     {
       "path": "RELEASE_NOTES/Elpis2.2.0.md",
-      "sha256": "a910e6504768fb363a4bcaed6818187d200cc967b04a4621ad7772e74063edcf"
+      "sha256": "8f5ef414f1223de0bd6fedb00c20499d2b610a3d0e2c28c0a6c2f2f5dcadabc4"
     },
     {
       "path": "RELEASE_NOTES/README.md",
@@ -2702,7 +2702,7 @@
     },
     {
       "path": "docs/RELEASE_GUARD_POLICY.md",
-      "sha256": "144d86a73a924aeed2c84187de5c0a4f160a52cf2b01fbd7a53d87d7a9ebf1cd"
+      "sha256": "e8a3945f17669f0482d67aa189299f773eca4b3fc1203c056921a0dd982e3b25"
     },
     {
       "path": "docs/RETRIEVAL.md",
@@ -5801,12 +5801,16 @@
       "sha256": "647d535903366e1fc2a9787b6a50678eadd52717f796eb1aa9b4877ecaf831dd"
     },
     {
+      "path": "tests/test_release_lifecycle_ordering.py",
+      "sha256": "4f133a4e2ae67024f034d20ccd50ff028c0d788389af657a5480c49d87d730f5"
+    },
+    {
       "path": "tests/test_release_manifest_git_boundary.py",
       "sha256": "6197845c36aad45e2ed0e53aa8d77865e67e91348aa23ac3715b60b972ab65ff"
     },
     {
       "path": "tests/test_release_repository_identity.py",
-      "sha256": "76da7fcfaa6568ea63e53248b885bf1ddd85746fdca111aa0eb93403f6c57a07"
+      "sha256": "9f0db82bfc939cbe5f8ada2a8da1530f97a4010fde1ff9dd4dacbc42fe9ae69c"
     },
     {
       "path": "tests/test_release_runtime_boundary_expansion.py",
@@ -5998,8 +6002,8 @@
     },
     {
       "path": "tools/verify_public_release.py",
-      "sha256": "5036c3208e27a2dd0fc3dc26ffc351f629ce95dda7d68850444c4b13115c5431"
+      "sha256": "06671479c4311619302bc7f760965ef1021f4cacc8d9133ba23f423eab386ebc"
     }
   ],
-  "file_count": 1496
+  "file_count": 1497
 }

@@ -8,6 +8,7 @@
 - Ship qualified E0R3 participation referents, ECS topology projection/analysis, and DurableApplicationLedger v2 as internal capabilities without stable package-root API promotion or runtime-admission change.
 - Preserve Branch36–40 as scientific evidence, with portable authority references and consistent checksum closure.
 - Keep `PUBLISHED_RELEASES.json` unchanged until immutable tag admission and preserve all historical release manifests byte-for-byte.
+- Repair release-lifecycle ordering so pre-tag public-main verification proves candidate ancestry without requiring the future tag, while strict tag/release verification requires the tag to resolve exactly to `HEAD`; bind this ordering into fast CI lifecycle tests.
 
 ## Elpis2.1.27 — Bounded AST-policy and release-infrastructure maintenance
 

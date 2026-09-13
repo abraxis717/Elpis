@@ -21,8 +21,20 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install pytest
-      - run: python tools/verify_public_release.py
-      - run: python -m pytest tests/test_release_tag_qualification.py
+      - name: Verify lifecycle-aware public release
+        run: python tools/verify_public_release.py
+      - name: Verify candidate repository identity on main push
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: python tools/verify_public_release.py --verify-candidate-repository-identity
+      - name: Verify strict tagged repository identity
+        if: startsWith(github.ref, 'refs/tags/')
+        run: python tools/verify_public_release.py --verify-repository-identity
+      - name: Verify release lifecycle contracts
+        run: >-
+          python -m pytest -q -p no:cacheprovider
+          tests/test_release_tag_qualification.py
+          tests/test_release_repository_identity.py
+          tests/test_release_lifecycle_ordering.py
 
   release-guards:
     name: Release and authority negative branches
