@@ -194,6 +194,20 @@ RELEASE_IDENTITIES = {
         "base_release_commit": "c911af22e01ee35c441d65e8dbcad18694bdcb2a",
     },
 
+    "2.2.3": {
+        # PyPI publication-workflow repair successor; primitive/runtime
+        # closure and original Elpis2.0.0 baseline unchanged.
+        "primitive_closure_commit": "482d4064321392108b87124cd47343d9c748f5bc",
+        "base_release_commit": "c911af22e01ee35c441d65e8dbcad18694bdcb2a",
+    },
+
+    "2.2.4": {
+        # Publication-workflow contract-test corrective successor; primitive/runtime
+        # closure and original Elpis2.0.0 baseline unchanged.
+        "primitive_closure_commit": "482d4064321392108b87124cd47343d9c748f5bc",
+        "base_release_commit": "c911af22e01ee35c441d65e8dbcad18694bdcb2a",
+    },
+
 }
 RELEASE_MANIFEST_REL = Path(f"manifests/Elpis{RELEASE_VERSION}.RELEASE_MANIFEST.json")
 DISTRIBUTION_MANIFEST_REL = Path(f"manifests/Elpis{RELEASE_VERSION}.DISTRIBUTION_MANIFEST.json")

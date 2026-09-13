@@ -1,3 +1,17 @@
+## Elpis2.2.4 — PyPI publication contract-test corrective successor
+
+- Preserve the sealed-but-failed local Elpis2.2.3 manifest unchanged.
+- Replace stale Trusted Publishing tests that encoded release-only workflow text and the malformed `git rev-list` command.
+- Qualify the repaired dual-trigger immutable-tag workflow contract before sealing.
+- Keep the existing public Elpis2.2.2 GitHub Release/tag immutable while recovering only its missing PyPI publication.
+
+## Elpis2.2.3 — PyPI publication-workflow repair successor
+
+- Fix the unmatched quote/parenthesis in `pypi-publish.yaml` tag identity verification.
+- Add a bounded `workflow_dispatch` recovery input that still checks out, verifies, archives, builds, and publishes only the requested immutable Elpis release tag.
+- Preserve the published Elpis2.2.2 GitHub Release/tag and recover its missing PyPI publication without deleting or recreating release authority.
+- Keep Trusted Publishing isolated behind the existing `pypi` environment with `id-token: write`.
+
 ## Elpis2.2.2 — README contract corrective successor
 
 - Preserve the sealed-but-failed local Elpis2.2.1 manifest; do not rewrite it.

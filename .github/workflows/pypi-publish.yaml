@@ -3,6 +3,12 @@ name: pypi-publish
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Immutable Elpis release tag to publish
+        required: true
+        type: string
 
 permissions: {}
 
@@ -12,11 +18,13 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    env:
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
     steps:
       - name: Check out immutable release tag
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ env.RELEASE_TAG }}
           fetch-depth: 0
 
       - name: Set up Python
@@ -31,8 +39,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "Elpis$(cat VERSION)" = "${{ github.event.release.tag_name }}"
-          test "$(git rev-parse HEAD)" = "$(git rev-list -n 1 "${{ github.event.release.tag_name }})"
+          test -n "${RELEASE_TAG}"
+          test "Elpis$(cat VERSION)" = "${RELEASE_TAG}"
+          test "$(git rev-parse HEAD)" = "$(git rev-list -n 1 "${RELEASE_TAG}")"
 
       - name: Verify repository release identity
         shell: bash
@@ -47,10 +56,10 @@ jobs:
           release_tree="${RUNNER_TEMP}/elpis-release-tree"
           rm -rf "${release_tree}"
           mkdir -p "${release_tree}"
-          git archive --format=tar "${{ github.event.release.tag_name }}" |
+          git archive --format=tar "${RELEASE_TAG}" |
             tar -xf - -C "${release_tree}"
           test ! -e "${release_tree}/.git"
-          test "Elpis$(cat "${release_tree}/VERSION")" = "${{ github.event.release.tag_name }}"
+          test "Elpis$(cat "${release_tree}/VERSION")" = "${RELEASE_TAG}"
 
       - name: Verify exported public release
         shell: bash

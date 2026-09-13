@@ -2,7 +2,7 @@
 
 **A deterministic structural-reasoning architecture for bounded learned proposals, explicit authority, and falsifiable runtime composition.**
 
-**Release line: Elpis2.2.2**
+**Release line: Elpis2.2.4**
 
 Elpis is a systems-research project about a narrow question: can learned components contribute useful structural proposals while deterministic machinery retains ownership of representation, admissibility, authority, validation, and terminal action?
 
@@ -14,7 +14,7 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 ## Release Notes
 
-**Elpis2.2.2** is the README/public-release-information contract corrective successor to the
+**Elpis2.2.4** is the publication-workflow contract-test corrective successor to the
 immutable tagged-but-unpublished Elpis2.2.0 object. It does not reinterpret the
 qualified 2.2.0 mechanisms or widen runtime authority. It repairs the public
 description of what the repository already contains, makes component
@@ -39,7 +39,7 @@ The immutable `Elpis2.2.0` tag is retained as evidence but classified
 `FAILED_NOT_PUBLISHED` because its sealed README still carried the stale
 Elpis2.1.27 release-summary paragraph.
 
-- Current notes: [`RELEASE_NOTES/Elpis2.2.2.md`](RELEASE_NOTES/Elpis2.2.2.md)
+- Current notes: [`RELEASE_NOTES/Elpis2.2.4.md`](RELEASE_NOTES/Elpis2.2.4.md)
 - 2.2.0 qualification notes: [`RELEASE_NOTES/Elpis2.2.0.md`](RELEASE_NOTES/Elpis2.2.0.md)
 - Public component registry: [`manifests/PUBLIC_COMPONENT_REGISTRY.json`](manifests/PUBLIC_COMPONENT_REGISTRY.json)
 - Qualified writer-chain registry: [`manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json`](manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json)

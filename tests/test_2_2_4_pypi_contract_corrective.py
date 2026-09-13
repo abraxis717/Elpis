@@ -1,0 +1,45 @@
+from __future__ import annotations
+import json, tomllib
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+
+def test_current_release_declarations_are_224():
+    assert (ROOT/"VERSION").read_text().strip()=="2.2.4"
+    assert tomllib.loads((ROOT/"pyproject.toml").read_text())["project"]["version"]=="2.2.4"
+    r=(ROOT/"README.md").read_text()
+    assert "**Release line: Elpis2.2.4**" in r
+    assert "RELEASE_NOTES/Elpis2.2.4.md" in r
+    assert (ROOT/"RELEASE_NOTES/Elpis2.2.4.md").is_file()
+
+def test_repaired_pypi_workflow_contract_is_current():
+    text=(ROOT/".github/workflows/pypi-publish.yaml").read_text()
+    for marker in (
+        "  release:",
+        "    types: [published]",
+        "  workflow_dispatch:",
+        "      release_tag:",
+        "        required: true",
+        "RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}",
+        "ref: ${{ env.RELEASE_TAG }}",
+        'test "Elpis$(cat VERSION)" = "${RELEASE_TAG}"',
+        'test "$(git rev-parse HEAD)" = "$(git rev-list -n 1 "${RELEASE_TAG}")"',
+        'python tools/verify_public_release.py --verify-repository-identity',
+        'git archive --format=tar "${RELEASE_TAG}"',
+        "      id-token: write",
+        "pypa/gh-action-pypi-publish@release/v1",
+    ):
+        assert marker in text, marker
+    assert 'git rev-list -n 1 "${{ github.event.release.tag_name }})' not in text
+
+def test_224_manifest_binds_contract_corrective():
+    data=json.loads((ROOT/"manifests/Elpis2.2.4.RELEASE_MANIFEST.json").read_text())
+    assert data["version"]=="2.2.4"
+    assert data["release_tag"]=="Elpis2.2.4"
+    paths={x["path"] for x in data["files"]}
+    for path in (
+        ".github/workflows/pypi-publish.yaml",
+        "tests/test_pypi_trusted_publishing_contract.py",
+        "manifests/Elpis2.2.3.RELEASE_MANIFEST.json",
+        "RELEASE_NOTES/Elpis2.2.4.md",
+    ):
+        assert path in paths
