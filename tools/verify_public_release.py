@@ -1074,6 +1074,16 @@ def _git_is_ancestor(ancestor, descendant):
     return proc.returncode == 0
 
 
+def _git_is_shallow_repository():
+    proc = _git_repository_command(
+        ["rev-parse", "--is-shallow-repository"]
+    )
+    return (
+        proc.returncode == 0
+        and proc.stdout.strip() == "true"
+    )
+
+
 def check_repository_identity(
     require_git=False,
     require_tag=False,
@@ -1124,10 +1134,16 @@ def check_repository_identity(
 
         resolved = _git_resolve_commit(commit)
         if resolved != commit:
-            errors.append(
-                f"RELEASE_IDENTITY_COMMIT_MISSING:"
-                f"{field}:{commit}"
-            )
+            if _git_is_shallow_repository():
+                errors.append(
+                    f"REPOSITORY_HISTORY_INCOMPLETE:"
+                    f"{field}:{commit}"
+                )
+            else:
+                errors.append(
+                    f"RELEASE_IDENTITY_COMMIT_MISSING:"
+                    f"{field}:{commit}"
+                )
             continue
 
         if (

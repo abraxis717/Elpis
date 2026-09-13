@@ -22,7 +22,7 @@
     },
     {
       "path": ".github/workflows/ci.yml",
-      "sha256": "3a9b39972701eb88b9b5add60dffa1cad5dc24404bbd028192831e1b3cd2c3e2"
+      "sha256": "9d44b6719c46b12213333b4f871f9707f014bc2359083fa6a49f0e6836aae187"
     },
     {
       "path": ".github/workflows/component-attribution.yml",
@@ -38,7 +38,7 @@
     },
     {
       "path": ".github/workflows/reference-runtime.yml",
-      "sha256": "175b109d6ebf637a37f3f29c708e7344df2ceca27dba850e7d991c2179784d9a"
+      "sha256": "1aadb2c1377561a553c45ac48fae66a8821c1e84db5feec4148201b61b1d3160"
     },
     {
       "path": ".gitignore",
@@ -50,7 +50,7 @@
     },
     {
       "path": "CHANGELOG.md",
-      "sha256": "7e2f1e850193a618d2cec37de3a67928b480277cdf3ece51d12532d2c94e676f"
+      "sha256": "c00dda71e3728b871bb8930b2ce43ac84af6e27547bfe53545c003c8d8bdcf34"
     },
     {
       "path": "CITATION.cff",
@@ -614,7 +614,7 @@
     },
     {
       "path": "RELEASE_NOTES/Elpis2.2.0.md",
-      "sha256": "8f5ef414f1223de0bd6fedb00c20499d2b610a3d0e2c28c0a6c2f2f5dcadabc4"
+      "sha256": "d74e42ad29615f58029b0031a4bb870ed00329655605e0859c2d212a9921cc45"
     },
     {
       "path": "RELEASE_NOTES/README.md",
@@ -2702,7 +2702,7 @@
     },
     {
       "path": "docs/RELEASE_GUARD_POLICY.md",
-      "sha256": "e8a3945f17669f0482d67aa189299f773eca4b3fc1203c056921a0dd982e3b25"
+      "sha256": "0ec2fccb97b1b6c3541e6234e2a811ae6b5aca4cd254086a5a498b40935e34c3"
     },
     {
       "path": "docs/RETRIEVAL.md",
@@ -5802,7 +5802,7 @@
     },
     {
       "path": "tests/test_release_lifecycle_ordering.py",
-      "sha256": "4f133a4e2ae67024f034d20ccd50ff028c0d788389af657a5480c49d87d730f5"
+      "sha256": "635ae02f5f9f7bcab5943f60ad61f0dd95d1f88e5d10395128873e4e28d82945"
     },
     {
       "path": "tests/test_release_manifest_git_boundary.py",
@@ -5810,7 +5810,7 @@
     },
     {
       "path": "tests/test_release_repository_identity.py",
-      "sha256": "9f0db82bfc939cbe5f8ada2a8da1530f97a4010fde1ff9dd4dacbc42fe9ae69c"
+      "sha256": "b35d9ccf243306258d128f6a076afe9a7703f087c91761c3f8a83586d3948b7b"
     },
     {
       "path": "tests/test_release_runtime_boundary_expansion.py",
@@ -6002,7 +6002,7 @@
     },
     {
       "path": "tools/verify_public_release.py",
-      "sha256": "06671479c4311619302bc7f760965ef1021f4cacc8d9133ba23f423eab386ebc"
+      "sha256": "021750794377131defaea03ecca5ed65301862705da8c1c10c249a66154b21f1"
     }
   ],
   "file_count": 1497

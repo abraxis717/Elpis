@@ -50,3 +50,12 @@ exactly to `HEAD`.
 This ordering is itself a tested release contract. A main-push workflow must not
 require a tag that policy forbids creating until after the main-push workflow is
 green.
+
+
+Repository-identity ancestry is only meaningful when the local Git object
+database contains the ratified authority commits. Any CI job that invokes the
+release verifier from a Git checkout must therefore use a full-history checkout
+(`actions/checkout` with `fetch-depth: 0`). The verifier must never fetch
+history itself. A shallow checkout that cannot resolve a ratified authority
+commit fails explicitly as `REPOSITORY_HISTORY_INCOMPLETE`; after the caller
+supplies full history, the same proof must pass.

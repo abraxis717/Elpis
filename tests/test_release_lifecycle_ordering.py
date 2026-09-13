@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -97,3 +98,55 @@ def test_policy_orders_push_before_tag_and_strict_tag_before_release() -> None:
     assert push < tag < release
     assert "candidate repository identity" in text
     assert "strict tagged repository identity" in text
+
+
+def _workflow_job_blocks(text: str):
+    try:
+        jobs = text.split("\njobs:\n", 1)[1]
+    except IndexError as exc:
+        raise AssertionError("workflow jobs block absent") from exc
+
+    matches = list(
+        re.finditer(
+            r"(?m)^  ([A-Za-z0-9_-]+):\n",
+            jobs,
+        )
+    )
+    for index, match in enumerate(matches):
+        start = match.start()
+        end = (
+            matches[index + 1].start()
+            if index + 1 < len(matches)
+            else len(jobs)
+        )
+        yield match.group(1), jobs[start:end]
+
+
+def test_every_repository_verifier_workflow_job_fetches_full_git_history() -> None:
+    workflow_dir = ROOT / ".github/workflows"
+    proof_jobs = []
+
+    for path in sorted(workflow_dir.glob("*.y*ml")):
+        workflow = _text(path)
+        for job_name, block in _workflow_job_blocks(workflow):
+            if "verify_public_release.py" not in block:
+                continue
+            proof_jobs.append((path.name, job_name))
+            assert "uses: actions/checkout@v4" in block, (
+                path.name,
+                job_name,
+            )
+            assert "fetch-depth: 0" in block, (
+                f"{path.name}/{job_name}: "
+                "repository identity proof requires full Git history"
+            )
+            assert "fetch-depth: 1" not in block, (
+                path.name,
+                job_name,
+            )
+
+    assert sorted(proof_jobs) == [
+        ("ci.yml", "verify"),
+        ("pypi-publish.yaml", "build"),
+        ("reference-runtime.yml", "reference-runtime-smoke"),
+    ]

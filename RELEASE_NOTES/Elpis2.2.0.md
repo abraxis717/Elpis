@@ -63,6 +63,8 @@ Repository identity is now lifecycle-aware rather than circular:
 
 This preserves the required order: qualify locally, push exact candidate SHA, require hosted main CI green, create the annotated tag at that SHA, require tag qualification, then publish the GitHub Release/PyPI artifact.
 
+Hosted ancestry proofs also require complete Git history. The `CI` public-release verifier job and `reference-runtime-smoke` now check out with `fetch-depth: 0`; shallow proof checkouts fail explicitly as `REPOSITORY_HISTORY_INCOMPLETE` rather than being misclassified as missing ratified commits. A permanent workflow-wide contract prevents any verifier-invoking Actions job from silently returning to shallow history.
+
 ## Publication boundary
 
 `PUBLISHED_RELEASES.json` remains unchanged in the pre-tag candidate.

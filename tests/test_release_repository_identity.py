@@ -248,3 +248,51 @@ def test_pypi_workflow_proves_strict_git_identity_before_archive() -> None:
         "python tools/verify_public_release.py "
         "--verify-repository-identity"
     ) in text
+
+
+def test_shallow_candidate_checkout_is_proof_incomplete_then_full_history_passes(
+    tmp_path: Path,
+) -> None:
+    repo, check, g, _ = _fixture(tmp_path)
+
+    shallow = tmp_path / "shallow"
+    subprocess.run(
+        [
+            "git",
+            "clone",
+            "-q",
+            "--depth=1",
+            "--no-tags",
+            repo.resolve().as_uri(),
+            str(shallow),
+        ],
+        check=True,
+    )
+
+    g["REPO"] = shallow
+
+    ok, errors = check(require_git=True)
+    assert not ok
+    assert any(
+        error.startswith(
+            "REPOSITORY_HISTORY_INCOMPLETE:"
+            "primitive_closure_commit:"
+        )
+        for error in errors
+    )
+    assert any(
+        error.startswith(
+            "REPOSITORY_HISTORY_INCOMPLETE:"
+            "base_release_commit:"
+        )
+        for error in errors
+    )
+    assert not any(
+        error.startswith("RELEASE_IDENTITY_COMMIT_MISSING:")
+        for error in errors
+    )
+
+    _git(shallow, "fetch", "-q", "--unshallow", "--no-tags")
+
+    ok, errors = check(require_git=True)
+    assert ok, errors
