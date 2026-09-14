@@ -103,7 +103,16 @@ def test_repository_completeness_explicitly_separates_source_only_integrations()
 
     assert "Complete installed/root top-level test suite" in ci
     assert "Source-only downstream Grid81 integration tests" in ci
-    assert 'PYTHONPATH=""' in ci
+    assert "env -u PYTHONPATH" in ci
+    assert 'PYTHONPATH=""\n          python -m pytest -q -p no:cacheprovider tests/' not in ci
+    assert 'INSTALL_SRC="$(mktemp -d)"' in ci
+    assert 'git archive HEAD | tar -x -C "$INSTALL_SRC"' in ci
+    assert 'python -m pip install "$INSTALL_SRC[trm]" pytest==9.0.2' in ci
+    assert (
+        '      - name: Install repository-completeness dependencies\n'
+        '        run: python -m pip install ".[trm]" pytest==9.0.2\n'
+        not in ci
+    )
 
     for test in source_only_tests:
         assert f"--ignore={test}" in ci

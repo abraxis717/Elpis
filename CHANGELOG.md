@@ -1,3 +1,13 @@
+## Elpis2.2.7 — Hosted repository-hygiene corrective successor
+
+- Preserve sealed Elpis2.2.6 unchanged as failed, untagged hosted-main evidence.
+- Keep the integrated runtime, Hermes hygiene hardening, and Astra compact-authority implementation unchanged.
+- Install repository-completeness dependencies from a throwaway `git archive HEAD` source tree so package build metadata never contaminates the checkout.
+- Run the ordinary installed/root test lane with `PYTHONPATH` absent via `env -u PYTHONPATH`, not exported as an empty value.
+- Retain the three source-only downstream Grid81 integration tests in their explicit minimal-root lane.
+- Permanently regression-test both hosted completeness mechanics in the generic current-release hygiene contract.
+- Keep Elpis2.2.7 on the historical v2 release manifest while compact v3 remains explicitly opt-in future infrastructure.
+
 ## Elpis2.2.6 — Hosted completeness and release-hygiene corrective successor
 
 - Preserve the sealed Elpis2.2.5 manifest unchanged as failed, untagged hosted-main evidence.

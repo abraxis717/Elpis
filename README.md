@@ -2,7 +2,7 @@
 
 **A deterministic structural-reasoning architecture for bounded learned proposals, explicit authority, and falsifiable runtime composition.**
 
-**Release line: Elpis2.2.6**
+**Release line: Elpis2.2.7**
 
 Elpis is a systems-research project about a narrow question: can learned components contribute useful structural proposals while deterministic machinery retains ownership of representation, admissibility, authority, validation, and terminal action?
 
@@ -14,21 +14,26 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 ## Release Notes
 
-**Elpis2.2.6** is the hosted-completeness and release-hygiene corrective
-successor to the sealed but untagged Elpis2.2.5 candidate.
+**Elpis2.2.7** is the hosted repository-hygiene corrective successor to the
+sealed but untagged Elpis2.2.6 candidate.
 
-The runtime-composition semantics qualified in 2.2.5 are unchanged. The
-corrective delta makes hosted repository qualification match the intentional
-package boundary: ordinary installed/root tests remain isolated, while the
-three downstream Grid81 integration tests that exercise source-only Promotion
-Authority, Candidate Constructor, and Canonical Publisher packages run in an
-explicit source-root lane. Installed-artifact qualification remains separate
-and strict.
+Elpis2.2.6 integrated the qualified runtime-composition work plus Hermes'
+repository-hygiene/child-process hardening and Astra's opt-in compact
+release-authority infrastructure. Its local qualification and every hosted CI
+job except `Repository completeness and installed artifact` passed. It was
+never tagged or published.
 
-Elpis2.2.6 also makes current-release metadata registration a persistent tested
-repository invariant so VERSION, package metadata, citation metadata, README,
-release notes, ratified release identity, manifest lifecycle, CI topology, and
-publication-registry truth cannot silently drift apart.
+The remaining hosted failure was mechanical: the normal completeness lane set
+`PYTHONPATH=""` even though the isolation contract requires the variable to be
+absent, and the job installed `".[trm]"` from the live checkout before running
+the repository-hygiene test, creating `build/` and `elpisai.egg-info` debris.
+
+Elpis2.2.7 changes only those release/CI mechanics. Repository completeness now
+installs from a throwaway `git archive` source tree and runs the normal/root
+suite with `PYTHONPATH` unset. The three deliberate source-only Grid81
+integrations remain in their explicit-root lane. Runtime, science, package
+membership, authority semantics, Hermes hardening, and Astra's future opt-in
+v3 implementation are otherwise unchanged.
 
 The 2.2.x line includes:
 
@@ -47,7 +52,7 @@ The immutable `Elpis2.2.0` tag is retained as evidence but classified
 `FAILED_NOT_PUBLISHED` because its sealed README still carried the stale
 Elpis2.1.27 release-summary paragraph.
 
-- Current notes: [`RELEASE_NOTES/Elpis2.2.6.md`](RELEASE_NOTES/Elpis2.2.6.md)
+- Current notes: [`RELEASE_NOTES/Elpis2.2.7.md`](RELEASE_NOTES/Elpis2.2.7.md)
 - 2.2.0 qualification notes: [`RELEASE_NOTES/Elpis2.2.0.md`](RELEASE_NOTES/Elpis2.2.0.md)
 - Public component registry: [`manifests/PUBLIC_COMPONENT_REGISTRY.json`](manifests/PUBLIC_COMPONENT_REGISTRY.json)
 - Qualified writer-chain registry: [`manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json`](manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json)

@@ -551,10 +551,13 @@ jobs:
           python tools/print_component_map.py >/tmp/elpis-component-map.txt
           PYTHONPATH=src python tools/qualify_allocator_budget.py >/tmp/elpis-allocator-budget.json
       - name: Install repository-completeness dependencies
-        run: python -m pip install ".[trm]" pytest==9.0.2
+        run: |
+          INSTALL_SRC="$(mktemp -d)"
+          git archive HEAD | tar -x -C "$INSTALL_SRC"
+          python -m pip install "$INSTALL_SRC[trm]" pytest==9.0.2
       - name: Complete installed/root top-level test suite
         run: >-
-          PYTHONPATH=""
+          env -u PYTHONPATH
           python -m pytest -q -p no:cacheprovider tests/
           --ignore=tests/test_grid81_application_promotion_source_identity.py
           --ignore=tests/test_grid81_promotion_candidate_runtime_integration.py
