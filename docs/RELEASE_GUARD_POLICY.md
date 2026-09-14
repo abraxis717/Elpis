@@ -80,3 +80,38 @@ release verifier from a Git checkout must therefore use a full-history checkout
 history itself. A shallow checkout that cannot resolve a ratified authority
 commit fails explicitly as `REPOSITORY_HISTORY_INCOMPLETE`; after the caller
 supplies full history, the same proof must pass.
+
+## Current-release hygiene invariant
+
+A VERSION advance is one atomic repository operation, not an informal release
+intention. Before a successor may be sealed, the current VERSION must agree
+with `pyproject.toml`, `CITATION.cff`, the README release line/current-note
+link, `RELEASE_NOTES/README.md`, a current release-note file, the CHANGELOG
+head, and a ratified entry in `tools/verify_public_release.py`.
+
+The current-release hygiene test is generic and must remain in the early hosted
+release-lifecycle gate. A successor manifest may be absent only during the
+explicit pre-seal lifecycle. Once present, its version/tag and required release
+files must agree with VERSION.
+
+`PUBLISHED_RELEASES.json` records publication fact, never publication intent.
+Do not pre-register an unpublished successor there. When the current version is
+actually published, its registry entry must use the exact immutable tag,
+manifest path, manifest SHA-256, and peeled commit. Release closeout is not
+complete while GitHub latest, PyPI latest, or the published-release registry
+lags the released VERSION.
+
+Compact successor authority is explicitly opt-in with `seal_release.py
+--schema v3` after 2.2.6. Elpis2.2.6 and every historical release retain their
+existing manifest schema and bytes. See [Compact release authority](COMPACT_RELEASE_AUTHORITY.md)
+for the canonical digest, publication exclusions, and Git tree projection.
+V3 requires included HEAD, index, and physical bytes/modes to agree before
+sealing. Commit included changes first, seal, then commit the excluded record.
+The compact tree check does not replace candidate or strict tagged repository
+identity, and never introduces a pre-tag requirement.
+
+Hosted repository-completeness must be reproduced locally before the real
+write-once seal. Tests for source-only integration surfaces must declare their
+minimal roots explicitly and stay separate from installed-artifact
+qualification. Do not repair collection failures by restoring ambient
+`PYTHONPATH` leakage or accidentally expanding package discovery.

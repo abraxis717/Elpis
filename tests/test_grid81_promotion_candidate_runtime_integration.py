@@ -3,6 +3,18 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import sys
+
+REPO = Path(__file__).resolve().parents[1]
+_REPO_ONLY_IMPORT_ROOTS = (
+    REPO / "components",
+    REPO / "components" / "Grid81DeterministicCanonicalPromotionAuthority" / "src",
+    REPO / "components" / "Grid81DeterministicCanonicalCandidateConstructor" / "src",
+)
+for _root in reversed(_REPO_ONLY_IMPORT_ROOTS):
+    _value = str(_root)
+    if _value not in sys.path:
+        sys.path.insert(0, _value)
 
 from Grid81.canonical_reader import load_current_grid81
 

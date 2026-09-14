@@ -7,6 +7,7 @@ import ast
 import hashlib
 import json
 import re
+import runpy
 import subprocess
 import sys
 import tomllib
@@ -214,6 +215,12 @@ RELEASE_IDENTITIES = {
         "primitive_closure_commit": "482d4064321392108b87124cd47343d9c748f5bc",
         "base_release_commit": "c911af22e01ee35c441d65e8dbcad18694bdcb2a",
     },
+    "2.2.6": {
+        # Hosted-completeness and release-hygiene corrective successor;
+        # primitive/runtime closure and original distribution baseline unchanged.
+        "primitive_closure_commit": "482d4064321392108b87124cd47343d9c748f5bc",
+        "base_release_commit": "c911af22e01ee35c441d65e8dbcad18694bdcb2a",
+    },
 }
 RELEASE_MANIFEST_REL = Path(f"manifests/Elpis{RELEASE_VERSION}.RELEASE_MANIFEST.json")
 DISTRIBUTION_MANIFEST_REL = Path(f"manifests/Elpis{RELEASE_VERSION}.DISTRIBUTION_MANIFEST.json")
@@ -392,11 +399,21 @@ def load_manifest():
     except Exception as exc:
         return {}, [f"invalid manifest: {exc}"]
 
+    if not isinstance(data, dict):
+        return {}, ["invalid manifest: root must be an object"]
+
     expected_schema = (
         "elpis.distribution-manifest.v1"
         if MANIFEST_REL == DISTRIBUTION_MANIFEST_REL
         else "elpis.release-manifest.v2"
     )
+    if data.get("schema") == "elpis.release-manifest.v3" and MANIFEST_REL != DISTRIBUTION_MANIFEST_REL:
+        compact = runpy.run_path(str(Path(__file__).with_name("release_tree_digest.py")))
+        try:
+            compact["require_successor"](RELEASE_VERSION)
+        except ValueError as exc:
+            errors.append(str(exc))
+        expected_schema = compact["SCHEMA"]
 
     try:
         identity = release_identity()
@@ -439,6 +456,15 @@ def load_manifest():
 
 def check_manifest():
     data, errors = load_manifest()
+    if data.get("schema") == "elpis.release-manifest.v3":
+        compact = runpy.run_path(str(Path(__file__).with_name("release_tree_digest.py")))
+        errors += compact["verify_record"](REPO, MANIFEST_REL.as_posix(), data)
+        return not errors, errors
+    return _check_inventory_manifest(data, errors)
+
+
+def _check_inventory_manifest(data, errors):
+    """Historical release v2 / distribution v1 byte and membership rules."""
     entries = data.get("files", [])
 
     if not isinstance(entries, list):
@@ -1137,7 +1163,7 @@ def _git_resolve_commit(ref):
     if proc.returncode != 0:
         return None
     value = proc.stdout.strip()
-    if not re.fullmatch(r"[0-9a-f]{40}", value):
+    if not re.fullmatch(r"(?:[0-9a-f]{40}|[0-9a-f]{64})", value):
         return None
     return value
 
@@ -1200,7 +1226,7 @@ def check_repository_identity(
         commit = identity.get(field)
         if not (
             isinstance(commit, str)
-            and re.fullmatch(r"[0-9a-f]{40}", commit)
+            and re.fullmatch(r"(?:[0-9a-f]{40}|[0-9a-f]{64})", commit)
         ):
             errors.append(
                 f"RELEASE_IDENTITY_INVALID:{field}"
@@ -1307,6 +1333,9 @@ def main() -> int:
     passed = True
 
     for name, fn in checks:
+        if name == "Repository identity" and not (REPO / ".git").exists():
+            print("[N/A] Repository identity: Git metadata absent")
+            continue
         ok, errors = fn()
         print(
             f"[{'PASS' if ok else 'FAIL'}] {name}"

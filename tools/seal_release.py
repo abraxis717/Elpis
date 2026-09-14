@@ -116,6 +116,8 @@ def digest(rel: str) -> str:
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--version")
+    ap.add_argument("--schema", choices=("v2", "v3"), default="v2",
+                    help="v3 is explicitly opt-in for a ratified successor after 2.2.6")
     ap.add_argument("--primitive-closure-commit")
     ap.add_argument("--base-release-commit")
     ap.add_argument("--provisional", action="store_true")
@@ -148,6 +150,14 @@ def main(argv: list[str]) -> int:
     if version != (REPO / "VERSION").read_text().strip():
         print("REFUSED: VERSION mismatch", file=sys.stderr)
         return 2
+    compact = None
+    if args.schema == "v3":
+        compact = runpy.run_path(str(Path(__file__).with_name("release_tree_digest.py")))
+        try:
+            compact["require_successor"](version)
+        except ValueError as exc:
+            print(f"REFUSED: {exc}", file=sys.stderr)
+            return 2
     verifier = runpy.run_path(str(REPO / "tools/verify_public_release.py"))
     try:
         identity = verifier["release_identity"]()
@@ -179,9 +189,12 @@ def main(argv: list[str]) -> int:
 
     if manifest.exists():
         data = json.loads(manifest.read_text())
+        if data.get("schema") != f"elpis.release-manifest.{args.schema}":
+            print("REFUSED: provisional override cannot migrate a manifest schema", file=sys.stderr)
+            return 2
     else:
         data = {
-            "schema": "elpis.release-manifest.v2",
+            "schema": f"elpis.release-manifest.{args.schema}",
             "package_name": verifier["PACKAGE_NAME"],
             "runtime_status": "VALIDATED_SOURCE",
             "full_elpis_runtime_admission": True,
@@ -199,8 +212,18 @@ def main(argv: list[str]) -> int:
     data["release_tag"] = f"Elpis{version}"
     data["version"] = version
     data.update(identity)
-    data["files"] = [{"path": f, "sha256": digest(f)} for f in files]
-    data["file_count"] = len(files)
+    if compact is None:
+        data["files"] = [{"path": f, "sha256": digest(f)} for f in files]
+        data["file_count"] = len(files)
+    else:
+        try:
+            ok, errors = verifier["check_repository_identity"]()
+            if not ok:
+                raise ValueError("; ".join(errors))
+            data.update(compact["build_record"](REPO, manifest_rel.as_posix()))
+        except (ValueError, OSError, RuntimeError) as exc:
+            print(f"REFUSED: {exc}", file=sys.stderr)
+            return 3
 
     manifest.parent.mkdir(parents=True, exist_ok=True)
     manifest.write_text(json.dumps(data, indent=2) + "\n")

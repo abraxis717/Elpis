@@ -2,8 +2,19 @@ from __future__ import annotations
 
 import hashlib
 from pathlib import Path
+import sys
 
 import pytest
+
+REPO = Path(__file__).resolve().parents[1]
+_REPO_ONLY_IMPORT_ROOTS = (
+    REPO / "components",
+    REPO / "components" / "Grid81DeterministicCanonicalPromotionAuthority" / "src",
+)
+for _root in reversed(_REPO_ONLY_IMPORT_ROOTS):
+    _value = str(_root)
+    if _value not in sys.path:
+        sys.path.insert(0, _value)
 
 from elpis_grid81_consumption_compiler.canonical import canonical_digest
 from elpis_grid81_consumption_compiler.input import create_transaction_input

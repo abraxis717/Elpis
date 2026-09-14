@@ -2,7 +2,7 @@
 
 **A deterministic structural-reasoning architecture for bounded learned proposals, explicit authority, and falsifiable runtime composition.**
 
-**Release line: Elpis2.2.5**
+**Release line: Elpis2.2.6**
 
 Elpis is a systems-research project about a narrow question: can learned components contribute useful structural proposals while deterministic machinery retains ownership of representation, admissibility, authority, validation, and terminal action?
 
@@ -14,18 +14,21 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 ## Release Notes
 
-**Elpis2.2.5** is the bounded runtime-composition integration successor. It
-preserves the existing authority boundaries while connecting previously
-qualified components through explicit production consumers and independently
-qualified cross-component handoffs.
+**Elpis2.2.6** is the hosted-completeness and release-hygiene corrective
+successor to the sealed but untagged Elpis2.2.5 candidate.
 
-The release qualifies a continuous Grid81 path from G5.2B capability authority
-through G5.3B capability consumption, G5.3C durable shadow application,
-promotion source binding/authority, isolated candidate construction, and
-durable atomic canonical publication. It also gives ECS topology
-projection/analysis, E0R3 participation, and DurableApplicationLedger v2 real
-production consumers without collapsing those distinct authority surfaces into
-one universal Elpis runtime.
+The runtime-composition semantics qualified in 2.2.5 are unchanged. The
+corrective delta makes hosted repository qualification match the intentional
+package boundary: ordinary installed/root tests remain isolated, while the
+three downstream Grid81 integration tests that exercise source-only Promotion
+Authority, Candidate Constructor, and Canonical Publisher packages run in an
+explicit source-root lane. Installed-artifact qualification remains separate
+and strict.
+
+Elpis2.2.6 also makes current-release metadata registration a persistent tested
+repository invariant so VERSION, package metadata, citation metadata, README,
+release notes, ratified release identity, manifest lifecycle, CI topology, and
+publication-registry truth cannot silently drift apart.
 
 The 2.2.x line includes:
 
@@ -44,7 +47,7 @@ The immutable `Elpis2.2.0` tag is retained as evidence but classified
 `FAILED_NOT_PUBLISHED` because its sealed README still carried the stale
 Elpis2.1.27 release-summary paragraph.
 
-- Current notes: [`RELEASE_NOTES/Elpis2.2.5.md`](RELEASE_NOTES/Elpis2.2.5.md)
+- Current notes: [`RELEASE_NOTES/Elpis2.2.6.md`](RELEASE_NOTES/Elpis2.2.6.md)
 - 2.2.0 qualification notes: [`RELEASE_NOTES/Elpis2.2.0.md`](RELEASE_NOTES/Elpis2.2.0.md)
 - Public component registry: [`manifests/PUBLIC_COMPONENT_REGISTRY.json`](manifests/PUBLIC_COMPONENT_REGISTRY.json)
 - Qualified writer-chain registry: [`manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json`](manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json)

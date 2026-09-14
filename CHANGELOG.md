@@ -1,3 +1,20 @@
+## Elpis2.2.6 — Hosted completeness and release-hygiene corrective successor
+
+- Preserve the sealed Elpis2.2.5 manifest unchanged as failed, untagged hosted-main evidence.
+- Repair repository-completeness CI without widening the installed distribution: ordinary tests exclude only the three source-only downstream Grid81 integrations, which now run in a separate explicit-root lane.
+- Keep Promotion Authority, Candidate Constructor, and Canonical Publisher outside package discovery unless a future release explicitly changes that public boundary.
+- Add a generic current-release hygiene contract binding VERSION, pyproject, CITATION, README, release notes/index, CHANGELOG, ratified release identity, manifest lifecycle, CI topology, and publication-registry truth.
+- Run that hygiene contract in the early CI release-lifecycle gate.
+- Require local provisional sealed/committed reproduction of the hosted completeness topology before the real successor manifest may be sealed.
+
+### Integrated agent hardening and compact release authority
+
+- Integrate repository-hygiene and child-process-hermeticity hardening from Hermes.
+- Integrate opt-in future compact release-manifest v3 tooling from Astra while keeping Elpis2.2.6 explicitly on v2.
+- Preserve the installed-package boundary; source-only Grid81 authority/publisher packages remain outside the wheel.
+- Keep the mutation harness on its historical/default-v2 path; future v3 activation must extend it before selecting v3 for a release.
+
+
 ## Elpis2.2.5 — Bounded runtime-composition integration successor
 
 - Connect the trusted ECS Kernel to verified topology projection and topology analysis as a read-only production path.

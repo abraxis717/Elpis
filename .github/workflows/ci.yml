@@ -31,12 +31,13 @@ jobs:
       - name: Verify strict tagged repository identity
         if: startsWith(github.ref, 'refs/tags/')
         run: python tools/verify_public_release.py --verify-repository-identity
-      - name: Verify release lifecycle contracts
+      - name: Verify release lifecycle and current-release hygiene contracts
         run: >-
           python -m pytest -q -p no:cacheprovider
           tests/test_release_tag_qualification.py
           tests/test_release_repository_identity.py
           tests/test_release_lifecycle_ordering.py
+          tests/test_current_release_hygiene.py
 
   release-guards:
     name: Release and authority negative branches
@@ -549,9 +550,22 @@ jobs:
           python tools/verify_canonical_assembly.py
           python tools/print_component_map.py >/tmp/elpis-component-map.txt
           PYTHONPATH=src python tools/qualify_allocator_budget.py >/tmp/elpis-allocator-budget.json
-      - name: Complete declared top-level test suite
+      - name: Install repository-completeness dependencies
         run: python -m pip install ".[trm]" pytest==9.0.2
-      - run: python -m pytest -q -p no:cacheprovider tests/
+      - name: Complete installed/root top-level test suite
+        run: >-
+          PYTHONPATH=""
+          python -m pytest -q -p no:cacheprovider tests/
+          --ignore=tests/test_grid81_application_promotion_source_identity.py
+          --ignore=tests/test_grid81_promotion_candidate_runtime_integration.py
+          --ignore=tests/test_grid81_candidate_publication_runtime_integration.py
+      - name: Source-only downstream Grid81 integration tests
+        run: >-
+          PYTHONPATH=components/Grid81DeterministicCanonicalPromotionPlanner/src:components/Grid81DeterministicCanonicalPromotionAuthority/src:components/Grid81DeterministicCanonicalCandidateConstructor/src:components/Grid81DeterministicCanonicalPublisher/src
+          python -m pytest -q -p no:cacheprovider
+          tests/test_grid81_application_promotion_source_identity.py
+          tests/test_grid81_promotion_candidate_runtime_integration.py
+          tests/test_grid81_candidate_publication_runtime_integration.py
       - name: Qualify installed assembly from pristine throwaway source copy
         run: |
           SRC="$(mktemp -d)"

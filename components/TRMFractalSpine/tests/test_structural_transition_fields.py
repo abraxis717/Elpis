@@ -332,10 +332,13 @@ print(record.oracle_transition_identity)
 print(record.canonical_target_identity)
 print(record.fields_digest)
 '''
+    source_root = str(Path(__file__).resolve().parents[1] / "src")
     outputs = []
     for seed in ("0", "977", "1954"):
         env = os.environ.copy()
+        env["PYTHONPATH"] = source_root
         env["PYTHONHASHSEED"] = seed
+        env["PYTHONDONTWRITEBYTECODE"] = "1"
         result = subprocess.run(
             [sys.executable, "-c", code],
             check=True,

@@ -10,6 +10,11 @@ dist/
 build/
 *.egg
 
+# Virtual environments
+.venv/
+venv/
+.tox/
+
 # CMake build
 CMakeCache.txt
 CMakeFiles/
@@ -26,12 +31,18 @@ build*/
 .hypothesis/
 coverage/
 *.cover
+htmlcov/
+.ipynb_checkpoints/
 
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
+*.swn
+*.bak
+*.orig
+*.rej
 
 # OS
 .DS_Store
@@ -48,6 +59,29 @@ Thumbs.db
 *.safetensors
 *.pt
 *.bin
+*.pth
+*.onnx
+*.ckpt
+*.pkl
+*.pickle
+*.npy
+*.npz
+*.h5
+*.hdf5
+
+# Downloaded archives
+*.tar
+*.tar.gz
+*.tgz
+*.tar.xz
+*.zip
+*.7z
+*.bz2
+
+# Qualification scratch
+.nfs.*
+*.tmp
+*.temp
 
 # Secrets
 .env

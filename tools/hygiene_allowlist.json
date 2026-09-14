@@ -1,0 +1,4 @@
+{
+  "description": "Explicit allowlist for tools/repository_hygiene.py. Each entry is a repository-relative path that matches a debris pattern but is legitimate source or scientific authority. The scanner never reports an allowlisted path. Add entries only with a justification; do not use this file to hide generated junk.",
+  "allow": []
+}

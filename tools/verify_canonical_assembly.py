@@ -2,8 +2,8 @@
 """Recompute and verify the current public canonical assembly.
 
 Trust boundary:
-- The VERSION-selected release/distribution manifest is the published byte-pin
-  authority for shipped COMPONENT_MANIFEST.json files.
+- The VERSION-selected release/distribution manifest authenticates shipped
+  COMPONENT_MANIFEST.json files through v2 byte pins or the v3 tree aggregate.
 - ELPIS_CANONICAL_MANIFEST.json and COMPONENT_REGISTRY.json legacy manifest
   digest fields are preserved as historical consistency metadata. Their
   historical preimage is not redefined here.
@@ -16,6 +16,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import runpy
 import sys
 from typing import Any
 
@@ -100,11 +101,12 @@ def _id_list(
 def _release_file_pins(
     root: Path,
     errors: list[str],
-) -> tuple[Path | None, dict[str, str]]:
+) -> tuple[Path | None, dict[str, str] | set[str]]:
+    """Return legacy byte pins or v3-authenticated publication membership."""
     version_path = root / "VERSION"
     if not version_path.is_file():
         errors.append("VERSION_MISSING")
-        return None, []
+        return None, {}
 
     version = version_path.read_text(encoding="utf-8").strip()
     distribution_rel = Path(
@@ -123,6 +125,30 @@ def _release_file_pins(
     )
     if authority is None:
         return authority_rel, {}
+
+    if authority.get("schema") == "elpis.release-manifest.v3":
+        compact = runpy.run_path(str(Path(__file__).with_name("release_tree_digest.py")))
+        try:
+            compact["require_successor"](version)
+            if authority_rel != release_rel or any(
+                authority.get(key) != expected for key, expected in (
+                    ("version", version),
+                    ("release_name", f"Elpis{version}"),
+                    ("release_tag", f"Elpis{version}"),
+                )
+            ):
+                raise ValueError("V3_RELEASE_SELECTION_MISMATCH")
+            findings = compact["verify_record"](root, authority_rel.as_posix(), authority)
+            if findings:
+                errors.extend(f"RELEASE_AUTHORITY:{finding}" for finding in findings)
+                return authority_rel, set()
+            # Membership is independently derived, never supplied by the record.
+            # In Git this also prevents untracked component files from acquiring
+            # byte authority merely because the rest of the tree verifies.
+            return authority_rel, set(compact["publication_paths"](root, authority_rel.as_posix()))
+        except (ValueError, OSError, RuntimeError) as exc:
+            errors.append(f"RELEASE_AUTHORITY:{exc}")
+            return authority_rel, set()
 
     entries = authority.get("files")
     if type(entries) is not list:
@@ -303,10 +329,10 @@ def verify(root: Path) -> list[str]:
         if manifest is None:
             continue
 
-        release_pin = release_pins.get(manifest_rel.as_posix())
-        if release_pin is None:
+        release_key = manifest_rel.as_posix()
+        if release_key not in release_pins:
             errors.append(f"RELEASE_MANIFEST_PIN_MISSING:{component_id}")
-        elif _sha256_file(manifest_path) != release_pin:
+        elif isinstance(release_pins, dict) and _sha256_file(manifest_path) != release_pins[release_key]:
             errors.append(f"RELEASE_MANIFEST_DIGEST:{component_id}")
 
         if manifest.get("component_id") != component_id:
@@ -404,7 +430,7 @@ def main() -> int:
 
     print(
         "PASS: canonical assembly recomputed from derived inventories, "
-        "manifest contents, dependency graph, and published byte pins; "
+        "manifest contents, dependency graph, and published byte authority; "
         "legacy manifest_digest fields are consistency-only metadata"
     )
     return 0
