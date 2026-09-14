@@ -208,6 +208,12 @@ RELEASE_IDENTITIES = {
         "base_release_commit": "c911af22e01ee35c441d65e8dbcad18694bdcb2a",
     },
 
+    "2.2.5": {
+        # Runtime-composition integration successor; primitive closure and
+        # original Elpis2.0.0 distribution baseline remain unchanged.
+        "primitive_closure_commit": "482d4064321392108b87124cd47343d9c748f5bc",
+        "base_release_commit": "c911af22e01ee35c441d65e8dbcad18694bdcb2a",
+    },
 }
 RELEASE_MANIFEST_REL = Path(f"manifests/Elpis{RELEASE_VERSION}.RELEASE_MANIFEST.json")
 DISTRIBUTION_MANIFEST_REL = Path(f"manifests/Elpis{RELEASE_VERSION}.DISTRIBUTION_MANIFEST.json")
@@ -219,10 +225,6 @@ PUBLICATION_REGISTRY_REL = Path("PUBLISHED_RELEASES.json")
 IGNORE_PARTS = {".git"}
 EPHEMERAL_PARTS = {"build", "dist", "__pycache__", ".venv",
                    ".pytest_cache", ".mypy_cache", ".ruff_cache"}
-# Clone-local Astra command-runner scaffolding is not release authority.
-# This is a narrow manifest-membership exemption only; physical safety scans
-# still traverse it through release_paths().
-MANIFEST_LOCAL_EXEMPT_PARTS = {".astra_tmp"}
 ALLOWLIST_REL = Path("tools/public_scan_allowlist.json")
 
 
@@ -326,11 +328,15 @@ def release_paths() -> list[Path]:
 
 
 def actual_files() -> set[str]:
-    # In a Git checkout, tracked membership is still validated first so a
-    # tracked-but-missing path fails closed exactly as before. Manifest
-    # exactness then unions the physical filesystem that can feed build tools.
-    # Therefore an untracked or Git-ignored packageable source cannot vanish
-    # merely because Git does not enumerate it.
+    """Return manifest-authority membership for this verification context.
+
+    A live Git checkout derives release membership only from tracked paths.
+    Clone-local ignored or untracked residue is not publication authority and
+    is handled separately by physical-tree safety scans. A Git-less exported
+    tree has no tracking metadata, so its physical non-ephemeral file set is
+    the only available authority; arbitrary undeclared junk therefore remains
+    visible and fails manifest exactness.
+    """
     if (REPO / ".git").exists():
         proc = subprocess.run(
             ["git", "-C", str(REPO), "ls-files", "-z"],
@@ -358,18 +364,6 @@ def actual_files() -> set[str]:
                 raise RuntimeError(
                     f"tracked release path missing from working tree: {rel.as_posix()}"
                 )
-
-        for path in release_paths():
-            rel = path.relative_to(REPO)
-            if (
-                ignored(rel)
-                or ephemeral(rel)
-                or bool(set(rel.parts) & MANIFEST_LOCAL_EXEMPT_PARTS)
-                or rel in {MANIFEST_REL, PUBLICATION_REGISTRY_REL}
-            ):
-                continue
-            if path.is_file() or path.is_symlink():
-                out.add(rel.as_posix())
         return out
 
     out: set[str] = set()
@@ -378,14 +372,12 @@ def actual_files() -> set[str]:
         if (
             ignored(rel)
             or ephemeral(rel)
-            or bool(set(rel.parts) & MANIFEST_LOCAL_EXEMPT_PARTS)
             or rel in {MANIFEST_REL, PUBLICATION_REGISTRY_REL}
         ):
             continue
         if path.is_file() or path.is_symlink():
             out.add(rel.as_posix())
     return out
-
 
 def load_manifest():
     errors = []
@@ -626,6 +618,13 @@ _RUNTIME_FORBIDDEN_BUILTIN_CALLS = {
     "__import__",
 }
 
+# This is intentionally a bounded regression tripwire, not a Python sandbox
+# and not a proof that arbitrary execution is impossible. It rejects only the
+# explicitly enumerated import/call/dynamic-lookup forms implemented below.
+RUNTIME_POLICY_TRIPWIRE_SCOPE = (
+    "enumerated_ast_execution_tripwire_not_python_sandbox"
+)
+
 
 def _runtime_static_string(node):
     if isinstance(node, ast.Constant) and isinstance(node.value, str):
@@ -749,6 +748,50 @@ def _runtime_policy_findings(path: Path):
     return sorted(findings)
 
 
+
+_RUNTIME_AUTHORITY_LITERAL_FIELDS = frozenset({
+    "execution_authorized",
+    "validation_authorized",
+})
+
+
+def _runtime_authority_literal_findings(tree):
+    """Reject explicit competing authority literals in runtime.py."""
+    findings = set()
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call):
+            for kw in node.keywords:
+                if kw.arg not in _RUNTIME_AUTHORITY_LITERAL_FIELDS:
+                    continue
+                if (
+                    isinstance(kw.value, ast.Constant)
+                    and kw.value.value is not False
+                ):
+                    findings.add(
+                        f"{kw.arg}:non_false_call_literal:"
+                        f"line={getattr(node, 'lineno', 0)}"
+                    )
+
+        if isinstance(node, ast.Dict):
+            for key, value in zip(node.keys, node.values):
+                if not (
+                    isinstance(key, ast.Constant)
+                    and key.value in _RUNTIME_AUTHORITY_LITERAL_FIELDS
+                ):
+                    continue
+                if (
+                    isinstance(value, ast.Constant)
+                    and value.value is not False
+                ):
+                    findings.add(
+                        f"{key.value}:non_false_dict_literal:"
+                        f"line={getattr(node, 'lineno', 0)}"
+                    )
+
+    return sorted(findings)
+
+
 def check_runtime_boundary():
     errors = []
 
@@ -819,6 +862,11 @@ def check_runtime_boundary():
         runtime.read_text(),
         filename=str(runtime),
     )
+
+    for finding in _runtime_authority_literal_findings(tree):
+        errors.append(
+            f"RUNTIME_AUTHORITY_LITERAL:{finding}"
+        )
 
     execution_false = False
     validation_false = False

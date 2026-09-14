@@ -2,7 +2,6 @@ from pathlib import Path
 import os
 from types import SimpleNamespace
 
-import torch
 import pytest
 
 import elpis_reference.refinement as refinement
@@ -37,6 +36,9 @@ def test_sudoku_codec_and_validator():
 
 
 def test_fprm_model_abi_constructs_on_cpu():
+    torch = pytest.importorskip(
+        "torch", reason="optional TRM runtime not installed"
+    )
     root = Path(__file__).resolve().parents[1]
     checkpoint = root / "models" / MODEL_FILENAME
 
@@ -95,6 +97,8 @@ class _FakeModel:
         self.max_iter = 1000
 
     def initial_carry(self, batch):
+        import torch
+
         return SimpleNamespace(
             halted=torch.zeros(
                 (batch["inputs"].shape[0],),
@@ -103,6 +107,8 @@ class _FakeModel:
         )
 
     def __call__(self, carry, batch):
+        import torch
+
         del carry
 
         rows = batch["inputs"].shape[0]
@@ -136,6 +142,8 @@ def _fake_loader(model):
         device="auto",
         seed=None,
     ):
+        import torch
+
         del model_path, device, seed
         return model, torch.device("cpu")
 
@@ -143,6 +151,9 @@ def _fake_loader(model):
 
 
 def test_runtime_rejects_given_violation_instead_of_rewriting(monkeypatch):
+    pytest.importorskip(
+        "torch", reason="optional TRM runtime not installed"
+    )
     puzzle = parse_puzzle(SOLVED)
     candidate = list(parse_puzzle(SOLVED))
     candidate[0] = 4
@@ -166,6 +177,9 @@ def test_runtime_rejects_given_violation_instead_of_rewriting(monkeypatch):
 
 
 def test_runtime_fails_closed_on_out_of_domain_model_token(monkeypatch):
+    pytest.importorskip(
+        "torch", reason="optional TRM runtime not installed"
+    )
     puzzle = parse_puzzle("." + SOLVED[1:])
     token_ids = [value + 1 for value in parse_puzzle(SOLVED)]
     token_ids[0] = 0

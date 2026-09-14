@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import torch
+import pytest
 
 from elpis_reference.model import (
     MODEL_FILENAME,
@@ -32,6 +32,9 @@ def test_fprm_native_sudoku_token_encoding():
 
 
 def test_fprm_qualified_padded32_geometry():
+    torch = pytest.importorskip(
+        "torch", reason="optional TRM runtime not installed"
+    )
     puzzle = tuple([0, 3, 4] + [0] * 78)
 
     batch = _build_fprm_batch(

@@ -14,6 +14,19 @@ from elpis_p0.lineage_authority import P0LineageAuthorityError, P0LineageAuthori
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _fresh_env(seed: str) -> dict[str, str]:
+    env = dict(os.environ, PYTHONHASHSEED=seed)
+    env["PYTHONPATH"] = os.pathsep.join(
+        (
+            str(ROOT / "tests"),
+            str(ROOT / "components"),
+            str(ROOT / "components/Pipeline/P0ControlProtocol/src"),
+            str(ROOT / "src"),
+        )
+    )
+    return env
+
+
 def run_direct():
     _, ingress, result, authorized, trace = rejected('direct-semantic-replay')
     diagnostic = diagnose(ingress, result, authorized, trace)
@@ -35,8 +48,7 @@ def run_direct():
 
 
 def fresh(seed):
-    env = dict(os.environ, PYTHONHASHSEED=seed)
-    env['PYTHONPATH'] = str(ROOT / 'tests') + os.pathsep + env.get('PYTHONPATH', '')
+    env = _fresh_env(seed)
     code = 'import json; from test_direct_semantic_replay import run_direct; print(json.dumps(run_direct(), sort_keys=True))'
     return json.loads(subprocess.check_output([sys.executable, '-c', code], cwd=ROOT, env=env))
 

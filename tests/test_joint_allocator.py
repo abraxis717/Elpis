@@ -16,6 +16,21 @@ from elpis_reference.structural_guidance._authority.elpis_p0.semantic_ir import 
 )
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def _child_env(seed: str | None = None) -> dict[str, str]:
+    env = os.environ.copy()
+    if seed is not None:
+        env["PYTHONHASHSEED"] = seed
+    env["PYTHONPATH"] = os.pathsep.join(
+        (
+            str(ROOT / "tests"),
+            str(ROOT / "src"),
+        )
+    )
+    return env
+
+
 sys.path.insert(0, str(ROOT / 'components/FuryanLocusOracle'))
 sys.path.insert(0, str(ROOT / 'components/FuryanLocusOracle/tests'))
 import FuryanLocusOracle as oracle
@@ -130,8 +145,7 @@ print(json.dumps(asdict(production(raw)), sort_keys=True, separators=(',', ':'))
 '''
     outputs = []
     for seed in ('1', '97', 'random'):
-        env = dict(os.environ, PYTHONHASHSEED=seed)
-        env['PYTHONPATH'] = str(ROOT / 'tests') + os.pathsep + env.get('PYTHONPATH', '')
+        env = _child_env(seed)
         outputs.append(subprocess.check_output([sys.executable, '-c', script], cwd=ROOT, env=env))
     assert outputs[0] == outputs[1] == outputs[2]
 
@@ -155,4 +169,4 @@ request = build_semantic_request_v1(request_id='independent', entities=(),
 assert project(ProjectionInputV1.from_signed(request)).status == 'PROJECTED'
 assert not any('FuryanLocusOracle' in str(getattr(m, '__file__', '')) for m in sys.modules.values())
 '''
-    subprocess.run([sys.executable, '-c', script], cwd=ROOT, env=os.environ.copy(), check=True)
+    subprocess.run([sys.executable, '-c', script], cwd=ROOT, env=_child_env(), check=True)

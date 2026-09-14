@@ -3,6 +3,7 @@
 import hashlib
 import json
 import os
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -91,13 +92,15 @@ def census_g53c(source_dir: str, receipts_path: str, determinism_path: str,
         # Collect all artifact/capability digests
         artifact_digests = tuple(r["artifact_digest"] for r in receipts)
         capability_digests = tuple(r["capability_digest"] for r in receipts)
-        shadow_receipt_digest = _receipt_chain_digest(receipts)
+        shadow_receipt_digest = last.get("receipt_digest", "")
+        receipt_chain_digest = _receipt_chain_digest(receipts)
         resulting_state_digest = last["resulting_state_digest"]
         resulting_ledger_head = last["resulting_ledger_head"]
     else:
         artifact_digests = ()
         capability_digests = ()
         shadow_receipt_digest = ""
+        receipt_chain_digest = ""
         resulting_state_digest = ""
         resulting_ledger_head = ""
 
@@ -123,9 +126,105 @@ def census_g53c(source_dir: str, receipts_path: str, determinism_path: str,
         capability_digest=":".join(sorted(capability_digests)),
         lifecycle_state=lifecycle,
         shadow_receipt_digest=shadow_receipt_digest,
+        receipt_chain_digest=receipt_chain_digest,
         resulting_state_digest=resulting_state_digest,
         resulting_ledger_head=resulting_ledger_head,
         bundle_digest=determinism_digest,
+    )
+
+
+_APPLICATION_RECEIPT_V2_IDENTITY_FIELDS = (
+    "schema_version",
+    "artifact_digest",
+    "capability_digest",
+    "application_outcome",
+    "previous_state_digest",
+    "resulting_state_digest",
+    "previous_ledger_head",
+    "consumer_class",
+    "timestamp",
+)
+
+
+def _hex64(value: Any) -> bool:
+    if type(value) is not str or len(value) != 64:
+        return False
+    try:
+        int(value, 16)
+    except ValueError:
+        return False
+    return True
+
+
+def _canonical_digest(value: Any) -> str:
+    payload = json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def bind_g53c_application_identity(
+    phase: PhaseEvidence,
+    *,
+    structural_artifact: dict,
+    application_receipt: dict,
+) -> PhaseEvidence:
+    if type(phase) is not PhaseEvidence or phase.phase_id != "G5.3C":
+        raise ValueError("G53C_PHASE_REQUIRED")
+    if type(structural_artifact) is not dict:
+        raise ValueError("G53C_ARTIFACT_TYPE")
+    if type(application_receipt) is not dict:
+        raise ValueError("G53C_APPLICATION_RECEIPT_TYPE")
+
+    if structural_artifact.get("schema_version") != "structural-influence-artifact.v1":
+        raise ValueError("G53C_ARTIFACT_SCHEMA")
+    if application_receipt.get("schema_version") != "application-receipt.v2":
+        raise ValueError("G53C_APPLICATION_RECEIPT_SCHEMA")
+    if application_receipt.get("application_outcome") != "APPLICATION_ACCEPTED":
+        raise ValueError("G53C_APPLICATION_NOT_ACCEPTED")
+
+    artifact_digest = structural_artifact.get("artifact_digest")
+    capability_digest = structural_artifact.get("source_capability_digest")
+    receipt_digest = application_receipt.get("receipt_digest")
+    resulting_state_digest = application_receipt.get("resulting_state_digest")
+    resulting_ledger_head = application_receipt.get("resulting_ledger_head")
+
+    for name, value in (
+        ("ARTIFACT_DIGEST", artifact_digest),
+        ("CAPABILITY_DIGEST", capability_digest),
+        ("RECEIPT_DIGEST", receipt_digest),
+        ("RESULTING_STATE_DIGEST", resulting_state_digest),
+        ("RESULTING_LEDGER_HEAD", resulting_ledger_head),
+    ):
+        if not _hex64(value):
+            raise ValueError(f"G53C_{name}_INVALID")
+
+    if application_receipt.get("artifact_digest") != artifact_digest:
+        raise ValueError("G53C_ARTIFACT_RECEIPT_MISMATCH")
+    if application_receipt.get("capability_digest") != capability_digest:
+        raise ValueError("G53C_CAPABILITY_RECEIPT_MISMATCH")
+
+    try:
+        identity_payload = {
+            field: application_receipt[field]
+            for field in _APPLICATION_RECEIPT_V2_IDENTITY_FIELDS
+        }
+    except KeyError as exc:
+        raise ValueError("G53C_APPLICATION_RECEIPT_FIELDS") from exc
+
+    if _canonical_digest(identity_payload) != receipt_digest:
+        raise ValueError("G53C_APPLICATION_RECEIPT_DIGEST_MISMATCH")
+
+    return replace(
+        phase,
+        artifact_digest=artifact_digest,
+        capability_digest=capability_digest,
+        shadow_receipt_digest=receipt_digest,
+        resulting_state_digest=resulting_state_digest,
+        resulting_ledger_head=resulting_ledger_head,
     )
 
 
@@ -163,11 +262,23 @@ def _receipt_chain_digest(receipts: list) -> str:
     return hashlib.sha256(chain.encode("utf-8")).hexdigest()
 
 
+def _resolve_config_directory(config: dict, key: str) -> str:
+    """Resolve one configured evidence directory without guessing authority."""
+    value = config.get(key)
+    if type(value) is not str or not value:
+        raise ValueError(f"SOURCE_DIRECTORY_INVALID:{key}")
+
+    resolved = os.path.expandvars(value)
+    if "$" in resolved:
+        raise ValueError(f"SOURCE_DIRECTORY_UNRESOLVED:{key}")
+    return resolved
+
+
 def build_source_chain(config: dict) -> SourceChain:
     """Build a complete source chain from a configuration dict."""
-    g53b1_dir = config["g53b1_directory"]
-    g53c_dir = config["g53c_directory"]
-    g53d_dir = config["g53d_directory"]
+    g53b1_dir = _resolve_config_directory(config, "g53b1_directory")
+    g53c_dir = _resolve_config_directory(config, "g53c_directory")
+    g53d_dir = _resolve_config_directory(config, "g53d_directory")
 
     g53b1 = census_g53b1(g53b1_dir)
 

@@ -62,7 +62,7 @@ def test_config_and_state_are_observed(tmp_path, monkeypatch):
         (phase_c / name).write_text('{}')
     first = generate_authority_audit(config)
     assert first['plan_status'] == 'NOT_RENDERED'
-    assert first['observation_digest'] == '7c11bb1621919a85eb19eef5a45f49b8c9f5be1a6262e3cb31963df1788cce47'
+    assert first['observation_digest'] == 'fc2abb07bcb9c45a6d4ea3655dcfda6750315aa7b0523dd0bf79e99235e17f91'
     assert set(first) == {'schema', 'source_chain_digest', 'decision_digest', 'plan_status', 'observation_digest'}
     changed = tmp_path / 'g53b1_directory' / 'G53B_RAW_EVIDENCE_MANIFEST.json'
     changed.write_text('{"observed_revision":2}')

@@ -42,6 +42,7 @@ def _census(config: dict) -> dict:
             "capability_digest": chain.g53c.capability_digest,
             "lifecycle_state": chain.g53c.lifecycle_state,
             "shadow_receipt_digest": chain.g53c.shadow_receipt_digest,
+            "receipt_chain_digest": chain.g53c.receipt_chain_digest,
             "resulting_state_digest": chain.g53c.resulting_state_digest,
             "resulting_ledger_head": chain.g53c.resulting_ledger_head,
         },

@@ -81,7 +81,9 @@ class DurableApplicationLedgerV2:
     No inheritance from v1: existing publisher isinstance admission cannot
     accidentally admit this primitive. Failed append rolls back both tables.
     Each append verifies the complete current chain under BEGIN IMMEDIATE,
-    then verifies the resulting chain before commit (linear in entry count).
+    then verifies the resulting chain before commit. Verification includes
+    SQLite PRAGMA integrity_check as well as the logical chain/association
+    walk, so append cost is not characterized as merely linear in entry count.
     SQLite contention uses the predecessor's 30-second timeout and FULL sync.
     """
 
@@ -208,12 +210,20 @@ class DurableApplicationLedgerV2:
         self._check_open()
         return self._connection.execute("SELECT 1 FROM ledger_entries LIMIT 1").fetchone() is None
 
-    def has_receipt(self, artifact_digest: str) -> bool:
-        """Query durable artifact consumption (historical method naming only)."""
+    def has_artifact(self, artifact_digest: str) -> bool:
+        """Return whether this exact artifact digest has been durably applied."""
         self._check_open()
         _require_digest("artifact_digest", artifact_digest)
         return self._connection.execute(
             "SELECT 1 FROM applied_artifacts WHERE artifact_digest = ?", (artifact_digest,)
+        ).fetchone() is not None
+
+    def has_receipt(self, receipt_digest: str) -> bool:
+        """Return whether this exact receipt digest is present in the v2 ledger."""
+        self._check_open()
+        _require_digest("receipt_digest", receipt_digest)
+        return self._connection.execute(
+            "SELECT 1 FROM ledger_entries WHERE receipt_digest = ?", (receipt_digest,)
         ).fetchone() is not None
 
     def append(self, previous_head: str, receipt_digest: str,

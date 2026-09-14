@@ -170,7 +170,10 @@ class TopologyProjection:
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, TopologyProjection):
             return NotImplemented
-        return self.to_dict() == other.to_dict()
+        return (
+            self.to_dict() == other.to_dict()
+            and self.topology_digest == other.topology_digest
+        )
 
     def __hash__(self) -> int:
         return hash(self.topology_digest)
@@ -179,6 +182,109 @@ class TopologyProjection:
 # ---------------------------------------------------------------------------
 # Projection construction (pure: validated history -> frozen projection)
 # ---------------------------------------------------------------------------
+
+
+
+def _is_digest(value: object) -> bool:
+    if not isinstance(value, str) or len(value) != 64:
+        return False
+    try:
+        int(value, 16)
+    except ValueError:
+        return False
+    return True
+
+
+def verify_projection(projection: TopologyProjection) -> None:
+    """Recompute and fail-close the complete frozen projection record."""
+    if type(projection) is not TopologyProjection:
+        raise TopologyError(
+            "TOPOLOGY_PROJECTION_INVALID: exact TopologyProjection required"
+        )
+    if projection.schema != TOPOLOGY_SCHEMA:
+        raise TopologyError("TOPOLOGY_SCHEMA_INVALID")
+    if not _is_digest(projection.genesis_digest):
+        raise TopologyError("TOPOLOGY_GENESIS_INVALID")
+    if (
+        isinstance(projection.mailbox_capacity, bool)
+        or not isinstance(projection.mailbox_capacity, int)
+        or projection.mailbox_capacity < 1
+    ):
+        raise TopologyError("TOPOLOGY_CAPACITY_INVALID")
+    if (
+        isinstance(projection.event_count, bool)
+        or not isinstance(projection.event_count, int)
+        or projection.event_count < 0
+    ):
+        raise TopologyError("TOPOLOGY_EVENT_COUNT_INVALID")
+    if not isinstance(projection.nodes, tuple):
+        raise TopologyError("TOPOLOGY_NODES_INVALID: tuple required")
+    if not isinstance(projection.edges, tuple):
+        raise TopologyError("TOPOLOGY_EDGES_INVALID: tuple required")
+
+    node_ids = []
+    for node in projection.nodes:
+        if type(node) is not TopologyNode:
+            raise TopologyError("TOPOLOGY_NODE_INVALID")
+        if not _is_digest(node.entity_id):
+            raise TopologyError("TOPOLOGY_NODE_ID_INVALID")
+        if (
+            isinstance(node.founding_index, bool)
+            or not isinstance(node.founding_index, int)
+            or node.founding_index < 0
+        ):
+            raise TopologyError("TOPOLOGY_FOUNDING_INDEX_INVALID")
+        if not isinstance(node.lifecycle, str) or not node.lifecycle:
+            raise TopologyError("TOPOLOGY_LIFECYCLE_INVALID")
+        node_ids.append(node.entity_id)
+
+    if node_ids != sorted(node_ids) or len(node_ids) != len(set(node_ids)):
+        raise TopologyError("TOPOLOGY_NODE_ORDER_OR_DUPLICATE_INVALID")
+    node_set = set(node_ids)
+
+    edge_keys = []
+    total_messages = 0
+    for edge in projection.edges:
+        if type(edge) is not TopologyEdge:
+            raise TopologyError("TOPOLOGY_EDGE_INVALID")
+        if edge.sender_entity_id not in node_set:
+            raise TopologyError("TOPOLOGY_EDGE_DANGLING_SENDER")
+        if edge.receiver_entity_id not in node_set:
+            raise TopologyError("TOPOLOGY_EDGE_DANGLING_RECEIVER")
+        if (
+            isinstance(edge.count, bool)
+            or not isinstance(edge.count, int)
+            or edge.count < 1
+        ):
+            raise TopologyError("TOPOLOGY_EDGE_COUNT_INVALID")
+        if (
+            isinstance(edge.first_commit_clock, bool)
+            or not isinstance(edge.first_commit_clock, int)
+            or isinstance(edge.last_commit_clock, bool)
+            or not isinstance(edge.last_commit_clock, int)
+            or edge.first_commit_clock < 0
+            or edge.last_commit_clock < edge.first_commit_clock
+        ):
+            raise TopologyError("TOPOLOGY_EDGE_CLOCK_INVALID")
+        expected_self_loop = edge.sender_entity_id == edge.receiver_entity_id
+        if type(edge.self_loop) is not bool or edge.self_loop != expected_self_loop:
+            raise TopologyError("TOPOLOGY_EDGE_SELF_LOOP_INVALID")
+        edge_keys.append((edge.sender_entity_id, edge.receiver_entity_id))
+        total_messages += edge.count
+
+    if edge_keys != sorted(edge_keys) or len(edge_keys) != len(set(edge_keys)):
+        raise TopologyError("TOPOLOGY_EDGE_ORDER_OR_DUPLICATE_INVALID")
+    if total_messages > projection.event_count:
+        raise TopologyError("TOPOLOGY_MESSAGE_COUNT_EXCEEDS_EVENT_COUNT")
+    if not _is_digest(projection.topology_digest):
+        raise TopologyError("TOPOLOGY_DIGEST_INVALID")
+
+    expected_digest = canonical.domain_digest(
+        DOMAIN_TOPOLOGY,
+        projection.to_dict(),
+    )
+    if projection.topology_digest != expected_digest:
+        raise TopologyError("TOPOLOGY_DIGEST_MISMATCH")
 
 
 def _fold_edges(events: Sequence[Mapping[str, Any]]) -> tuple:
@@ -285,6 +391,10 @@ def project_topology(
     if not isinstance(events, Sequence) or isinstance(events, (str, bytes)):
         raise TopologyError("TOPOLOGY_EVENTS_INVALID: must be a sequence of events")
 
+    # Snapshot the caller-supplied sequence ONCE. Replay, folding, event_count,
+    # and digest construction must observe one identical committed-history view.
+    events = tuple(events)
+
     # Step 1: the EXISTING authoritative replay/validation path. This is the
     # ONLY validation used; no weaker duplicate validator is invented.
     state = replay_from_events(genesis_digest, events, mailbox_capacity)
@@ -316,7 +426,6 @@ def project_topology(
 
 
 def topology_digest(projection: TopologyProjection) -> str:
-    """Return the projection's domain-separated topology digest."""
-    if not isinstance(projection, TopologyProjection):
-        raise TopologyError("TOPOLOGY_PROJECTION_INVALID: not a TopologyProjection")
+    """Return the recomputation-verified topology digest."""
+    verify_projection(projection)
     return projection.topology_digest

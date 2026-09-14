@@ -3,13 +3,11 @@ import json, tomllib
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 
-def test_current_release_declarations_are_224():
-    assert (ROOT/"VERSION").read_text().strip()=="2.2.4"
-    assert tomllib.loads((ROOT/"pyproject.toml").read_text())["project"]["version"]=="2.2.4"
-    r=(ROOT/"README.md").read_text()
-    assert "**Release line: Elpis2.2.4**" in r
-    assert "RELEASE_NOTES/Elpis2.2.4.md" in r
+def test_224_release_artifacts_remain_preserved():
     assert (ROOT/"RELEASE_NOTES/Elpis2.2.4.md").is_file()
+    data=json.loads((ROOT/"manifests/Elpis2.2.4.RELEASE_MANIFEST.json").read_text())
+    assert data["version"]=="2.2.4"
+    assert data["release_tag"]=="Elpis2.2.4"
 
 def test_repaired_pypi_workflow_contract_is_current():
     text=(ROOT/".github/workflows/pypi-publish.yaml").read_text()

@@ -1,27 +1,11 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
-import tomllib
 
 import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-
-
-def _pytest_source_roots() -> tuple[Path, ...]:
-    data = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
-    rels = data["tool"]["pytest"]["ini_options"]["pythonpath"]
-    return tuple((ROOT / rel).resolve() for rel in rels)
-
-
-_roots = _pytest_source_roots()
-_existing = os.environ.get("PYTHONPATH")
-_parts = [str(path) for path in _roots]
-if _existing:
-    _parts.append(_existing)
-os.environ["PYTHONPATH"] = os.pathsep.join(_parts)
 
 
 # These tests verify Git history, tracked inventories, or release sealing.

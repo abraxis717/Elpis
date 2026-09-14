@@ -80,7 +80,6 @@ def create_shadow_artifact(fixture: dict, index: int) -> dict:
         "materialization_class": "MATERIALIZE_AUTHORIZED_STRUCTURAL_INFLUENCE_SET_V1",
         "application_state": "UNAPPLIED",
         "consumer_class": "STRUCTURAL_INFLUENCE_COMPILER_V1",
-        "authorized_consumer_class": "STRUCTURAL_INFLUENCE_COMPILER_V1",
         "authorized_proposal_digests": proposals,
         "proposal_bindings": bindings,
         "source_capability_digest": fixture["capability_digest"],
@@ -92,15 +91,15 @@ def create_shadow_artifact(fixture: dict, index: int) -> dict:
         "target_domain_class": "GRID81_STRUCTURAL_PROPOSAL_DOMAIN_V1",
     }
 
-    # Compute artifact digest
-    artifact_digest = canonical_digest(artifact_payload)
-    artifact_payload["artifact_digest"] = artifact_digest
+    # Match the real G5.3B contract: semantic identity exists before the full
+    # artifact digest, and the full digest includes artifact_semantic_digest.
     artifact_payload["artifact_semantic_digest"] = canonical_digest({
         "artifact_class": artifact_payload["artifact_class"],
         "authorized_proposal_digests": proposals,
         "consumer_class": artifact_payload["consumer_class"],
         "materialization_class": artifact_payload["materialization_class"],
     })
+    artifact_payload["artifact_digest"] = canonical_digest(artifact_payload)
 
     return artifact_payload
 
@@ -121,7 +120,7 @@ def mutate_and_rehash(base_artifact: dict, field: str, new_value) -> dict:
         mutated[field] = new_value
     # Recompute digest to pass guard 3
     digest_payload = {k: v for k, v in mutated.items()
-                      if k not in ("artifact_digest", "artifact_semantic_digest")}
+                      if k != "artifact_digest"}
     mutated["artifact_digest"] = canonical_digest(digest_payload)
     return mutated
 
@@ -162,7 +161,7 @@ def create_mutation_artifact(base_artifact: dict, mutation: dict) -> dict:
         mutated = copy.deepcopy(base_artifact)
         mutated["proposal_bindings"] = mutated["proposal_bindings"][:max(0, len(mutated["proposal_bindings"]) - 1)]
         digest_payload = {k: v for k, v in mutated.items()
-                          if k not in ("artifact_digest", "artifact_semantic_digest")}
+                          if k != "artifact_digest"}
         mutated["artifact_digest"] = canonical_digest(digest_payload)
     elif mutation_type == "purpose_mismatch":
         mutated = mutate_and_rehash(base_artifact, "materialization_class",
@@ -176,7 +175,7 @@ def create_mutation_artifact(base_artifact: dict, mutation: dict) -> dict:
         # Recompute digest so guard catches the structural issue, not digest
         mutated["proposal_bindings"] = [None]
         digest_payload = {k: v for k, v in mutated.items()
-                          if k not in ("artifact_digest", "artifact_semantic_digest")}
+                          if k != "artifact_digest"}
         mutated["artifact_digest"] = canonical_digest(digest_payload)
     elif mutation_type == "empty_bindings":
         mutated = mutate_and_rehash(base_artifact, "proposal_bindings", [])

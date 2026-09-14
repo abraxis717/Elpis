@@ -15,6 +15,7 @@ class SourceContract:
     g53c_capability_digests: tuple
     g53c_lifecycle_state: str
     g53c_shadow_receipt_digest: str
+    g53c_receipt_chain_digest: str
     g53c_resulting_state_digest: str
     g53c_resulting_ledger_head: str
     g53c_determinism_receipt_digest: str

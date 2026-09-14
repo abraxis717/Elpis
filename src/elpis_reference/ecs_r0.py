@@ -15,6 +15,7 @@ import os
 from pathlib import Path
 import re
 import struct
+from typing import TYPE_CHECKING
 
 ONTOLOGY = "MICROSCOPIC_COLUMN_PARTICIPATION_MASK_R0"
 VERSION = "R0"
@@ -36,6 +37,9 @@ EXPECTED = {
 }
 HEADER_SHA256 = "5ea67cfabb46155e18cfae0e4f351c4650bf2082219741374fcec6b6a63f365d"
 MANIFEST_SHA256 = "78dcc7ab307145450fd9155e0183f4cbdbae54a478a71ab16a2be17fc33f5af5"
+
+if TYPE_CHECKING:
+    from .structural_guidance.e0r3_participation import ParticipationBinding
 
 
 class R0Error(ValueError):
@@ -248,6 +252,31 @@ class Candidate:
         return EditAddress(ONTOLOGY, VERSION, PRIMITIVE, 6, self.width,
                            self.theta.digest, GAUGE, slot, self.mask[slot].value,
                            self.equivalence_digest)
+
+    def participation_binding(self) -> ParticipationBinding:
+        # Lazy import preserves ecs_r0 as the underlying authority while
+        # allowing the qualified E0R3 adapter to consume this Candidate.
+        from .structural_guidance.e0r3_participation import bind_participation
+        return bind_participation(self)
+
+    def mutate_participation(
+        self,
+        binding: ParticipationBinding,
+        referent_id: str,
+        op: Opcode,
+    ) -> MutationResult:
+        # The supplied binding is not trusted. E0R3 revalidates the candidate
+        # digest, reverse-bound addresses, order, and referent identity before
+        # delegating to R0 mutate(), which still owns all mutation preconditions.
+        from .structural_guidance.e0r3_participation import (
+            ParticipationOperation,
+            apply_participation,
+        )
+        return apply_participation(
+            self,
+            binding,
+            ParticipationOperation(referent_id, op),
+        )
 
 
 @dataclass(frozen=True, slots=True)

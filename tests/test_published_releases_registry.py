@@ -5,6 +5,8 @@ import json
 import os
 import re
 import subprocess
+
+import pytest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -59,7 +61,22 @@ def _pending_event_tag() -> str | None:
     return tag if TAG_RE.fullmatch(tag) else None
 
 
+def _repository_is_shallow() -> bool:
+    return _git("rev-parse", "--is-shallow-repository") == "true"
+
+
+def _require_complete_history(*, shallow: bool | None = None) -> None:
+    if shallow is None:
+        shallow = _repository_is_shallow()
+    if shallow:
+        raise AssertionError(
+            "REPOSITORY_HISTORY_INCOMPLETE: published release registry "
+            "qualification requires complete Git history"
+        )
+
+
 def test_published_release_registry_matches_tag_authority():
+    _require_complete_history()
     data = json.loads(REGISTRY.read_text(encoding="utf-8"))
     assert data["schema"] == "elpis.published-releases.v1"
     assert data["source_of_truth"] == "refs/tags/Elpis<semver>"
@@ -108,6 +125,7 @@ def test_published_release_registry_matches_tag_authority():
 
 
 def test_failed_sealed_candidates_are_not_published():
+    _require_complete_history()
     data = json.loads(REGISTRY.read_text(encoding="utf-8"))
     tags = {
         entry["release_tag"]
@@ -121,6 +139,7 @@ def test_failed_sealed_candidates_are_not_published():
 
 
 def test_failed_release_2_1_24_is_bound_to_immutable_authority():
+    _require_complete_history()
     payload = _failed_payload()
     entries = {
         item["release_tag"]: item
@@ -145,6 +164,7 @@ def test_failed_release_2_1_24_is_bound_to_immutable_authority():
 
 
 def test_current_release_is_published():
+    _require_complete_history()
     data = json.loads(REGISTRY.read_text(encoding="utf-8"))
     tags = {
         entry["release_tag"]
@@ -154,6 +174,7 @@ def test_current_release_is_published():
 
 
 def test_failed_release_2_2_0_is_bound_to_immutable_authority():
+    _require_complete_history()
     payload = _failed_payload()
     entries = {item["release_tag"]: item for item in payload["failed_releases"]}
     item = entries["Elpis2.2.0"]
@@ -169,3 +190,7 @@ def test_failed_release_2_2_0_is_bound_to_immutable_authority():
     manifest = ROOT / item["manifest_path"]
     assert manifest.is_file()
     assert hashlib.sha256(manifest.read_bytes()).hexdigest() == item["manifest_sha256"]
+
+def test_shallow_history_failure_is_explicit() -> None:
+    with pytest.raises(AssertionError, match="REPOSITORY_HISTORY_INCOMPLETE"):
+        _require_complete_history(shallow=True)

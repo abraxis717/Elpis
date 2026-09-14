@@ -2,7 +2,7 @@
 
 **A deterministic structural-reasoning architecture for bounded learned proposals, explicit authority, and falsifiable runtime composition.**
 
-**Release line: Elpis2.2.4**
+**Release line: Elpis2.2.5**
 
 Elpis is a systems-research project about a narrow question: can learned components contribute useful structural proposals while deterministic machinery retains ownership of representation, admissibility, authority, validation, and terminal action?
 
@@ -14,23 +14,28 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 ## Release Notes
 
-**Elpis2.2.4** is the publication-workflow contract-test corrective successor to the
-immutable tagged-but-unpublished Elpis2.2.0 object. It does not reinterpret the
-qualified 2.2.0 mechanisms or widen runtime authority. It repairs the public
-description of what the repository already contains, makes component
-qualification/admission states explicit, adds machine-readable component
-documentation links, and hardens release tests so stale human-facing release
-claims cannot pass merely because version tokens and hyperlinks are present.
+**Elpis2.2.5** is the bounded runtime-composition integration successor. It
+preserves the existing authority boundaries while connecting previously
+qualified components through explicit production consumers and independently
+qualified cross-component handoffs.
+
+The release qualifies a continuous Grid81 path from G5.2B capability authority
+through G5.3B capability consumption, G5.3C durable shadow application,
+promotion source binding/authority, isolated candidate construction, and
+durable atomic canonical publication. It also gives ECS topology
+projection/analysis, E0R3 participation, and DurableApplicationLedger v2 real
+production consumers without collapsing those distinct authority surfaces into
+one universal Elpis runtime.
 
 The 2.2.x line includes:
 
 - physical-tree-aware release manifests and immutable-tag `git archive` build provenance;
 - lifecycle-aware repository identity and full-history hosted ancestry proofs;
 - portable root/package-derived inter-code bindings with Git-less relocation qualification;
-- E0R3 whole-column participation referents;
-- qualified ECS topology projection and topology analysis;
-- DurableApplicationLedger schema v2;
-- the explicit Grid81 canonical writer chain: planner -> promotion authority -> isolated candidate constructor -> durable/atomic publisher;
+- E0R3 whole-column participation referents with a qualified ECS R0 production consumer;
+- qualified ECS Kernel -> topology projection -> topology analysis read-only composition;
+- DurableApplicationLedger schema v2 consumed by the qualified G5.3C application path;
+- the qualified Grid81 authority-to-publication chain: capability authority -> consumption compiler -> durable application -> promotion planner/authority -> isolated candidate constructor -> durable/atomic publisher;
 - bounded Regex/HACF/query-local proposal ingress;
 - current secret/private-path and runtime-boundary hardening;
 - Branch36-40 science artifacts retained as evidence, not promoted to runtime API.
@@ -39,7 +44,7 @@ The immutable `Elpis2.2.0` tag is retained as evidence but classified
 `FAILED_NOT_PUBLISHED` because its sealed README still carried the stale
 Elpis2.1.27 release-summary paragraph.
 
-- Current notes: [`RELEASE_NOTES/Elpis2.2.4.md`](RELEASE_NOTES/Elpis2.2.4.md)
+- Current notes: [`RELEASE_NOTES/Elpis2.2.5.md`](RELEASE_NOTES/Elpis2.2.5.md)
 - 2.2.0 qualification notes: [`RELEASE_NOTES/Elpis2.2.0.md`](RELEASE_NOTES/Elpis2.2.0.md)
 - Public component registry: [`manifests/PUBLIC_COMPONENT_REGISTRY.json`](manifests/PUBLIC_COMPONENT_REGISTRY.json)
 - Qualified writer-chain registry: [`manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json`](manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json)

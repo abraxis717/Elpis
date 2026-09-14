@@ -33,6 +33,7 @@ class PhaseEvidence:
     capability_digest: str | None = None
     lifecycle_state: str | None = None
     shadow_receipt_digest: str | None = None
+    receipt_chain_digest: str | None = None
     resulting_state_digest: str | None = None
     resulting_ledger_head: str | None = None
     bundle_digest: str | None = None

@@ -15,6 +15,17 @@ sys.meta_path.insert(0, NoTorch())
 '''
 
 
+def _repo_source_env() -> dict[str, str]:
+    data = tomllib.loads((ROOT / 'pyproject.toml').read_text(encoding='utf-8'))
+    rels = data['tool']['pytest']['ini_options']['pythonpath']
+    env = os.environ.copy()
+    env.pop('PYTHONPATH', None)
+    env['PYTHONPATH'] = os.pathsep.join(
+        str((ROOT / rel).resolve()) for rel in rels
+    )
+    return env
+
+
 def test_packaging_extra():
     project = tomllib.loads((ROOT / 'pyproject.toml').read_text())['project']
     for path in ('pyproject.toml', 'runtime/R0/pyproject.toml', 'components/TRMFractalSpine/pyproject.toml'):
@@ -59,7 +70,13 @@ for operation in (
         raise AssertionError('TRM call should require extra')
 print('torch_modules=0')
 '''
-    result = subprocess.run([sys.executable, '-c', code], cwd=ROOT, env=os.environ.copy(), capture_output=True, text=True)
+    result = subprocess.run(
+        [sys.executable, '-c', code],
+        cwd=ROOT,
+        env=_repo_source_env(),
+        capture_output=True,
+        text=True,
+    )
     assert result.returncode == 0, result.stderr
     assert result.stdout.strip() == 'torch_modules=0'
 
@@ -96,12 +113,7 @@ def test_model_architecture_with_extra():
 
 
 def test_r0_transaction_without_torch():
-    paths = [ROOT / 'src', ROOT / 'components', ROOT / 'runtime/R0/src']
-    paths += [ROOT / 'components' / p / 'src' for p in (
-        'Pipeline/P0ControlProtocol', 'TRMFractalSpine',
-        'Grid81DeterministicStructuralAdjudicator', 'Grid81StructuralSemantics',
-    )]
-    env = dict(os.environ, PYTHONPATH=os.pathsep.join(map(str, paths)))
+    env = _repo_source_env()
     code = BLOCK_TORCH + '''
 from elpis_runtime_r0.transaction import execute_r0_transaction
 first = execute_r0_transaction()
@@ -124,8 +136,7 @@ else:
     raise AssertionError('ClampState construction must acquire the optional Torch boundary')
 print('PASS_DARWINIAN_LAZY_TORCH')
 """
-    env = dict(os.environ)
-    env['PYTHONPATH'] = str(ROOT / 'src') + os.pathsep + str(ROOT / 'components')
+    env = _repo_source_env()
     result = subprocess.run([sys.executable, '-c', code], cwd=ROOT, env=env, capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
     assert result.stdout.strip() == 'PASS_DARWINIAN_LAZY_TORCH'

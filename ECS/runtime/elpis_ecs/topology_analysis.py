@@ -67,8 +67,10 @@ from .errors import EcsError
 from .topology import (
     DOMAIN_TOPOLOGY,
     TOPOLOGY_SCHEMA,
+    TopologyError,
     TopologyProjection,
     project_topology,
+    verify_projection,
 )
 
 # ---------------------------------------------------------------------------
@@ -226,7 +228,10 @@ class TopologyAnalysis:
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, TopologyAnalysis):
             return NotImplemented
-        return self.to_dict() == other.to_dict()
+        return (
+            self.to_dict() == other.to_dict()
+            and self.analysis_digest == other.analysis_digest
+        )
 
     def __hash__(self) -> int:
         return hash(self.analysis_digest)
@@ -235,6 +240,37 @@ class TopologyAnalysis:
 # ---------------------------------------------------------------------------
 # Private pure helper: already-qualified projection -> frozen analysis
 # ---------------------------------------------------------------------------
+
+
+
+def _is_analysis_digest(value: object) -> bool:
+    if not isinstance(value, str) or len(value) != 64:
+        return False
+    try:
+        int(value, 16)
+    except ValueError:
+        return False
+    return True
+
+
+def verify_analysis(analysis: TopologyAnalysis) -> None:
+    """Recompute and fail-close the frozen analysis record."""
+    if type(analysis) is not TopologyAnalysis:
+        raise TopologyAnalysisError(
+            "ANALYSIS_RECORD_INVALID: exact TopologyAnalysis required"
+        )
+    if analysis.schema != ANALYSIS_SCHEMA:
+        raise TopologyAnalysisError("ANALYSIS_SCHEMA_INVALID")
+    if not _is_analysis_digest(analysis.topology_digest):
+        raise TopologyAnalysisError("ANALYSIS_TOPOLOGY_DIGEST_INVALID")
+    if not _is_analysis_digest(analysis.analysis_digest):
+        raise TopologyAnalysisError("ANALYSIS_DIGEST_INVALID")
+    expected = canonical.domain_digest(
+        DOMAIN_ANALYSIS,
+        analysis.to_dict(),
+    )
+    if analysis.analysis_digest != expected:
+        raise TopologyAnalysisError("ANALYSIS_DIGEST_MISMATCH")
 
 
 def _strongly_connected_components(nodes: Sequence[str], edges: Sequence) -> tuple:
@@ -314,10 +350,12 @@ def analyze_projection(projection: TopologyProjection) -> TopologyAnalysis:
         TopologyAnalysisError: the supplied record is not a
             ``TopologyProjection`` (fail-closed).
     """
-    if not isinstance(projection, TopologyProjection):
+    try:
+        verify_projection(projection)
+    except TopologyError as exc:
         raise TopologyAnalysisError(
-            "ANALYSIS_PROJECTION_INVALID: not a TopologyProjection"
-        )
+            f"ANALYSIS_PROJECTION_INVALID: {exc}"
+        ) from exc
 
     node_ids = [n.entity_id for n in projection.nodes]
     edges = projection.edges
@@ -452,9 +490,6 @@ def analyze_topology(
 
 
 def analysis_digest(analysis: TopologyAnalysis) -> str:
-    """Return the analysis's domain-separated analysis digest."""
-    if not isinstance(analysis, TopologyAnalysis):
-        raise TopologyAnalysisError(
-            "ANALYSIS_RECORD_INVALID: not a TopologyAnalysis"
-        )
+    """Return the recomputation-verified analysis digest."""
+    verify_analysis(analysis)
     return analysis.analysis_digest

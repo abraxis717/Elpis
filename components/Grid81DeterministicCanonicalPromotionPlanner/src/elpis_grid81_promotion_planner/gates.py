@@ -141,8 +141,8 @@ def _check_shadow_application_accepted(chain: SourceChain) -> bool:
 
 
 def _check_receipt_integrity(chain: SourceChain) -> bool:
-    """Receipt chain digest must match stored digest."""
-    if not chain.g53c.shadow_receipt_digest:
+    """Receipt chain digest must match the independent aggregate identity."""
+    if not chain.g53c.receipt_chain_digest:
         return False
     receipts_path = os.path.join(
         chain.g53c.source_directory,
@@ -158,7 +158,7 @@ def _check_receipt_integrity(chain: SourceChain) -> bool:
     computed = hashlib.sha256(
         json.dumps(receipts, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
-    return computed == chain.g53c.shadow_receipt_digest
+    return computed == chain.g53c.receipt_chain_digest
 
 
 def _check_shadow_state_transition(chain: SourceChain) -> bool:

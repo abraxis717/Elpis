@@ -32,7 +32,25 @@ def _append(path: Path, payload: str) -> None:
             handle.write("\n")
 
 
-def test_current_structural_guidance_tree_passes_expanded_policy(
+def test_runtime_policy_scope_is_explicitly_bounded() -> None:
+    ns = runpy.run_path(str(VERIFIER))
+    assert ns["RUNTIME_POLICY_TRIPWIRE_SCOPE"] == (
+        "enumerated_ast_execution_tripwire_not_python_sandbox"
+    )
+
+    policy = (ROOT / "docs/RELEASE_GUARD_POLICY.md").read_text(
+        encoding="utf-8"
+    )
+    assert "enumerated AST regression" in policy
+    assert "not a Python sandbox" in policy
+    assert "not an allowlist proof" in policy
+    assert (
+        "proof that arbitrary Python execution techniques are impossible"
+        in policy
+    )
+
+
+def test_current_structural_guidance_tree_passes_enumerated_tripwire(
     tmp_path: Path,
 ) -> None:
     _, _, check = _fixture(tmp_path)
@@ -98,7 +116,7 @@ def test_current_structural_guidance_tree_passes_expanded_policy(
         ),
     ],
 )
-def test_alias_and_dynamic_execution_evasions_fail_closed(
+def test_enumerated_alias_and_dynamic_execution_forms_fail_closed(
     tmp_path: Path,
     relative: str,
     payload: str,

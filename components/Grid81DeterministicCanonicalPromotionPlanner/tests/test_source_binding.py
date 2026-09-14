@@ -4,6 +4,8 @@ import json
 import os
 import sys
 
+import pytest
+
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src"))
 
 from elpis_grid81_promotion_planner.source_binding import (
@@ -11,6 +13,7 @@ from elpis_grid81_promotion_planner.source_binding import (
     census_g53b1,
     census_g53c,
     census_g53d,
+    _resolve_config_directory,
 )
 from elpis_grid81_promotion_planner.canonical import SourceChain
 
@@ -19,6 +22,27 @@ CONFIG = os.path.join(
 )
 with open(CONFIG) as _f:
     config = json.load(_f)
+
+
+def test_config_directory_expands_environment(monkeypatch):
+    monkeypatch.setenv("ELPIS_CANON", "/tmp/elpis-canon-root")
+    resolved = _resolve_config_directory(
+        {"g53b1_directory": "${ELPIS_CANON}/Elpis_Canon/reports/G5_3B"},
+        "g53b1_directory",
+    )
+    assert resolved == "/tmp/elpis-canon-root/Elpis_Canon/reports/G5_3B"
+
+
+def test_config_directory_rejects_unresolved_environment(monkeypatch):
+    monkeypatch.delenv("ELPIS_I5_MISSING_ROOT", raising=False)
+    with pytest.raises(
+        ValueError,
+        match="SOURCE_DIRECTORY_UNRESOLVED:g53b1_directory",
+    ):
+        _resolve_config_directory(
+            {"g53b1_directory": "${ELPIS_I5_MISSING_ROOT}/reports"},
+            "g53b1_directory",
+        )
 
 
 def test_build_source_chain():

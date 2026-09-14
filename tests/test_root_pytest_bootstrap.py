@@ -27,16 +27,13 @@ def test_pytest_source_roots_are_repository_relative_and_present() -> None:
         assert (ROOT / path).is_dir(), rel
 
 
-def test_subprocess_pythonpath_is_bootstrapped_from_same_roots() -> None:
-    expected = [
-        str((ROOT / rel).resolve())
-        for rel in DATA["tool"]["pytest"]["ini_options"]["pythonpath"]
-    ]
-    inherited = os.environ.get("PYTHONPATH", "").split(os.pathsep)
-    assert inherited[: len(expected)] == expected
+def test_conftest_does_not_export_source_roots_to_environment() -> None:
+    before = os.environ.copy()
+    _load_conftest_module()
+    assert os.environ == before
 
 
-def test_fresh_child_imports_project_packages_from_this_checkout() -> None:
+def test_repo_source_child_imports_use_explicit_local_roots() -> None:
     script = """
 from pathlib import Path
 import DarwinianMatrix
@@ -47,10 +44,16 @@ for mod in (DarwinianMatrix, elpis, elpis_reference):
     path = Path(mod.__file__).resolve()
     assert path.is_relative_to(root), (mod.__name__, path, root)
 """
+    env = os.environ.copy()
+    env.pop("PYTHONPATH", None)
+    env["PYTHONPATH"] = os.pathsep.join(
+        str((ROOT / rel).resolve())
+        for rel in DATA["tool"]["pytest"]["ini_options"]["pythonpath"]
+    )
     subprocess.run(
         [sys.executable, "-c", script],
         cwd=ROOT,
-        env=os.environ.copy(),
+        env=env,
         check=True,
     )
 

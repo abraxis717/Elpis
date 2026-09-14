@@ -22,6 +22,15 @@ from elpis_grid81_application_executor.ledger import ledger_head_digest
 from elpis_grid81_application_executor import durable_ledger_v2 as v2
 
 V2 = v2.DurableApplicationLedgerV2
+_COMPONENT_SRC = Path(__file__).resolve().parents[1] / "src"
+
+
+def _child_env():
+    env = dict(os.environ)
+    env.pop("PYTHONPATH", None)
+    env["PYTHONPATH"] = str(_COMPONENT_SRC)
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
+    return env
 
 
 def digest(label):
@@ -71,7 +80,8 @@ def test_identity_genesis_persistence_and_immutable_entry(tmp_path):
             assert entry.previous_head == (entries[-1]["entry_digest"] if entries else v2.GENESIS_HEAD)
             entries.append(asdict(entry))
             assert ledger.verify_chain() == (True, "valid")
-            assert ledger.has_receipt(entry.artifact_digest)
+            assert ledger.has_artifact(entry.artifact_digest)
+            assert ledger.has_receipt(entry.receipt_digest)
         with pytest.raises(FrozenInstanceError):
             entry.artifact_digest = digest("forged")
         with pytest.raises(ValueError, match="digest mismatch"):
@@ -130,7 +140,22 @@ def test_no_artifact_sentinel_or_digest_subclass(tmp_path):
         with pytest.raises(TypeError):
             ledger.append(ledger.head, digest("receipt"), DigestSubclass(digest("artifact")))
         with pytest.raises(ValueError):
+            ledger.has_artifact("")
+        with pytest.raises(ValueError):
             ledger.has_receipt("")
+
+
+def test_v2_receipt_and_artifact_queries_are_semantically_distinct(tmp_path):
+    with V2(tmp_path / "v2.sqlite") as ledger:
+        receipt = digest("receipt-query")
+        artifact = digest("artifact-query")
+        ledger.append(ledger.head, receipt, artifact)
+
+        assert receipt != artifact
+        assert ledger.has_artifact(artifact)
+        assert not ledger.has_artifact(receipt)
+        assert ledger.has_receipt(receipt)
+        assert not ledger.has_receipt(artifact)
 
 
 @pytest.mark.parametrize("sequence", [0, -1, True, 1.0, "1", 2**63])
@@ -597,7 +622,7 @@ def test_process_death_recovers_or_retains_exact_durable_commit(tmp_path, point)
         before = ledger.to_dict()
     cp = subprocess.run([sys.executable, "-B", str(Path(__file__).resolve()),
                          "crash", str(path), point], capture_output=True, text=True,
-                        timeout=40, env=dict(os.environ, PYTHONDONTWRITEBYTECODE="1"))
+                        timeout=40, env=_child_env())
     assert cp.returncode == (23 if point == "before_commit" else 24), cp.stderr
     if point == "before_commit":
         assert Path(str(path) + "-journal").exists()
@@ -632,7 +657,7 @@ def test_independent_process_cas_contention(tmp_path, seeded):
             processes.append(subprocess.Popen(
                 [sys.executable, "-B", str(Path(__file__).resolve()), "race", str(path), str(identity)],
                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
-                env=dict(os.environ, PYTHONDONTWRITEBYTECODE="1")))
+                env=_child_env()))
         ready = []
         for process in processes:
             assert select.select([process.stdout], [], [], 30)[0], "writer did not reach barrier"

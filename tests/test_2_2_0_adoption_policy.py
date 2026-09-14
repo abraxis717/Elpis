@@ -7,6 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 POLICY_PATH = ROOT / "manifests/ELPIS_2_2_0_ADOPTION_POLICY_R0.json"
+PUBLICATION_REGISTRY = ROOT / "PUBLISHED_RELEASES.json"
 
 
 def _policy():
@@ -43,12 +44,33 @@ def _ecs_all() -> set[str]:
     raise AssertionError("elpis_ecs.__all__ missing")
 
 
-def test_policy_identity_and_release_guard() -> None:
+def test_historical_policy_identity_and_pre_materialization_state() -> None:
+    # This frozen policy records the state before any 2.2.x publication.
     policy = _policy()
     assert policy["schema"] == "elpis.release-adoption-policy.v1"
+    assert policy["policy_id"] == "ELPIS_2_2_0_ADOPTION_POLICY_R0"
     assert policy["target_release"] == "2.2.0"
     assert policy["predecessor_release"] == "2.1.27"
     assert policy["release_materialization_authorized"] is False
+    assert policy["next_gate"] == (
+        "materialize 2.2.0 documentation/version/release manifests against this "
+        "policy; no tag/release/PyPI publication until separately authorized"
+    )
+
+
+def test_historical_pre_materialization_flag_is_not_a_live_publication_gate() -> None:
+    # Later publication authority is separate from this immutable historical fact.
+    policy = _policy()
+    registry = json.loads(PUBLICATION_REGISTRY.read_text(encoding="utf-8"))
+    published = {
+        entry["version"]
+        for entry in registry["published_releases"]
+    }
+
+    assert policy["target_release"] == "2.2.0"
+    assert policy["release_materialization_authorized"] is False
+    assert "2.2.0" not in published
+    assert "2.2.2" in published
 
 
 def test_exact_candidate_disposition_is_internal_qualified() -> None:

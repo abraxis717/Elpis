@@ -15,6 +15,27 @@ Seal only after implementation qualification. A provisional seal is confined to
 an explicit throwaway copy and makes no correctness claim. Historical release
 manifests and tags are immutable.
 
+## Structural-guidance runtime static tripwire
+
+The structural-guidance source scan is an **enumerated AST regression
+tripwire**. It rejects the import roots, builtin calls, `os.system` forms, and
+static `getattr` patterns explicitly implemented in
+`tools/verify_public_release.py`, recursively across the shipped
+`structural_guidance` Python tree.
+
+This control is **not a Python sandbox**, not an allowlist proof, and not a
+proof that arbitrary Python execution techniques are impossible. Dynamic
+attribute construction, reflection, deserialization, alternate process APIs,
+or other execution mechanisms outside the enumerated patterns are not claimed
+to be covered merely because this tripwire passes.
+
+Accordingly, historical release wording about detecting execution-policy
+"bypass classes" must be read as referring to the specifically enumerated
+regression classes, not to complete semantic coverage of Python execution.
+Broader execution authority remains controlled by the runtime's separate
+authority invariants and negative authorization checks.
+
+
 ## Release lifecycle
 
 Release identity has two distinct repository states and they must not be

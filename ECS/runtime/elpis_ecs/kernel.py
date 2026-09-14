@@ -36,6 +36,8 @@ ENTITY-FACING API (no sender parameter; sender is the bound port's entity):
 READ-ONLY INTROSPECTION (serialized at a transition boundary):
   Kernel.state_root_digest()
   Kernel.events()
+  Kernel.topology_projection() -> TopologyProjection
+  Kernel.topology_analysis() -> TopologyAnalysis
   Kernel.entity_ids()
   Kernel.mailbox_size(receiver)
 
@@ -112,6 +114,12 @@ from .persistence import (
 )
 from .port import EntityPort, _check_port_live, _check_sender_active
 from .replay import KernelState, replay_from_events, replay_with_checkpoint
+from .topology import TopologyProjection, project_topology, verify_projection
+from .topology_analysis import (
+    TopologyAnalysis,
+    analyze_projection,
+    verify_analysis,
+)
 from .scheduler import ReadyItem, RANK_ACTIVATE, RANK_ENQUEUE, order_ready
 
 LOG_FILENAME = "events.log"
@@ -619,6 +627,39 @@ class Kernel:
         except BaseException:
             self.close()
             raise
+
+    @_serialized
+    def topology_projection(self) -> TopologyProjection:
+        """Derive and recomputation-verify topology from committed history.
+
+        This is a read-only derived view on success. The event snapshot is read
+        from this kernel's durable log while the existing transition lock is
+        held. ``project_topology`` reruns authoritative ECS replay; the result
+        is then independently checked by ``verify_projection`` before it
+        crosses the Kernel introspection boundary.
+        """
+        self._require_state()
+        events = tuple(self.events())
+        projection = project_topology(
+            self._genesis_digest,
+            events,
+            self.mailbox_capacity,
+        )
+        verify_projection(projection)
+        return projection
+
+    @_serialized
+    def topology_analysis(self) -> TopologyAnalysis:
+        """Derive and recomputation-verify analysis through topology.
+
+        The analysis consumes the exact verified projection returned by
+        ``topology_projection``. It does not reread storage, create a second
+        state authority, persist analysis state, or grant mutation authority.
+        """
+        projection = self.topology_projection()
+        analysis = analyze_projection(projection)
+        verify_analysis(analysis)
+        return analysis
 
     @_serialized
     def entity_ids(self) -> list[str]:

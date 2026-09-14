@@ -1,3 +1,14 @@
+## Elpis2.2.5 — Bounded runtime-composition integration successor
+
+- Connect the trusted ECS Kernel to verified topology projection and topology analysis as a read-only production path.
+- Give E0R3 participation and DurableApplicationLedger v2 real production consumers while preserving their existing authority boundaries.
+- Qualify the Grid81 chain continuously from G5.2B capability grant through G5.3B consumption, G5.3C durable application, promotion, candidate construction, and atomic canonical publication.
+- Preserve exact ApplicationReceiptV2 identity separately from aggregate receipt-chain identity through promotion source bindings and canonical generation evidence.
+- Preserve single-use/replay exclusion across consumption, durable application, and canonical publication; exact publication replay remains idempotent.
+- Retain F9 source-root isolation by making fresh-child tests declare only their minimal import roots instead of restoring ambient PYTHONPATH leakage.
+- Preserve historical release manifests and PUBLISHED_RELEASES.json unchanged until immutable-tag admission.
+- Do not claim a monolithic Elpis runtime: ECS topology, E0R3 participation, and the bounded Grid81 pipeline remain distinct typed authority surfaces.
+
 ## Elpis2.2.4 — PyPI publication contract-test corrective successor
 
 - Preserve the sealed-but-failed local Elpis2.2.3 manifest unchanged.
