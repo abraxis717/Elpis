@@ -1,3 +1,11 @@
+## Elpis2.2.9
+
+- Advance from the hosted-green but unreleasable Elpis2.2.8 candidate without rewriting its commit, release note, or write-once manifest.
+- Correct the stale 2.2.8 release-note claim about frozen structural-feature authority.
+- Preserve the complete structural-guidance `_authority` subtree and the repository `${ELPIS_CANON}` source-binding hook exactly as sealed in Elpis2.2.7.
+- Carry the qualified 2.2.8 implementation forward without runtime, scientific, package-surface, or authority-semantics changes.
+- Keep publication-registry materialization, immutable tag creation, GitHub Release publication, and PyPI Trusted Publishing as later gates.
+
 ## Elpis2.2.8 — Red-team hardening and release-lifecycle successor
 
 - Close the qualified F1/F1b/F1c/F3/F4/F5 authority, rollback, CI-coverage, and fail-closed hardening findings without reopening closed milestones.
