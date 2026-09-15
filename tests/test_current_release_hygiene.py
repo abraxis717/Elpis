@@ -27,6 +27,9 @@ def test_current_release_metadata_and_registration_are_atomic():
     assert f"**Release line: Elpis{version}**" in readme
     assert f"RELEASE_NOTES/Elpis{version}.md" in readme
 
+    release_section = readme.split("## Release Notes", 1)[1].split("## Install and quick start", 1)[0]
+    assert release_section.strip().startswith(f"**Elpis{version}**")
+
     note = ROOT / f"RELEASE_NOTES/Elpis{version}.md"
     assert note.is_file()
 

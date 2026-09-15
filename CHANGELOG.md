@@ -1,3 +1,11 @@
+## Elpis2.2.10
+
+- Correct the public README release-summary section so it opens with the active VERSION rather than stale Elpis2.2.8 text.
+- Record tagged, CI-passed, unpublished Elpis2.2.9 as immutable failed-release evidence.
+- Add a regression requiring the README `## Release Notes` section itself to open with the current release version.
+- Preserve the complete structural-guidance `_authority` subtree and repository `${ELPIS_CANON}` source-binding hook exactly as sealed in Elpis2.2.7.
+- Carry the qualified 2.2.9 implementation forward without runtime, scientific, package-surface, or authority-semantics changes.
+
 ## Elpis2.2.9
 
 - Advance from the hosted-green but unreleasable Elpis2.2.8 candidate without rewriting its commit, release note, or write-once manifest.

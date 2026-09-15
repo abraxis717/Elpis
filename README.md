@@ -2,7 +2,7 @@
 
 **A deterministic structural-reasoning architecture for bounded learned proposals, explicit authority, and falsifiable runtime composition.**
 
-**Release line: Elpis2.2.9**
+**Release line: Elpis2.2.10**
 
 Elpis is a systems-research project about a narrow question: can learned components contribute useful structural proposals while deterministic machinery retains ownership of representation, admissibility, authority, validation, and terminal action?
 
@@ -14,11 +14,11 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 ## Release Notes
 
-**Elpis2.2.8** is the red-team hardening and release-lifecycle successor to the published Elpis2.2.7 release.
+**Elpis2.2.10** is the qualified red-team hardening and release-lifecycle release for the Elpis 2.2 line.
 
-The post-2.2.7 hardening closes qualified authority, rollback, CI-coverage, fail-closed, canonical-identity, topology-replay, durable-ledger, and scheduler findings while preserving historical replay and authority boundaries. The release also repairs hosted lifecycle verification so an untagged candidate is verified as a candidate, while an already-published VERSION continues to be verified against its immutable release tag.
+The release closes bounded findings in deterministic authority checking, checkpoint rollback floors, fail-closed invariant enforcement, canonical identity, topology replay, durable-ledger validation, scheduler fairness, and hosted release qualification.
 
-The imported 2.2.7 red-team report retains its technical findings but no longer ships host-local path literals. Release-manifest v3 remains opt-in future infrastructure; Elpis2.2.8 continues to use the historical v2 release-manifest contract.
+The structural-guidance `_authority` subtree remains byte-identical to sealed Elpis2.2.7. The repository `${ELPIS_CANON}` source-binding fixture, implementation, and regression guard also remain byte-identical to the sealed 2.2.7 contract. Generic hardening is explicitly prevented from rewriting that frozen authority.
 
 The 2.2.x line includes:
 
@@ -33,12 +33,9 @@ The 2.2.x line includes:
 - current secret/private-path and runtime-boundary hardening;
 - Branch36-40 science artifacts retained as evidence, not promoted to runtime API.
 
-The immutable `Elpis2.2.0` tag is retained as evidence but classified
-`FAILED_NOT_PUBLISHED` because its sealed README still carried the stale
-Elpis2.1.27 release-summary paragraph.
+The immutable `Elpis2.2.0` and `Elpis2.2.9` tags are retained as failed-not-published release evidence under `FAILED_RELEASES.json`.
 
-- Current notes: [`RELEASE_NOTES/Elpis2.2.9.md`](RELEASE_NOTES/Elpis2.2.9.md)
-- 2.2.0 qualification notes: [`RELEASE_NOTES/Elpis2.2.0.md`](RELEASE_NOTES/Elpis2.2.0.md)
+- Current notes: [`RELEASE_NOTES/Elpis2.2.10.md`](RELEASE_NOTES/Elpis2.2.10.md)
 - Public component registry: [`manifests/PUBLIC_COMPONENT_REGISTRY.json`](manifests/PUBLIC_COMPONENT_REGISTRY.json)
 - Qualified writer-chain registry: [`manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json`](manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json)
 - 2.2 qualified-internal adoption policy: [`manifests/ELPIS_2_2_0_ADOPTION_POLICY_R0.json`](manifests/ELPIS_2_2_0_ADOPTION_POLICY_R0.json)
