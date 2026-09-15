@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pytest
 
+pytest.importorskip("torch", reason="TRM tests require optional torch dependency", exc_type=ImportError)
+
 import elpis_reference.feedback_refinement as feedback
 from DarwinianMatrix.projector.constraints import (
     ClampOperation, ClampProposal, ClampState, ClampTransaction, apply_clamp_transaction,

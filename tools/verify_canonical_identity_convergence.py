@@ -2,6 +2,14 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+for source_root in (ROOT / "src", ROOT / "ECS/runtime"):
+    value = str(source_root)
+    if value not in sys.path:
+        sys.path.insert(0, value)
 
 from elpis.canonical_identity import canonical_json_bytes, content_digest
 from elpis.contracts.closure.identity import (

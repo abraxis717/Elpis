@@ -1,3 +1,14 @@
+## Elpis2.2.11 — Post-publication corrective successor
+
+- Close a post-commit DurableApplicationLedger v2 validation race by retaining the last externally validated SQLite `data_version` baseline across owner commits; a foreign commit after the owner commit is therefore revalidated on the next operation instead of being absorbed into a trusted snapshot.
+- Make Promotion Planner replay qualification fail closed when recognized status fields are missing, false, conflicting, or non-boolean.
+- Reserve the Canonical Identity v1 `__bytes__` sentinel against ordinary mappings so raw bytes cannot alias an accepted dictionary payload.
+- Preserve frozen structural-guidance authority byte-for-byte while refusing optimized `python -O` execution before assert-based frozen authority can run with stripped invariants.
+- Derive pending publication-registry state from repository VERSION/tag/failed/published authority rather than GitHub event environment variables.
+- Make canonical-identity convergence verification runnable from a pristine checkout without ambient `PYTHONPATH`.
+- Make Torch-backed tests skip cleanly when the optional `trm` dependency is absent and propagate the TRMFractalSpine source root into direct semantic-replay child processes.
+- Keep NumPy 2.x support, unavailable external PromotionPlanner source-authority qualification, and GitHub/tag supply-chain enforcement outside this release claim until separately qualified.
+
 ## Elpis2.2.10
 
 - Correct the public README release-summary section so it opens with the active VERSION rather than stale Elpis2.2.8 text.

@@ -6,6 +6,8 @@ import inspect
 
 import pytest
 
+pytest.importorskip("torch", reason="TRM tests require optional torch dependency", exc_type=ImportError)
+
 import elpis_reference.projector_release as adapter_module
 from DarwinianMatrix.projector.constraints import (
     ClampOperation,

@@ -54,11 +54,38 @@ def _publishable_tags() -> list[str]:
     return [tag for tag in _semantic_tags() if tag not in failed]
 
 
-def _pending_event_tag() -> str | None:
-    if os.environ.get("GITHUB_REF_TYPE") != "tag":
+def _derive_pending_current_tag(
+    *,
+    version: str,
+    semantic_tags: list[str],
+    failed_tags: set[str],
+    published_tags: set[str],
+) -> str | None:
+    tag = f"Elpis{version}"
+    if tag not in semantic_tags:
         return None
-    tag = os.environ.get("GITHUB_REF_NAME", "")
-    return tag if TAG_RE.fullmatch(tag) else None
+    if tag in failed_tags or tag in published_tags:
+        return None
+    return tag
+
+
+def _pending_repository_tag(published_tags: set[str]) -> str | None:
+    version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+    pending = _derive_pending_current_tag(
+        version=version,
+        semantic_tags=_semantic_tags(),
+        failed_tags=_failed_tags(),
+        published_tags=published_tags,
+    )
+    if pending is None:
+        return None
+
+    manifest = ROOT / "manifests" / f"{pending}.RELEASE_MANIFEST.json"
+    assert manifest.is_file()
+    payload = json.loads(manifest.read_text(encoding="utf-8"))
+    assert payload["release_tag"] == pending
+    assert payload["version"] == version
+    return pending
 
 
 def _repository_is_shallow() -> bool:
@@ -89,7 +116,7 @@ def test_published_release_registry_matches_tag_authority():
     assert len(tags) == len(set(tags))
 
     publishable = _publishable_tags()
-    pending = _pending_event_tag()
+    pending = _pending_repository_tag(set(tags))
     if pending is None:
         assert tags == publishable
     else:
@@ -97,12 +124,6 @@ def test_published_release_registry_matches_tag_authority():
         assert pending not in _failed_tags()
         assert pending not in tags
         assert tags == [tag for tag in publishable if tag != pending]
-
-        manifest = ROOT / "manifests" / f"{pending}.RELEASE_MANIFEST.json"
-        assert manifest.is_file()
-        payload = json.loads(manifest.read_text(encoding="utf-8"))
-        assert payload["release_tag"] == pending
-        assert payload["version"] == pending.removeprefix("Elpis")
 
     for entry in entries:
         tag = entry["release_tag"]
@@ -194,3 +215,20 @@ def test_failed_release_2_2_0_is_bound_to_immutable_authority():
 def test_shallow_history_failure_is_explicit() -> None:
     with pytest.raises(AssertionError, match="REPOSITORY_HISTORY_INCOMPLETE"):
         _require_complete_history(shallow=True)
+
+def test_pending_release_derivation_is_repository_state_not_github_environment(monkeypatch):
+    monkeypatch.setenv("GITHUB_REF_TYPE", "branch")
+    monkeypatch.setenv("GITHUB_REF_NAME", "main")
+    assert _derive_pending_current_tag(
+        version="9.9.9",
+        semantic_tags=["Elpis9.9.8", "Elpis9.9.9"],
+        failed_tags=set(),
+        published_tags={"Elpis9.9.8"},
+    ) == "Elpis9.9.9"
+    assert _derive_pending_current_tag(
+        version="9.9.9",
+        semantic_tags=["Elpis9.9.9"],
+        failed_tags={"Elpis9.9.9"},
+        published_tags=set(),
+    ) is None
+

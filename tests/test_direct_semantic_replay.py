@@ -21,6 +21,7 @@ def _fresh_env(seed: str) -> dict[str, str]:
             str(ROOT / "tests"),
             str(ROOT / "components"),
             str(ROOT / "components/Pipeline/P0ControlProtocol/src"),
+            str(ROOT / "components/TRMFractalSpine/src"),
             str(ROOT / "src"),
         )
     )

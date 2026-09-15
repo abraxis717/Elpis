@@ -6,6 +6,8 @@ from types import SimpleNamespace
 
 import pytest
 
+pytest.importorskip("torch", reason="TRM tests require optional torch dependency", exc_type=ImportError)
+
 from DarwinianMatrix.projector.constraints import (
     ClampOperation,
     ClampProposal,
