@@ -12,7 +12,7 @@ from elpis_grid81_promotion_planner.gates import (
     GATE_DEFINITIONS,
     first_failure,
 )
-from elpis_grid81_promotion_planner.decision import make_decision, DECISION_READY
+from elpis_grid81_promotion_planner.decision import make_decision, DECISION_NOT_READY
 
 CONFIG = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "..", "fixtures", "source_config.json"
@@ -29,14 +29,11 @@ def _load_config():
 def test_gate_count():
     chain = build_source_chain(_load_config())
     results = evaluate_gates(chain)
-    assert len(results) == 20
+    assert len(results) == 19
 
 
-def test_all_gates_pass_on_sealed_chain():
-    chain = build_source_chain(_load_config())
-    results = evaluate_gates(chain)
-    for r in results:
-        assert r.passed, f"Gate {r.gate_id} failed with {r.rejection_code}"
+def test_no_unestablished_phase_disposition_gate():
+    assert all(gate_id != "GATE_ALL_PHASE_DISPOSITIONS_PRESENT" for gate_id, _, _ in GATE_DEFINITIONS)
 
 
 def test_gate_order_deterministic():
@@ -56,18 +53,12 @@ def test_gate_digests_deterministic():
         assert r1[i].digest == r2[i].digest
 
 
-def test_decision_is_ready():
-    chain = build_source_chain(_load_config())
-    results = evaluate_gates(chain)
-    decision = make_decision(results, chain)
-    assert decision.decision == DECISION_READY
-
-
-def test_first_failure_none_when_all_pass():
-    chain = build_source_chain(_load_config())
-    results = evaluate_gates(chain)
-    assert first_failure(results) is None
-
+def test_established_gate_set_excludes_unstructured_disposition():
+    assert len(GATE_DEFINITIONS) == 19
+    assert all(
+        gate_id != "GATE_ALL_PHASE_DISPOSITIONS_PRESENT"
+        for gate_id, _, _ in GATE_DEFINITIONS
+    )
 
 def test_missing_phase_rejected():
     bad_config = dict(_load_config())

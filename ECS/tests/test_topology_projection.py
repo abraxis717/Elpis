@@ -21,6 +21,7 @@ durable authority.
 """
 
 from __future__ import annotations
+from elpis_ecs.scheduler import SCHEDULER_V1
 
 import copy
 import os
@@ -97,8 +98,7 @@ def _build_scenario(kernel):
 
 def _project(kernel):
     """Project the topology from the kernel's committed history."""
-    return project_topology(kernel._genesis_digest, kernel.events(),
-                            kernel.mailbox_capacity)
+    return project_topology(kernel._genesis_digest, kernel.events(), kernel.mailbox_capacity, scheduler_protocol=kernel.scheduler_protocol)
 
 
 def _edge_key(e):
@@ -112,7 +112,7 @@ def _edge_key(e):
 
 class TestBasicProjection:
     def test_empty_history(self, tmp_path):
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         t = project_topology(GENESIS, [], CAP)
         assert t.schema == TOPOLOGY_SCHEMA
         assert t.genesis_digest == GENESIS
@@ -125,7 +125,7 @@ class TestBasicProjection:
         k.close()
 
     def test_founded_entities_no_edges(self, tmp_path):
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         a = k.found_entity("alpha")
         b = k.found_entity("beta")
         k.run_until_quiescent()  # activate both
@@ -139,7 +139,7 @@ class TestBasicProjection:
         k.close()
 
     def test_one_directed_interaction(self, tmp_path):
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         a = k.found_entity("alpha")
         b = k.found_entity("beta")
         k.run_until_quiescent()
@@ -155,7 +155,7 @@ class TestBasicProjection:
         k.close()
 
     def test_multiple_directed_interactions(self, tmp_path):
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         ids = _build_scenario(k)
         t = _project(k)
         # Edges: a->b, b->a, a->c, c->c. (No d edges; no a->d edge.)
@@ -169,7 +169,7 @@ class TestBasicProjection:
         k.close()
 
     def test_repeated_same_directed_pair(self, tmp_path):
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         ids = _build_scenario(k)
         t = _project(k)
         ab = next(e for e in t.edges if _edge_key(e) == (ids["a"], ids["b"]))
@@ -179,7 +179,7 @@ class TestBasicProjection:
         k.close()
 
     def test_opposite_direction_distinct(self, tmp_path):
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         ids = _build_scenario(k)
         t = _project(k)
         ab = next(e for e in t.edges if _edge_key(e) == (ids["a"], ids["b"]))
@@ -191,7 +191,7 @@ class TestBasicProjection:
         k.close()
 
     def test_self_interaction(self, tmp_path):
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         ids = _build_scenario(k)
         t = _project(k)
         cc = next(e for e in t.edges if _edge_key(e) == (ids["c"], ids["c"]))
@@ -201,7 +201,7 @@ class TestBasicProjection:
         k.close()
 
     def test_isolated_entity_represented(self, tmp_path):
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         ids = _build_scenario(k)
         t = _project(k)
         # d is isolated (no interactions) but remains a node.
@@ -217,7 +217,7 @@ class TestBasicProjection:
         # Edges derive from the committed EVENT HISTORY, not the live mailbox.
         # After run_until_quiescent the mailboxes are empty, but the edges
         # must still be present (the ENQUEUED events remain in history).
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         ids = _build_scenario(k)  # scenario processes all messages
         # Mailboxes are now empty (all processed).
         assert k.mailbox_size(ids["b"]) == 0
@@ -237,7 +237,7 @@ class TestPayloadAuthority:
         # The a->c payload text contains d's real entity_id ("connected to
         # <d>"), but the committed envelope attribution is a->c. The fake
         # claim must NOT manufacture an a->d edge.
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         ids = _build_scenario(k)
         t = _project(k)
         keys = {_edge_key(e) for e in t.edges}
@@ -252,7 +252,7 @@ class TestPayloadAuthority:
     def test_payload_text_never_read_for_edges(self, tmp_path):
         # Even a payload that is pure topology-claim text cannot create edges
         # beyond the committed envelope attribution.
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         a = k.found_entity("alpha")
         b = k.found_entity("beta")
         c = k.found_entity("gamma")
@@ -274,7 +274,7 @@ class TestPayloadAuthority:
 
 class TestDeterminism:
     def test_deterministic_node_ordering(self, tmp_path):
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         _build_scenario(k)
         t = _project(k)
         node_ids = [n.entity_id for n in t.nodes]
@@ -282,7 +282,7 @@ class TestDeterminism:
         k.close()
 
     def test_deterministic_edge_ordering(self, tmp_path):
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         _build_scenario(k)
         t = _project(k)
         keys = [_edge_key(e) for e in t.edges]
@@ -290,7 +290,7 @@ class TestDeterminism:
         k.close()
 
     def test_deterministic_digest(self, tmp_path):
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         _build_scenario(k)
         t1 = _project(k)
         t2 = _project(k)
@@ -301,7 +301,7 @@ class TestDeterminism:
     def test_pure_function_of_inputs(self, tmp_path):
         # Two independent projections from the same (genesis, events, cap)
         # give identical results (pure function, no accumulation).
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         _build_scenario(k)
         events = k.events()
         genesis = k._genesis_digest
@@ -316,11 +316,11 @@ class TestDeterminism:
         # Same scenario in two different storage dirs -> identical topology.
         with tempfile.TemporaryDirectory() as d1, \
                 tempfile.TemporaryDirectory() as d2:
-            k1 = Kernel(d1).open()
+            k1 = Kernel(d1, scheduler_protocol=SCHEDULER_V1).open()
             _build_scenario(k1)
             t1 = _project(k1)
             k1.close()
-            k2 = Kernel(d2).open()
+            k2 = Kernel(d2, scheduler_protocol=SCHEDULER_V1).open()
             _build_scenario(k2)
             t2 = _project(k2)
             k2.close()
@@ -333,12 +333,12 @@ class TestDeterminism:
         # Live projection vs a FRESH kernel instance over the same durable
         # history: identical topology.
         d = str(tmp_path)
-        k = Kernel(d).open()
+        k = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         _build_scenario(k)
         t_live = _project(k)
         k.close()
         # Fresh kernel instance over the same durable history.
-        k2 = Kernel(d).open()
+        k2 = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         t_reopen = _project(k2)
         k2.close()
         assert t_live.topology_digest == t_reopen.topology_digest
@@ -353,9 +353,10 @@ class TestDeterminism:
         script = (
             "import sys; sys.path.insert(0, %r)\n"
             "from elpis_ecs.kernel import Kernel\n"
+"from elpis_ecs.scheduler import SCHEDULER_V1\n"
             "from elpis_ecs.topology import project_topology\n"
             "d = %r\n"
-            "k = Kernel(d).open()\n"
+            "k = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()\n"
             "a = k.found_entity('alpha')\n"
             "b = k.found_entity('beta')\n"
             "c = k.found_entity('gamma')\n"
@@ -388,7 +389,7 @@ class TestDeterminism:
         # Live execution vs a FRESH PYTHON PROCESS projecting the same durable
         # history: identical topology digest.
         d = str(tmp_path)
-        k = Kernel(d).open()
+        k = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         _build_scenario(k)
         t_live = _project(k)
         k.close()
@@ -397,8 +398,9 @@ class TestDeterminism:
         script = (
             "import sys; sys.path.insert(0, %r)\n"
             "from elpis_ecs.kernel import Kernel\n"
+"from elpis_ecs.scheduler import SCHEDULER_V1\n"
             "from elpis_ecs.topology import project_topology\n"
-            "k = Kernel(%r).open()\n"
+            "k = Kernel(%r, scheduler_protocol=SCHEDULER_V1).open()\n"
             "t = project_topology(k._genesis_digest, k.events(), k.mailbox_capacity)\n"
             "print(t.topology_digest)\n"
             "k.close()\n"
@@ -418,7 +420,7 @@ class TestDeterminism:
 
 class TestFailClosed:
     def test_wrong_genesis_rejection(self, tmp_path):
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         _build_scenario(k)
         events = k.events()
         k.close()
@@ -429,7 +431,7 @@ class TestFailClosed:
     def test_wrong_capacity_rejection(self, tmp_path):
         # History built with capacity 16; projecting with capacity 1 must fail
         # closed (the first event's before_state_root binds the capacity).
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         _build_scenario(k)
         events = k.events()
         genesis = k._genesis_digest
@@ -438,7 +440,7 @@ class TestFailClosed:
             project_topology(genesis, events, 1)
 
     def test_broken_clock_linkage_rejection(self, tmp_path):
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         _build_scenario(k)
         events = copy.deepcopy(k.events())
         k.close()
@@ -448,7 +450,7 @@ class TestFailClosed:
             project_topology(GENESIS, events, CAP)
 
     def test_corrupt_payload_digest_rejection(self, tmp_path):
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         _build_scenario(k)
         events = copy.deepcopy(k.events())
         k.close()
@@ -458,7 +460,7 @@ class TestFailClosed:
             project_topology(GENESIS, events, CAP)
 
     def test_forged_envelope_sender_rejection(self, tmp_path):
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         _build_scenario(k)
         events = copy.deepcopy(k.events())
         k.close()
@@ -470,7 +472,7 @@ class TestFailClosed:
             project_topology(GENESIS, events, CAP)
 
     def test_broken_prev_digest_rejection(self, tmp_path):
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         _build_scenario(k)
         events = copy.deepcopy(k.events())
         k.close()
@@ -484,7 +486,7 @@ class TestFailClosed:
     def test_semantically_impossible_lifecycle_rejection(self, tmp_path):
         # A history where an entity is activated twice (illegal lifecycle) is
         # semantically impossible and must fail closed.
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         a = k.found_entity("alpha")
         k.run_until_quiescent()  # activate a
         events = copy.deepcopy(k.events())
@@ -504,7 +506,7 @@ class TestFailClosed:
 
 class TestNonMutation:
     def test_input_events_not_mutated(self, tmp_path):
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         _build_scenario(k)
         events = k.events()
         events_before = copy.deepcopy(events)
@@ -514,7 +516,7 @@ class TestNonMutation:
         k.close()
 
     def test_kernel_state_unchanged(self, tmp_path):
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         _build_scenario(k)
         root_before = k.state_root_digest()
         ids_before = k.entity_ids()
@@ -528,7 +530,7 @@ class TestNonMutation:
         # The projection is a pure function: projecting the same history
         # repeatedly yields the identical frozen record (no accumulation, no
         # mutable state).
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         _build_scenario(k)
         events = k.events()
         genesis = k._genesis_digest
@@ -546,7 +548,7 @@ class TestNonMutation:
 
 class TestDomainSeparation:
     def test_digest_domain_separated(self, tmp_path):
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         _build_scenario(k)
         t = _project(k)
         k.close()
@@ -561,7 +563,7 @@ class TestDomainSeparation:
     def test_digest_differs_from_state_root_domain(self, tmp_path):
         # The topology digest is in its own domain; it must not collide with
         # the state-root domain digest of an equivalent payload.
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         _build_scenario(k)
         t = _project(k)
         k.close()
@@ -577,7 +579,7 @@ class TestDomainSeparation:
 
 class TestSchema:
     def test_schema_versioned(self, tmp_path):
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         _build_scenario(k)
         t = _project(k)
         assert t.schema == TOPOLOGY_SCHEMA
@@ -585,7 +587,7 @@ class TestSchema:
         k.close()
 
     def test_node_fields(self, tmp_path):
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         a = k.found_entity("alpha")
         k.run_until_quiescent()
         t = _project(k)
@@ -599,7 +601,7 @@ class TestSchema:
         k.close()
 
     def test_edge_fields(self, tmp_path):
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         a = k.found_entity("alpha")
         b = k.found_entity("beta")
         k.run_until_quiescent()
@@ -618,7 +620,7 @@ class TestSchema:
         k.close()
 
     def test_invalid_preconditions(self, tmp_path):
-        k = Kernel(str(tmp_path)).open()
+        k = Kernel(str(tmp_path), scheduler_protocol=SCHEDULER_V1).open()
         _build_scenario(k)
         events = k.events()
         k.close()

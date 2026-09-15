@@ -65,11 +65,7 @@ def _redigest_projection(projection):
 def test_project_topology_snapshots_caller_sequence_once(tmp_path):
     k = _scenario(tmp_path)
     seq = OneShotSequence(k.events())
-    projection = project_topology(
-        k._genesis_digest,
-        seq,
-        k.mailbox_capacity,
-    )
+    projection = project_topology(k._genesis_digest, seq, k.mailbox_capacity, scheduler_protocol=k.scheduler_protocol)
     assert seq.iterations == 1
     verify_projection(projection)
     k.close()
@@ -77,11 +73,7 @@ def test_project_topology_snapshots_caller_sequence_once(tmp_path):
 
 def test_projection_equality_includes_digest_and_accessor_recomputes(tmp_path):
     k = _scenario(tmp_path)
-    projection = project_topology(
-        k._genesis_digest,
-        k.events(),
-        k.mailbox_capacity,
-    )
+    projection = project_topology(k._genesis_digest, k.events(), k.mailbox_capacity, scheduler_protocol=k.scheduler_protocol)
     forged = replace(projection, topology_digest="0" * 64)
     assert projection != forged
     with pytest.raises(TopologyError, match="TOPOLOGY_DIGEST_MISMATCH"):
@@ -93,11 +85,7 @@ def test_projection_equality_includes_digest_and_accessor_recomputes(tmp_path):
 
 def test_projection_rejects_forged_self_loop_even_with_fresh_digest(tmp_path):
     k = _scenario(tmp_path)
-    projection = project_topology(
-        k._genesis_digest,
-        k.events(),
-        k.mailbox_capacity,
-    )
+    projection = project_topology(k._genesis_digest, k.events(), k.mailbox_capacity, scheduler_protocol=k.scheduler_protocol)
     edge = projection.edges[0]
     bad_edge = replace(edge, self_loop=not edge.self_loop)
     forged = replace(
@@ -115,11 +103,7 @@ def test_projection_rejects_forged_self_loop_even_with_fresh_digest(tmp_path):
 
 def test_analysis_rejects_dangling_projection_as_domain_error(tmp_path):
     k = _scenario(tmp_path)
-    projection = project_topology(
-        k._genesis_digest,
-        k.events(),
-        k.mailbox_capacity,
-    )
+    projection = project_topology(k._genesis_digest, k.events(), k.mailbox_capacity, scheduler_protocol=k.scheduler_protocol)
     edge = projection.edges[0]
     dangling = replace(edge, receiver_entity_id="f" * 64)
     forged = replace(
@@ -138,11 +122,7 @@ def test_analysis_rejects_dangling_projection_as_domain_error(tmp_path):
 
 def test_analysis_equality_includes_digest_and_accessor_recomputes(tmp_path):
     k = _scenario(tmp_path)
-    analysis = analyze_topology(
-        k._genesis_digest,
-        k.events(),
-        k.mailbox_capacity,
-    )
+    analysis = analyze_topology(k._genesis_digest, k.events(), k.mailbox_capacity, scheduler_protocol=k.scheduler_protocol)
     forged = replace(analysis, analysis_digest="0" * 64)
     assert analysis != forged
     verify_analysis(analysis)

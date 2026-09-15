@@ -142,11 +142,16 @@ def verify(root: Path) -> list[str]:
     ):
         return errors
 
-    assert registry is not None
-    assert graph is not None
-    assert legacy_canonical is not None
-    assert legacy_public is not None
-    assert legacy_graph is not None
+    if not (registry is not None):
+        raise AssertionError('PRODUCTION_ASSERTION_FAILED:tools/verify_grid81_writer_successor_assembly.py:145')
+    if not (graph is not None):
+        raise AssertionError('PRODUCTION_ASSERTION_FAILED:tools/verify_grid81_writer_successor_assembly.py:146')
+    if not (legacy_canonical is not None):
+        raise AssertionError('PRODUCTION_ASSERTION_FAILED:tools/verify_grid81_writer_successor_assembly.py:147')
+    if not (legacy_public is not None):
+        raise AssertionError('PRODUCTION_ASSERTION_FAILED:tools/verify_grid81_writer_successor_assembly.py:148')
+    if not (legacy_graph is not None):
+        raise AssertionError('PRODUCTION_ASSERTION_FAILED:tools/verify_grid81_writer_successor_assembly.py:149')
 
     if registry.get("schema") != (
         "elpis.grid81.writer-chain.successor-registry.v1"

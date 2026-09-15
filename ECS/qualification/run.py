@@ -30,11 +30,13 @@ def determinism(work, interpreter=sys.executable):
             live = json.loads(build.stdout)
             fresh = subprocess.run([interpreter, str(SCENARIO), str(directory), "--replay"],
                                    capture_output=True, text=True, env=env, check=True, timeout=60)
-            assert json.loads(fresh.stdout) == live
+            if not (json.loads(fresh.stdout) == live):
+                raise AssertionError('PRODUCTION_ASSERTION_FAILED:ECS/qualification/run.py:33')
             results.append(live)
             cases.append({"hash_seed": seed, "restart_every_operations": restart,
                           "fresh_process_equal": True})
-    assert all(value == results[0] for value in results)
+    if not (all(value == results[0] for value in results)):
+        raise AssertionError('PRODUCTION_ASSERTION_FAILED:ECS/qualification/run.py:37')
     return {"cases": cases, "all_canonical_outputs_equal": True,
             "independent_histories": len(results), "fresh_replays": len(results),
             "event_count": results[0]["snapshot"]["event_count"],
@@ -67,10 +69,11 @@ def main():
         with tempfile.TemporaryDirectory(dir=out) as temporary:
             deterministic = determinism(Path(temporary), interpreter)
         versions.append({"python": version, **deterministic})
-    assert all(v["state_root"] == versions[0]["state_root"] and
+    if not (all(v["state_root"] == versions[0]["state_root"] and
                v["event_bytes_sha256"] == versions[0]["event_bytes_sha256"] and
                v["full_projection_digest"] == versions[0]["full_projection_digest"]
-               for v in versions)
+               for v in versions)):
+        raise AssertionError('PRODUCTION_ASSERTION_FAILED:ECS/qualification/run.py:70')
     evidence = {"schema": "ecs.integration.evidence.v1", "authority": False,
                 "python": sys.version.split()[0], "tests": counts,
                 "determinism": versions, "cross_version_equal": True}

@@ -241,7 +241,8 @@ def m13():
     mutable = MutableShadowState(shadow)
     # First application succeeds
     receipt1 = apply_artifact(artifact, mutable.state, ledger, compiler_contract_digest=ccd)
-    assert receipt1["application_outcome"] == APPLICATION_ACCEPTED
+    if not (receipt1["application_outcome"] == APPLICATION_ACCEPTED):
+        raise AssertionError('PRODUCTION_ASSERTION_FAILED:components/Grid81DeterministicCapabilityApplicationExecutor/src/elpis_grid81_application_executor/mutation_harness.py:244')
     # Transition shadow state
     mutable.transition_to_applied(artifact["artifact_digest"])
     # Second application with same artifact
@@ -256,7 +257,8 @@ def m14():
     fixture, artifact, shadow, ledger, ccd = make_valid()
     mutable = MutableShadowState(shadow)
     receipt1 = apply_artifact(artifact, mutable.state, ledger, compiler_contract_digest=ccd)
-    assert receipt1["application_outcome"] == APPLICATION_ACCEPTED
+    if not (receipt1["application_outcome"] == APPLICATION_ACCEPTED):
+        raise AssertionError('PRODUCTION_ASSERTION_FAILED:components/Grid81DeterministicCapabilityApplicationExecutor/src/elpis_grid81_application_executor/mutation_harness.py:259')
     mutable.transition_to_applied(artifact["artifact_digest"])
     receipt2 = apply_artifact(artifact, mutable.state, ledger, compiler_contract_digest=ccd)
     return {"caught": receipt2["application_outcome"] != APPLICATION_ACCEPTED,
@@ -375,7 +377,8 @@ def m22():
     fixture, artifact, shadow, ledger, ccd = make_valid()
     mutable = MutableShadowState(shadow)
     receipt1 = apply_artifact(artifact, mutable.state, ledger, compiler_contract_digest=ccd)
-    assert receipt1["application_outcome"] == APPLICATION_ACCEPTED
+    if not (receipt1["application_outcome"] == APPLICATION_ACCEPTED):
+        raise AssertionError('PRODUCTION_ASSERTION_FAILED:components/Grid81DeterministicCapabilityApplicationExecutor/src/elpis_grid81_application_executor/mutation_harness.py:378')
     mutable.transition_to_applied(artifact["artifact_digest"])
     receipt2 = apply_artifact(artifact, mutable.state, ledger, compiler_contract_digest=ccd)
     return {"caught": receipt2["application_outcome"] != APPLICATION_ACCEPTED,
@@ -404,7 +407,8 @@ def m23():
 
     # Apply first
     receipt1 = apply_artifact(artifact, mutable.state, ledger, compiler_contract_digest=ccd)
-    assert receipt1["application_outcome"] == APPLICATION_ACCEPTED
+    if not (receipt1["application_outcome"] == APPLICATION_ACCEPTED):
+        raise AssertionError('PRODUCTION_ASSERTION_FAILED:components/Grid81DeterministicCapabilityApplicationExecutor/src/elpis_grid81_application_executor/mutation_harness.py:407')
     mutable.transition_to_applied(artifact["artifact_digest"])
 
     # Create competing artifact for same capability with stale expected head
@@ -454,7 +458,8 @@ MUTATIONS.append(("M25", "Altered upstream capability", "capability_identity", m
 def m26():
     fixture, artifact, shadow, ledger, ccd = make_valid()
     receipt1 = apply_artifact(artifact, shadow, ledger, compiler_contract_digest=ccd)
-    assert receipt1["application_outcome"] == APPLICATION_ACCEPTED
+    if not (receipt1["application_outcome"] == APPLICATION_ACCEPTED):
+        raise AssertionError('PRODUCTION_ASSERTION_FAILED:components/Grid81DeterministicCapabilityApplicationExecutor/src/elpis_grid81_application_executor/mutation_harness.py:457')
     ok, status = ledger.verify_chain()
     return {"caught": ok, "expected": "valid", "actual": status}
 MUTATIONS.append(("M26", "Receipt chain integrity", "receipt_chain", m26))

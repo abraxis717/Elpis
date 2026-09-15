@@ -597,12 +597,10 @@ def _crash_worker(path, point):
     class CrashLedger(V2):
         armed = False
 
-        @classmethod
-        def _require_valid(cls, connection):
-            super()._require_valid(connection)
-            if cls.armed and point == "before_commit":
-                if connection.execute("SELECT COUNT(*) FROM ledger_entries").fetchone()[0] == 2:
-                    os._exit(23)
+        def _verify_new_entry_association(self, connection, entry):
+            super()._verify_new_entry_association(connection, entry)
+            if self.armed and point == "before_commit" and entry.sequence == 2:
+                os._exit(23)
 
     with CrashLedger(path) as ledger:
         # Force dirty pages to spill before process death: the surviving journal

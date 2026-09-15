@@ -14,6 +14,7 @@ Proves:
   * event-chain field types/ranges are validated (bool-as-int, bad types).
 """
 from __future__ import annotations
+from elpis_ecs.scheduler import SCHEDULER_V1
 
 import copy
 
@@ -66,7 +67,7 @@ class TestClockProgression:
     def test_clock_progression_exact(self, tmp_path):
         """Every committed event has logical_clock == index + 1."""
         d = str(tmp_path)
-        k = Kernel(d).open()
+        k = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         events = _make_history(k)
         k.close()
         for i, ev in enumerate(events):
@@ -74,7 +75,7 @@ class TestClockProgression:
 
     def test_clock_skip_rejected(self, tmp_path):
         d = str(tmp_path)
-        k = Kernel(d).open()
+        k = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         events = _make_history(k)
         k.close()
         bad = copy.deepcopy(events)
@@ -84,7 +85,7 @@ class TestClockProgression:
 
     def test_clock_duplicate_rejected(self, tmp_path):
         d = str(tmp_path)
-        k = Kernel(d).open()
+        k = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         events = _make_history(k)
         k.close()
         bad = copy.deepcopy(events)
@@ -94,7 +95,7 @@ class TestClockProgression:
 
     def test_clock_regressed_rejected(self, tmp_path):
         d = str(tmp_path)
-        k = Kernel(d).open()
+        k = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         events = _make_history(k)
         k.close()
         bad = copy.deepcopy(events)
@@ -105,7 +106,7 @@ class TestClockProgression:
     def test_clock_bool_rejected(self, tmp_path):
         """A boolean masquerading as an integer clock is rejected."""
         d = str(tmp_path)
-        k = Kernel(d).open()
+        k = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         events = _make_history(k)
         k.close()
         bad = copy.deepcopy(events)
@@ -115,7 +116,7 @@ class TestClockProgression:
 
     def test_clock_negative_rejected(self, tmp_path):
         d = str(tmp_path)
-        k = Kernel(d).open()
+        k = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         events = _make_history(k)
         k.close()
         bad = copy.deepcopy(events)
@@ -125,7 +126,7 @@ class TestClockProgression:
 
     def test_clock_non_int_rejected(self, tmp_path):
         d = str(tmp_path)
-        k = Kernel(d).open()
+        k = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         events = _make_history(k)
         k.close()
         bad = copy.deepcopy(events)
@@ -137,7 +138,7 @@ class TestClockProgression:
 class TestEventChainFieldValidation:
     def test_event_index_bool_rejected(self, tmp_path):
         d = str(tmp_path)
-        k = Kernel(d).open()
+        k = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         events = _make_history(k)
         k.close()
         bad = copy.deepcopy(events)
@@ -147,7 +148,7 @@ class TestEventChainFieldValidation:
 
     def test_event_index_mismatch_rejected(self, tmp_path):
         d = str(tmp_path)
-        k = Kernel(d).open()
+        k = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         events = _make_history(k)
         k.close()
         bad = copy.deepcopy(events)
@@ -157,7 +158,7 @@ class TestEventChainFieldValidation:
 
     def test_transaction_id_non_str_rejected(self, tmp_path):
         d = str(tmp_path)
-        k = Kernel(d).open()
+        k = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         events = _make_history(k)
         k.close()
         bad = copy.deepcopy(events)
@@ -167,7 +168,7 @@ class TestEventChainFieldValidation:
 
     def test_entity_id_non_str_rejected(self, tmp_path):
         d = str(tmp_path)
-        k = Kernel(d).open()
+        k = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         events = _make_history(k)
         k.close()
         bad = copy.deepcopy(events)
@@ -177,7 +178,7 @@ class TestEventChainFieldValidation:
 
     def test_payload_non_dict_rejected(self, tmp_path):
         d = str(tmp_path)
-        k = Kernel(d).open()
+        k = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         events = _make_history(k)
         k.close()
         bad = copy.deepcopy(events)
@@ -187,7 +188,7 @@ class TestEventChainFieldValidation:
 
     def test_payload_digest_mismatch_rejected(self, tmp_path):
         d = str(tmp_path)
-        k = Kernel(d).open()
+        k = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         events = _make_history(k)
         k.close()
         bad = copy.deepcopy(events)
@@ -197,7 +198,7 @@ class TestEventChainFieldValidation:
 
     def test_before_root_non_digest_rejected(self, tmp_path):
         d = str(tmp_path)
-        k = Kernel(d).open()
+        k = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         events = _make_history(k)
         k.close()
         bad = copy.deepcopy(events)
@@ -207,7 +208,7 @@ class TestEventChainFieldValidation:
 
     def test_after_root_non_digest_rejected(self, tmp_path):
         d = str(tmp_path)
-        k = Kernel(d).open()
+        k = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         events = _make_history(k)
         k.close()
         bad = copy.deepcopy(events)
@@ -217,7 +218,7 @@ class TestEventChainFieldValidation:
 
     def test_prev_digest_non_digest_rejected(self, tmp_path):
         d = str(tmp_path)
-        k = Kernel(d).open()
+        k = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         events = _make_history(k)
         k.close()
         bad = copy.deepcopy(events)
@@ -229,7 +230,7 @@ class TestEventChainFieldValidation:
 class TestReplayAuthority:
     def test_founding_index_replayed_exactly(self, tmp_path):
         d = str(tmp_path)
-        k = Kernel(d).open()
+        k = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         k.found_entity("e0")
         k.found_entity("e1")
         k.found_entity("e2")
@@ -242,7 +243,7 @@ class TestReplayAuthority:
         """Replaying a history under a different capacity fails (the initial
         root binds the capacity)."""
         d = str(tmp_path)
-        k = Kernel(d, mailbox_capacity=16).open()
+        k = Kernel(d, mailbox_capacity=16, scheduler_protocol=SCHEDULER_V1).open()
         k.found_entity("alpha")
         events = k.events()
         k.close()
@@ -254,7 +255,7 @@ class TestCheckpointClockBinding:
     def _checkpointed(self, d, clock_delta=0):
         """Write a checkpoint at the last event; optionally corrupt its clock."""
         from elpis_ecs.persistence import Checkpoint
-        k = Kernel(d).open()
+        k = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         events = _make_history(k)
         cp = Checkpoint(
             event_index=len(events) - 1,
@@ -270,7 +271,7 @@ class TestCheckpointClockBinding:
         """A checkpoint whose root matches but whose clock does not is
         rejected; full replay still yields the correct state."""
         d = str(tmp_path)
-        k = Kernel(d).open()
+        k = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         events = _make_history(k)
         good_root = k.state_root_digest()
         good_clock = k.state.logical_clock
@@ -283,7 +284,7 @@ class TestCheckpointClockBinding:
             state_root_digest=good_root,  # root matches
             logical_clock=good_clock + 5,  # clock does NOT match
         )
-        k2 = Kernel(d)
+        k2 = Kernel(d, scheduler_protocol=SCHEDULER_V1)
         k2._checkpoints.write(cp)
         # The mismatched checkpoint is rejected; full replay yields the
         # correct state (clock == good_clock, not good_clock + 5).
@@ -297,14 +298,14 @@ class TestCheckpointClockBinding:
         accepted and yields the same state."""
         d = str(tmp_path)
         events = self._checkpointed(d, clock_delta=0)
-        k2 = Kernel(d).open()
+        k2 = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         assert k2.state.logical_clock == len(events)
         k2.close()
 
     def test_checkpoint_event_digest_mismatch_rejected(self, tmp_path):
         """A checkpoint whose event digest does not agree is rejected."""
         d = str(tmp_path)
-        k = Kernel(d).open()
+        k = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         events = _make_history(k)
         good_root = k.state_root_digest()
         good_clock = k.state.logical_clock
@@ -317,9 +318,7 @@ class TestCheckpointClockBinding:
             state_root_digest=good_root,
             logical_clock=good_clock,
         )
-        k2 = Kernel(d)
+        k2 = Kernel(d, scheduler_protocol=SCHEDULER_V1)
         k2._checkpoints.write(cp)
-        k2.open()
-        assert k2.state.logical_clock == good_clock
-        assert k2.state_root_digest() == good_root
-        k2.close()
+        with pytest.raises(WrongAuthorityError, match="checkpoint event digest mismatch"):
+            k2.open()

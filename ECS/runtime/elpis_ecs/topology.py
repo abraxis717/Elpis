@@ -60,6 +60,7 @@ from typing import Any, Mapping, Sequence
 from . import canonical
 from .errors import EcsError
 from .replay import KernelState, replay_from_events
+from .scheduler import SCHEDULER_V1
 
 # ---------------------------------------------------------------------------
 # Schema / domain constants (explicit, versioned)
@@ -356,10 +357,71 @@ def _fold_nodes(state: KernelState) -> tuple:
     return tuple(nodes)
 
 
+
+def _project_topology_from_validated_state(
+    genesis_digest: str,
+    events: Sequence[Mapping[str, Any]],
+    mailbox_capacity: int,
+    state: KernelState,
+) -> TopologyProjection:
+    """Project topology from one already-authoritative live Kernel snapshot.
+
+    This internal path is only for the live Kernel, which owns both the
+    projection state and EventLog. It does not replace the public
+    ``project_topology`` validator for caller-supplied histories.
+
+    The EventLog snapshot has already passed frame/schema/digest/link checks.
+    Before folding, bind that exact snapshot back to the live projection:
+    state genesis/capacity must match; event count must equal logical clock;
+    and for non-empty history the live state root must equal the final event's
+    committed ``after_state_root``.
+    """
+    if type(state) is not KernelState:
+        raise TopologyError(
+            "TOPOLOGY_LIVE_STATE_INVALID: exact KernelState required"
+        )
+    if not isinstance(events, Sequence) or isinstance(events, (str, bytes)):
+        raise TopologyError("TOPOLOGY_EVENTS_INVALID: must be a sequence of events")
+    events = tuple(events)
+
+    if state.genesis_digest != genesis_digest:
+        raise TopologyError("TOPOLOGY_LIVE_STATE_GENESIS_MISMATCH")
+    if state.mailbox_capacity != mailbox_capacity:
+        raise TopologyError("TOPOLOGY_LIVE_STATE_CAPACITY_MISMATCH")
+    if state.logical_clock != len(events):
+        raise TopologyError("TOPOLOGY_LIVE_STATE_EVENT_COUNT_MISMATCH")
+
+    if events:
+        live_root = state.state_root_digest()
+        if live_root != events[-1]["after_state_root"]:
+            raise TopologyError("TOPOLOGY_LIVE_STATE_ROOT_MISMATCH")
+
+    nodes = _fold_nodes(state)
+    edges = _fold_edges(events)
+    record = {
+        "schema": TOPOLOGY_SCHEMA,
+        "genesis_digest": genesis_digest,
+        "mailbox_capacity": mailbox_capacity,
+        "event_count": len(events),
+        "nodes": [n.to_dict() for n in nodes],
+        "edges": [e.to_dict() for e in edges],
+    }
+    topology_digest = canonical.domain_digest(DOMAIN_TOPOLOGY, record)
+    return TopologyProjection(
+        schema=TOPOLOGY_SCHEMA,
+        genesis_digest=genesis_digest,
+        mailbox_capacity=mailbox_capacity,
+        event_count=len(events),
+        nodes=nodes,
+        edges=edges,
+        topology_digest=topology_digest,
+    )
+
 def project_topology(
     genesis_digest: str,
     events: Sequence[Mapping[str, Any]],
     mailbox_capacity: int,
+    scheduler_protocol: str = SCHEDULER_V1,
 ) -> TopologyProjection:
     """Derive the canonical topology projection from committed history.
 
@@ -397,7 +459,7 @@ def project_topology(
 
     # Step 1: the EXISTING authoritative replay/validation path. This is the
     # ONLY validation used; no weaker duplicate validator is invented.
-    state = replay_from_events(genesis_digest, events, mailbox_capacity)
+    state = replay_from_events(genesis_digest, events, mailbox_capacity, scheduler_protocol=scheduler_protocol)
 
     # Step 2: fold the validated committed facts (read-only).
     nodes = _fold_nodes(state)

@@ -1,0 +1,118 @@
+import sqlite3
+
+import pytest
+
+from elpis_grid81_application_executor import durable_ledger_v2 as v2
+from elpis_grid81_application_executor.canonical import canonical_digest
+
+
+V2 = v2.DurableApplicationLedgerV2
+
+
+def digest(label):
+    return canonical_digest({"fixture": label})
+
+
+def append(ledger, number):
+    return ledger.append(
+        ledger.head,
+        digest(f"receipt-{number}"),
+        digest(f"artifact-{number}"),
+    )
+
+
+def test_steady_state_append_avoids_full_verifier(tmp_path):
+    path = tmp_path / "incremental.sqlite"
+    with V2(path) as ledger:
+        statements = []
+        ledger._connection.set_trace_callback(statements.append)
+        for index in range(12):
+            append(ledger, index)
+        upper = [statement.upper() for statement in statements]
+        assert not any("PRAGMA INTEGRITY_CHECK" in statement for statement in upper)
+        assert not any(
+            "SELECT * FROM LEDGER_ENTRIES ORDER BY SEQUENCE" in statement
+            for statement in upper
+        )
+        assert ledger.verify_chain() == (True, "valid")
+
+
+def test_owner_snapshot_advances_after_own_commits(tmp_path):
+    path = tmp_path / "owner.sqlite"
+    with V2(path) as ledger:
+        initial_version = ledger._verified_data_version
+        first = append(ledger, 1)
+        assert ledger._verified_count == 1
+        assert ledger._verified_head == first.entry_digest
+        assert ledger._connection.execute(
+            "PRAGMA data_version"
+        ).fetchone()[0] == initial_version
+
+        second = append(ledger, 2)
+        assert ledger._verified_count == 2
+        assert ledger._verified_head == second.entry_digest
+        assert ledger.verify_chain() == (True, "valid")
+
+
+def test_valid_external_commit_revalidates_then_preserves_cas(tmp_path):
+    path = tmp_path / "two-owners.sqlite"
+    first = V2(path)
+    second = V2(path)
+    try:
+        stale = first.head
+        append(second, 1)
+        statements = []
+        first._connection.set_trace_callback(statements.append)
+        with pytest.raises(ValueError, match="Stale ledger head"):
+            first.append(
+                stale,
+                digest("first-receipt"),
+                digest("first-artifact"),
+            )
+        assert any(
+            "PRAGMA INTEGRITY_CHECK" in statement.upper()
+            for statement in statements
+        )
+        append(first, 2)
+        assert first.verify_chain() == (True, "valid")
+    finally:
+        first.close()
+        second.close()
+
+
+def test_external_corruption_revalidates_before_insert(tmp_path):
+    path = tmp_path / "corrupt.sqlite"
+    with V2(path) as ledger:
+        append(ledger, 1)
+        with sqlite3.connect(path) as attacker:
+            attacker.execute(
+                "UPDATE ledger_entries SET entry_digest = ? "
+                "WHERE sequence = 1",
+                (digest("tampered-entry"),),
+            )
+
+        statements = []
+        ledger._connection.set_trace_callback(statements.append)
+        with pytest.raises(RuntimeError, match="digest_mismatch_at_sequence:1"):
+            ledger.append(
+                ledger.head,
+                digest("next-receipt"),
+                digest("next-artifact"),
+            )
+        assert not any(
+            statement.lstrip().upper().startswith("INSERT")
+            for statement in statements
+        )
+
+
+def test_explicit_verify_chain_remains_full_validation(tmp_path):
+    path = tmp_path / "verify.sqlite"
+    with V2(path) as ledger:
+        append(ledger, 1)
+        statements = []
+        ledger._connection.set_trace_callback(statements.append)
+        assert ledger.verify_chain() == (True, "valid")
+        assert any(
+            "PRAGMA INTEGRITY_CHECK" in statement.upper()
+            for statement in statements
+        )

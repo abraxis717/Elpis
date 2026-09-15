@@ -24,7 +24,8 @@ def main():
     args = parser.parse_args()
     identity = json.loads((ROOT / 'tests/allocator_measurement_corpus.json').read_text())
     generator = ROOT / 'components/FuryanLocusOracle/tests/corpus.py'
-    assert hashlib.sha256(generator.read_bytes()).hexdigest() == identity['generator_sha256']
+    if not (hashlib.sha256(generator.read_bytes()).hexdigest() == identity['generator_sha256']):
+        raise AssertionError('PRODUCTION_ASSERTION_FAILED:tools/qualify_allocator_budget.py:27')
     cases = []
     for n in (1, 2, 3):
         cases.extend({'group': 'canonical_core', 'instance': raw, 'orbit': orbit}
@@ -33,9 +34,12 @@ def main():
         cases.extend({'group': group, 'instance': raw} for raw in getattr(corpus, group)())
     data = ''.join(json.dumps(case, sort_keys=True, separators=(',', ':'), allow_nan=False) + '\n'
                    for case in cases).encode()
-    assert hashlib.sha256(data).hexdigest() == identity['sha256']
-    assert len(cases) == identity['cases']
-    assert dict(Counter(case['group'] for case in cases)) == identity['groups']
+    if not (hashlib.sha256(data).hexdigest() == identity['sha256']):
+        raise AssertionError('PRODUCTION_ASSERTION_FAILED:tools/qualify_allocator_budget.py:36')
+    if not (len(cases) == identity['cases']):
+        raise AssertionError('PRODUCTION_ASSERTION_FAILED:tools/qualify_allocator_budget.py:37')
+    if not (dict(Counter(case['group'] for case in cases)) == identity['groups']):
+        raise AssertionError('PRODUCTION_ASSERTION_FAILED:tools/qualify_allocator_budget.py:38')
     assignment = _joint_assignment
     if args.baseline:
         source = subprocess.check_output([
@@ -67,14 +71,16 @@ def main():
         finally:
             sys.setprofile(None)
         if not args.baseline:
-            assert entries == result.search_entries
+            if not (entries == result.search_entries):
+                raise AssertionError('PRODUCTION_ASSERTION_FAILED:tools/qualify_allocator_budget.py:70')
             exhausted += result.status == 'SEARCH_BUDGET_EXHAUSTED'
         maximum = max(maximum, entries)
     print(json.dumps({'corpus_sha256': identity['sha256'], 'cases': len(cases),
                       'maximum_search_entries': maximum, 'multiplier': 4,
                       'selected_default': 4 * maximum,
                       'exhausted': exhausted if not args.baseline else 'NOT_BUDGETED'}, sort_keys=True))
-    assert maximum == 21 and exhausted == 0
+    if not (maximum == 21 and exhausted == 0):
+        raise AssertionError('PRODUCTION_ASSERTION_FAILED:tools/qualify_allocator_budget.py:77')
 
 
 if __name__ == '__main__':

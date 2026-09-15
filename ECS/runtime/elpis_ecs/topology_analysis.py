@@ -59,6 +59,8 @@ tuple / SCC index).
 
 from __future__ import annotations
 
+from .scheduler import SCHEDULER_V1
+
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
@@ -340,11 +342,11 @@ def _strongly_connected_components(nodes: Sequence[str], edges: Sequence) -> tup
 def analyze_projection(projection: TopologyProjection) -> TopologyAnalysis:
     """Analyze an ALREADY-qualified topology projection (private pure helper).
 
-    This helper does NOT re-derive the topology and does NOT validate
-    authority: it consumes a ``TopologyProjection`` that has already passed
-    the qualified topology-projection path. The authority-bearing public
-    entrypoint (``analyze_topology``) is the only path that derives through
-    ``topology.py``.
+    This helper does NOT re-derive topology authority. It accepts an existing
+    ``TopologyProjection`` and immediately verifies that projection's
+    structural/digest contract with ``verify_projection`` before analysis.
+    The authority-bearing public entrypoint (``analyze_topology``) remains the
+    only path that derives the projection through ``topology.py``.
 
     Raises:
         TopologyAnalysisError: the supplied record is not a
@@ -455,6 +457,7 @@ def analyze_topology(
     genesis_digest: str,
     events: Sequence[Mapping[str, Any]],
     mailbox_capacity: int,
+    scheduler_protocol: str = SCHEDULER_V1,
 ) -> TopologyAnalysis:
     """Derive the deterministic structural analysis of committed history.
 
@@ -483,7 +486,7 @@ def analyze_topology(
     """
     # Step 1: the EXISTING qualified topology-projection authority. This is
     # the ONLY derivation path; no weaker duplicate validator is invented.
-    projection = project_topology(genesis_digest, events, mailbox_capacity)
+    projection = project_topology(genesis_digest, events, mailbox_capacity, scheduler_protocol=scheduler_protocol)
 
     # Step 2: pure structural analysis of the qualified projection.
     return analyze_projection(projection)

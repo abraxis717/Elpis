@@ -40,7 +40,8 @@ class LoopAttn(nn.Module):
         if impl == "lite":
             self.w = nn.Parameter(torch.zeros(hidden_size))  # learned pseudo-query (uniform init)
         elif impl == "mha":
-            assert hidden_size % num_heads == 0
+            if not (hidden_size % num_heads == 0):
+                raise AssertionError('PRODUCTION_ASSERTION_FAILED:src/elpis_reference/vendor/fprm/models/loop_attnres.py:43')
             self.num_heads = num_heads
             self.head_dim = hidden_size // num_heads
             self.k_proj = CastedLinear(hidden_size, hidden_size, bias=False)
@@ -325,7 +326,8 @@ class DecayTrajAttn(nn.Module):
                  content: bool = True, score_norm: bool = True, score_noise: float = 0.0,
                  mode_sigma: float = 0.0, eps: float = 1e-6):
         super().__init__()
-        assert hidden_size % heads == 0
+        if not (hidden_size % heads == 0):
+            raise AssertionError('PRODUCTION_ASSERTION_FAILED:src/elpis_reference/vendor/fprm/models/loop_attnres.py:328')
         self.heads = heads
         self.hdim = hidden_size // heads
         self.temp = temp

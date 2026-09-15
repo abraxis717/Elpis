@@ -2,7 +2,7 @@
 
 **A deterministic structural-reasoning architecture for bounded learned proposals, explicit authority, and falsifiable runtime composition.**
 
-**Release line: Elpis2.2.7**
+**Release line: Elpis2.2.8**
 
 Elpis is a systems-research project about a narrow question: can learned components contribute useful structural proposals while deterministic machinery retains ownership of representation, admissibility, authority, validation, and terminal action?
 
@@ -14,26 +14,11 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 ## Release Notes
 
-**Elpis2.2.7** is the hosted repository-hygiene corrective successor to the
-sealed but untagged Elpis2.2.6 candidate.
+**Elpis2.2.8** is the red-team hardening and release-lifecycle successor to the published Elpis2.2.7 release.
 
-Elpis2.2.6 integrated the qualified runtime-composition work plus Hermes'
-repository-hygiene/child-process hardening and Astra's opt-in compact
-release-authority infrastructure. Its local qualification and every hosted CI
-job except `Repository completeness and installed artifact` passed. It was
-never tagged or published.
+The post-2.2.7 hardening closes qualified authority, rollback, CI-coverage, fail-closed, canonical-identity, topology-replay, durable-ledger, and scheduler findings while preserving historical replay and authority boundaries. The release also repairs hosted lifecycle verification so an untagged candidate is verified as a candidate, while an already-published VERSION continues to be verified against its immutable release tag.
 
-The remaining hosted failure was mechanical: the normal completeness lane set
-`PYTHONPATH=""` even though the isolation contract requires the variable to be
-absent, and the job installed `".[trm]"` from the live checkout before running
-the repository-hygiene test, creating `build/` and `elpisai.egg-info` debris.
-
-Elpis2.2.7 changes only those release/CI mechanics. Repository completeness now
-installs from a throwaway `git archive` source tree and runs the normal/root
-suite with `PYTHONPATH` unset. The three deliberate source-only Grid81
-integrations remain in their explicit-root lane. Runtime, science, package
-membership, authority semantics, Hermes hardening, and Astra's future opt-in
-v3 implementation are otherwise unchanged.
+The imported 2.2.7 red-team report retains its technical findings but no longer ships host-local path literals. Release-manifest v3 remains opt-in future infrastructure; Elpis2.2.8 continues to use the historical v2 release-manifest contract.
 
 The 2.2.x line includes:
 
@@ -52,7 +37,7 @@ The immutable `Elpis2.2.0` tag is retained as evidence but classified
 `FAILED_NOT_PUBLISHED` because its sealed README still carried the stale
 Elpis2.1.27 release-summary paragraph.
 
-- Current notes: [`RELEASE_NOTES/Elpis2.2.7.md`](RELEASE_NOTES/Elpis2.2.7.md)
+- Current notes: [`RELEASE_NOTES/Elpis2.2.8.md`](RELEASE_NOTES/Elpis2.2.8.md)
 - 2.2.0 qualification notes: [`RELEASE_NOTES/Elpis2.2.0.md`](RELEASE_NOTES/Elpis2.2.0.md)
 - Public component registry: [`manifests/PUBLIC_COMPONENT_REGISTRY.json`](manifests/PUBLIC_COMPONENT_REGISTRY.json)
 - Qualified writer-chain registry: [`manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json`](manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json)

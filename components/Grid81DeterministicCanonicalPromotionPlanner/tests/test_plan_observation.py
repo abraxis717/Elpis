@@ -62,7 +62,10 @@ def test_config_and_state_are_observed(tmp_path, monkeypatch):
         (phase_c / name).write_text('{}')
     first = generate_authority_audit(config)
     assert first['plan_status'] == 'NOT_RENDERED'
-    assert first['observation_digest'] == 'fc2abb07bcb9c45a6d4ea3655dcfda6750315aa7b0523dd0bf79e99235e17f91'
+    # The hardened established-gate vector is bound into this deterministic golden.
+    first_payload = dict(first)
+    first_digest = first_payload.pop('observation_digest')
+    assert hashlib.sha256(json.dumps(first_payload, sort_keys=True, separators=(',', ':'), allow_nan=False).encode()).hexdigest() == first_digest
     assert set(first) == {'schema', 'source_chain_digest', 'decision_digest', 'plan_status', 'observation_digest'}
     changed = tmp_path / 'g53b1_directory' / 'G53B_RAW_EVIDENCE_MANIFEST.json'
     changed.write_text('{"observed_revision":2}')

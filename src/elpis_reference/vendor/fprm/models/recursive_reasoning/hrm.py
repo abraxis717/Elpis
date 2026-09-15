@@ -184,7 +184,8 @@ class HierarchicalReasoningModel_ACTV1_Inner(nn.Module):
                         z_L = self.L_level(z_L, z_H + input_embeddings, **seq_info)
                 if not (_H_step == self.config.H_cycles - 1):
                     z_H = self.H_level(z_H, z_L, **seq_info)
-        assert not z_H.requires_grad and not z_L.requires_grad
+        if not (not z_H.requires_grad and not z_L.requires_grad):
+            raise AssertionError('PRODUCTION_ASSERTION_FAILED:src/elpis_reference/vendor/fprm/models/recursive_reasoning/hrm.py:187')
         # 1-step grad
         z_L = self.L_level(z_L, z_H + input_embeddings, **seq_info)
         z_H = self.H_level(z_H, z_L, **seq_info)

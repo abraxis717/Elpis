@@ -210,7 +210,8 @@ class FixedPointTransformer(nn.Module):
                 grid_part = self.conv(grid_part.transpose(1, 2)).transpose(1, 2)[:, :grid_part.shape[1], :].contiguous()
             elif self.conv_type == 'conv2d':
                 hw = int(math.sqrt(grid_len))
-                assert hw * hw == grid_len, f"grid_len {grid_len} is not a perfect square"
+                if not (hw * hw == grid_len):
+                    raise AssertionError(f"grid_len {grid_len} is not a perfect square")
 
                 grid_part = grid_part.reshape(batch_size, hw, hw, hidden_size).permute(0, 3, 1, 2).contiguous()
                 grid_part = self.conv(grid_part).permute(0, 2, 3, 1).reshape(batch_size, grid_len, hidden_size).contiguous()

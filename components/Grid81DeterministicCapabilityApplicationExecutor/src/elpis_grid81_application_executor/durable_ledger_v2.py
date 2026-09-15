@@ -80,10 +80,12 @@ class DurableApplicationLedgerV2:
 
     No inheritance from v1: existing publisher isinstance admission cannot
     accidentally admit this primitive. Failed append rolls back both tables.
-    Each append verifies the complete current chain under BEGIN IMMEDIATE,
-    then verifies the resulting chain before commit. Verification includes
-    SQLite PRAGMA integrity_check as well as the logical chain/association
-    walk, so append cost is not characterized as merely linear in entry count.
+    Opening/reopening performs complete schema, SQLite integrity, chain and
+    association verification. The owner then binds data_version, schema
+    versions, connection change count and the verified tail sequence/head.
+    Ordinary owner-only append validates only that snapshot and the new
+    entry/association. Another connection's commit or an out-of-band mutation
+    forces full revalidation before ordinary CAS semantics continue.
     SQLite contention uses the predecessor's 30-second timeout and FULL sync.
     """
 
@@ -99,6 +101,12 @@ class DurableApplicationLedgerV2:
         self._database_path = database_path
         self._connection = None
         self._storage_identity = None
+        self._verified_data_version = None
+        self._verified_schema_version = None
+        self._verified_temp_schema_version = None
+        self._verified_total_changes = 0
+        self._verified_count = 0
+        self._verified_head = GENESIS_HEAD
         if database_path.exists() and not self._has_v2_header(database_path):
             # Unknown/v1 files receive only read-only SQLite admission. Explicit
             # v2 headers instead permit SQLite's ordinary hot-journal recovery
@@ -136,6 +144,7 @@ class DurableApplicationLedgerV2:
                     connection.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
                     connection.execute(f"PRAGMA application_id = {APPLICATION_ID}")
                 self._require_valid(connection)
+                self._capture_verified_owner_snapshot(connection)
         except BaseException:
             self._connection.close()
             self._connection = None
@@ -194,6 +203,94 @@ class DurableApplicationLedgerV2:
             raise
 
     @staticmethod
+    def _tail_state(connection):
+        row = connection.execute(
+            "SELECT sequence, entry_digest FROM ledger_entries "
+            "ORDER BY sequence DESC LIMIT 1"
+        ).fetchone()
+        if row is None:
+            return 0, GENESIS_HEAD
+        return row["sequence"], row["entry_digest"]
+
+    def _capture_verified_owner_snapshot(self, connection):
+        count, head = self._tail_state(connection)
+        self._verified_count = count
+        self._verified_head = head
+        self._verified_data_version = connection.execute(
+            "PRAGMA data_version"
+        ).fetchone()[0]
+        self._verified_schema_version = connection.execute(
+            "PRAGMA schema_version"
+        ).fetchone()[0]
+        self._verified_temp_schema_version = connection.execute(
+            "PRAGMA temp.schema_version"
+        ).fetchone()[0]
+        self._verified_total_changes = connection.total_changes
+
+    def _require_incremental_owner_snapshot(self, connection):
+        if self._verified_data_version is None:
+            raise RuntimeError("Ledger owner snapshot is not initialized")
+
+        current = (
+            connection.execute("PRAGMA data_version").fetchone()[0],
+            connection.execute("PRAGMA schema_version").fetchone()[0],
+            connection.execute("PRAGMA temp.schema_version").fetchone()[0],
+            connection.total_changes,
+        )
+        expected = (
+            self._verified_data_version,
+            self._verified_schema_version,
+            self._verified_temp_schema_version,
+            self._verified_total_changes,
+        )
+
+        if current != expected:
+            self._require_valid(connection)
+            self._capture_verified_owner_snapshot(connection)
+
+        count, head = self._tail_state(connection)
+        if count != self._verified_count or head != self._verified_head:
+            self._require_valid(connection)
+            self._capture_verified_owner_snapshot(connection)
+            count, head = self._tail_state(connection)
+        return count, head
+
+    @staticmethod
+    def _verify_new_entry_association(connection, entry):
+        row = connection.execute(
+            "SELECT * FROM ledger_entries WHERE sequence = ?",
+            (entry.sequence,),
+        ).fetchone()
+        if row is None:
+            raise RuntimeError("New ledger entry readback missing")
+        if (
+            row["sequence"] != entry.sequence
+            or row["previous_head"] != entry.previous_head
+            or row["receipt_digest"] != entry.receipt_digest
+            or row["artifact_digest"] != entry.artifact_digest
+        ):
+            raise RuntimeError("New ledger entry readback mismatch")
+        expected_digest = entry_digest_v2(
+            row["sequence"], row["previous_head"],
+            row["receipt_digest"], row["artifact_digest"],
+        )
+        if row["entry_digest"] != expected_digest:
+            raise RuntimeError(f"digest_mismatch_at_sequence:{entry.sequence}")
+        if row["entry_digest"] != entry.entry_digest:
+            raise RuntimeError("New ledger entry digest readback mismatch")
+
+        association = connection.execute(
+            "SELECT artifact_digest, sequence, receipt_digest "
+            "FROM applied_artifacts WHERE artifact_digest = ?",
+            (entry.artifact_digest,),
+        ).fetchone()
+        expected_association = (
+            entry.artifact_digest, entry.sequence, entry.receipt_digest,
+        )
+        if association is None or tuple(association) != expected_association:
+            raise RuntimeError("New artifact association readback mismatch")
+
+    @staticmethod
     def _head(connection):
         row = connection.execute(
             "SELECT entry_digest FROM ledger_entries ORDER BY sequence DESC LIMIT 1"
@@ -228,30 +325,59 @@ class DurableApplicationLedgerV2:
 
     def append(self, previous_head: str, receipt_digest: str,
                artifact_digest: str) -> LedgerEntryV2:
-        """One explicit artifact per application entry; no empty sentinel."""
-        for name, value in (("previous_head", previous_head), ("receipt_digest", receipt_digest),
-                            ("artifact_digest", artifact_digest)):
+        for name, value in (
+            ("previous_head", previous_head),
+            ("receipt_digest", receipt_digest),
+            ("artifact_digest", artifact_digest),
+        ):
             _require_digest(name, value)
+
+        committed_entry = None
         with self._transaction(write=True) as connection:
-            self._require_valid(connection)
-            head = self._head(connection)
+            count, head = self._require_incremental_owner_snapshot(connection)
             if previous_head != head:
-                raise ValueError(f"Stale ledger head: expected {head[:16]}..., got {previous_head[:16]}...")
-            if connection.execute("SELECT 1 FROM applied_artifacts WHERE artifact_digest = ?",
-                                  (artifact_digest,)).fetchone():
+                raise ValueError(
+                    f"Stale ledger head: expected {head[:16]}..., "
+                    f"got {previous_head[:16]}..."
+                )
+            if connection.execute(
+                "SELECT 1 FROM applied_artifacts WHERE artifact_digest = ?",
+                (artifact_digest,),
+            ).fetchone():
                 raise ValueError("Duplicate artifact: already applied")
-            if connection.execute("SELECT 1 FROM ledger_entries WHERE receipt_digest = ?",
-                                  (receipt_digest,)).fetchone():
+            if connection.execute(
+                "SELECT 1 FROM ledger_entries WHERE receipt_digest = ?",
+                (receipt_digest,),
+            ).fetchone():
                 raise ValueError("Duplicate receipt: already applied")
-            sequence = connection.execute("SELECT COUNT(*) FROM ledger_entries").fetchone()[0] + 1
-            entry = LedgerEntryV2(sequence, head, receipt_digest, artifact_digest,
-                                  entry_digest_v2(sequence, head, receipt_digest, artifact_digest))
-            connection.execute("INSERT INTO ledger_entries VALUES (?, ?, ?, ?, ?)",
-                               (sequence, head, receipt_digest, entry.entry_digest, artifact_digest))
-            connection.execute("INSERT INTO applied_artifacts VALUES (?, ?, ?)",
-                               (artifact_digest, sequence, receipt_digest))
-            self._require_valid(connection)
-        return entry
+
+            sequence = count + 1
+            entry = LedgerEntryV2(
+                sequence,
+                head,
+                receipt_digest,
+                artifact_digest,
+                entry_digest_v2(sequence, head, receipt_digest, artifact_digest),
+            )
+            connection.execute(
+                "INSERT INTO ledger_entries VALUES (?, ?, ?, ?, ?)",
+                (
+                    sequence,
+                    head,
+                    receipt_digest,
+                    entry.entry_digest,
+                    artifact_digest,
+                ),
+            )
+            connection.execute(
+                "INSERT INTO applied_artifacts VALUES (?, ?, ?)",
+                (artifact_digest, sequence, receipt_digest),
+            )
+            self._verify_new_entry_association(connection, entry)
+            committed_entry = entry
+
+        self._capture_verified_owner_snapshot(self._connection)
+        return committed_entry
 
     @staticmethod
     def _verify(connection) -> tuple[bool, str]:

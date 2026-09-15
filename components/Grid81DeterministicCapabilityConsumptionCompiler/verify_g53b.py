@@ -84,9 +84,12 @@ def verify_transaction_inventories():
             for line in f:
                 if line.strip():
                     record = json.loads(line)
-                    assert record["transaction_outcome"] == "CONSUMPTION_ACCEPTED"
-                    assert record["structural_influence_artifact"] is not None
-                    assert record["consumption_receipt"] is not None
+                    if not (record["transaction_outcome"] == "CONSUMPTION_ACCEPTED"):
+                        raise AssertionError('PRODUCTION_ASSERTION_FAILED:components/Grid81DeterministicCapabilityConsumptionCompiler/verify_g53b.py:87')
+                    if not (record["structural_influence_artifact"] is not None):
+                        raise AssertionError('PRODUCTION_ASSERTION_FAILED:components/Grid81DeterministicCapabilityConsumptionCompiler/verify_g53b.py:88')
+                    if not (record["consumption_receipt"] is not None):
+                        raise AssertionError('PRODUCTION_ASSERTION_FAILED:components/Grid81DeterministicCapabilityConsumptionCompiler/verify_g53b.py:89')
                     accepted_count += 1
     results["accepted_count"] = accepted_count
 
@@ -96,9 +99,12 @@ def verify_transaction_inventories():
             for line in f:
                 if line.strip():
                     record = json.loads(line)
-                    assert record["transaction_outcome"] != "CONSUMPTION_ACCEPTED"
-                    assert record["structural_influence_artifact"] is None
-                    assert record["consumption_receipt"] is not None
+                    if not (record["transaction_outcome"] != "CONSUMPTION_ACCEPTED"):
+                        raise AssertionError('PRODUCTION_ASSERTION_FAILED:components/Grid81DeterministicCapabilityConsumptionCompiler/verify_g53b.py:99')
+                    if not (record["structural_influence_artifact"] is None):
+                        raise AssertionError('PRODUCTION_ASSERTION_FAILED:components/Grid81DeterministicCapabilityConsumptionCompiler/verify_g53b.py:100')
+                    if not (record["consumption_receipt"] is not None):
+                        raise AssertionError('PRODUCTION_ASSERTION_FAILED:components/Grid81DeterministicCapabilityConsumptionCompiler/verify_g53b.py:101')
                     rejected_count += 1
     results["rejected_count"] = rejected_count
 
@@ -114,13 +120,18 @@ def verify_artifact_inventory():
             for line in f:
                 if line.strip():
                     artifact = json.loads(line)
-                    assert artifact["artifact_class"] == "BOUNDED_STRUCTURAL_INFLUENCE_ARTIFACT_V1"
-                    assert artifact["application_state"] == "UNAPPLIED"
-                    assert artifact["materialization_class"] == "MATERIALIZE_AUTHORIZED_STRUCTURAL_INFLUENCE_SET_V1"
-                    assert artifact["target_domain_class"] == "GRID81_STRUCTURAL_PROPOSAL_DOMAIN_V1"
+                    if not (artifact["artifact_class"] == "BOUNDED_STRUCTURAL_INFLUENCE_ARTIFACT_V1"):
+                        raise AssertionError('PRODUCTION_ASSERTION_FAILED:components/Grid81DeterministicCapabilityConsumptionCompiler/verify_g53b.py:117')
+                    if not (artifact["application_state"] == "UNAPPLIED"):
+                        raise AssertionError('PRODUCTION_ASSERTION_FAILED:components/Grid81DeterministicCapabilityConsumptionCompiler/verify_g53b.py:118')
+                    if not (artifact["materialization_class"] == "MATERIALIZE_AUTHORIZED_STRUCTURAL_INFLUENCE_SET_V1"):
+                        raise AssertionError('PRODUCTION_ASSERTION_FAILED:components/Grid81DeterministicCapabilityConsumptionCompiler/verify_g53b.py:119')
+                    if not (artifact["target_domain_class"] == "GRID81_STRUCTURAL_PROPOSAL_DOMAIN_V1"):
+                        raise AssertionError('PRODUCTION_ASSERTION_FAILED:components/Grid81DeterministicCapabilityConsumptionCompiler/verify_g53b.py:120')
                     # Check no forbidden fields
                     forbidden = check_forbidden_fields(artifact)
-                    assert len(forbidden) == 0, f"Forbidden fields: {forbidden}"
+                    if not (len(forbidden) == 0):
+                        raise AssertionError(f"Forbidden fields: {forbidden}")
                     count += 1
     return {"artifact_count": count, "all_unapplied": True, "no_forbidden_fields": True}
 
@@ -134,8 +145,10 @@ def verify_receipt_inventory():
             for line in f:
                 if line.strip():
                     receipt = json.loads(line)
-                    assert receipt["schema_version"] == "capability-consumption-receipt.v1"
-                    assert check_hex64(receipt["receipt_digest"])
+                    if not (receipt["schema_version"] == "capability-consumption-receipt.v1"):
+                        raise AssertionError('PRODUCTION_ASSERTION_FAILED:components/Grid81DeterministicCapabilityConsumptionCompiler/verify_g53b.py:137')
+                    if not (check_hex64(receipt["receipt_digest"])):
+                        raise AssertionError('PRODUCTION_ASSERTION_FAILED:components/Grid81DeterministicCapabilityConsumptionCompiler/verify_g53b.py:138')
                     count += 1
     return {"receipt_count": count}
 

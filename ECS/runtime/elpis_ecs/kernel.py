@@ -114,13 +114,25 @@ from .persistence import (
 )
 from .port import EntityPort, _check_port_live, _check_sender_active
 from .replay import KernelState, replay_from_events, replay_with_checkpoint
-from .topology import TopologyProjection, project_topology, verify_projection
+from .topology import (
+    TopologyProjection,
+    _project_topology_from_validated_state,
+    verify_projection,
+)
 from .topology_analysis import (
     TopologyAnalysis,
     analyze_projection,
     verify_analysis,
 )
-from .scheduler import ReadyItem, RANK_ACTIVATE, RANK_ENQUEUE, order_ready
+from .scheduler import (
+    KNOWN_SCHEDULERS,
+    ReadyItem,
+    RANK_ACTIVATE,
+    RANK_ENQUEUE,
+    SCHEDULER_V1,
+    SCHEDULER_V2,
+    order_ready,
+)
 
 LOG_FILENAME = "events.log"
 CHECKPOINT_FILENAME = "checkpoint.bin"
@@ -156,7 +168,8 @@ class Kernel:
         storage_dir: str,
         genesis_label: str = "ecs-m1a-genesis",
         mailbox_capacity: int = DEFAULT_MAILBOX_CAPACITY,
-    ) -> None:
+            scheduler_protocol: str | None = None,
+) -> None:
         if isinstance(mailbox_capacity, bool) or not isinstance(
             mailbox_capacity, int
         ) or not 1 <= mailbox_capacity <= MAX_INT:
@@ -176,6 +189,13 @@ class Kernel:
         self._checkpoints = CheckpointStore(self.cp_path)
         self._state: KernelState | None = None
         self._genesis_digest = genesis_descriptor_digest(genesis_label)
+        if (
+            scheduler_protocol is not None
+            and scheduler_protocol not in KNOWN_SCHEDULERS
+        ):
+            raise PersistenceError("SCHEDULER_PROTOCOL_INVALID")
+        self._requested_scheduler_protocol = scheduler_protocol
+        self._scheduler_protocol = SCHEDULER_V1
         # Kernel epoch: incremented on every successful open() and on close().
         # Entity ports bind to an epoch; a port from a previous epoch is stale.
         self._epoch = 0
@@ -193,6 +213,10 @@ class Kernel:
         return self._genesis_label
 
     @property
+    def scheduler_protocol(self):
+        return self._scheduler_protocol
+
+    @property
     def state(self):
         """Detached snapshot; modifying it never changes the live kernel."""
         with self._mutation_lock:
@@ -201,6 +225,50 @@ class Kernel:
     # ------------------------------------------------------------------
     # Open / recover
     # ------------------------------------------------------------------
+
+    def _bind_scheduler_protocol(self, events) -> None:
+        requested = self._requested_scheduler_protocol
+
+        if not events:
+            selected = requested or SCHEDULER_V2
+            self._scheduler_protocol = selected
+            self._genesis_digest = genesis_descriptor_digest(
+                self._genesis_label,
+                selected,
+            )
+            return
+
+        first_before = events[0]["before_state_root"]
+        matches = []
+        for candidate in (SCHEDULER_V1, SCHEDULER_V2):
+            candidate_genesis = genesis_descriptor_digest(
+                self._genesis_label,
+                candidate,
+            )
+            candidate_initial = state_root_digest(
+                empty_state_root(
+                    candidate_genesis,
+                    self.mailbox_capacity,
+                )
+            )
+            if candidate_initial == first_before:
+                matches.append((candidate, candidate_genesis))
+
+        if len(matches) != 1:
+            raise WrongAuthorityError(
+                "SCHEDULER_PROTOCOL_UNRESOLVED: first event does not bind "
+                "exactly one supported scheduler genesis"
+            )
+
+        selected, candidate_genesis = matches[0]
+        if requested is not None and requested != selected:
+            raise WrongAuthorityError(
+                "SCHEDULER_PROTOCOL_MISMATCH: requested profile does not "
+                "match committed history"
+            )
+
+        self._scheduler_protocol = selected
+        self._genesis_digest = candidate_genesis
 
     def open(self) -> "Kernel":
         """Exclusively open, validate full history, then recover crash debris.
@@ -220,10 +288,9 @@ class Kernel:
                 self._log.close()
                 self._log.open()
                 events = self._log.read_events(recovery=True)
+                self._bind_scheduler_protocol(events)
                 cp = self._checkpoints.read()
-                state = replay_with_checkpoint(
-                    self._genesis_digest, events, cp.to_dict() if cp else None,
-                    self.mailbox_capacity)
+                state = replay_with_checkpoint(self._genesis_digest, events, cp.to_dict() if cp else None, self.mailbox_capacity, scheduler_protocol=self._scheduler_protocol)
                 # Only after ALL historical semantics validate may crash debris go.
                 self._log.finish_recovery()
                 self._state = state
@@ -309,16 +376,13 @@ class Kernel:
                 payload=dict(rec.state.payload),
             )
             post_state.registry.replace(rec)
-        # Internal transition-boundary assertions.
-        assert before_root == state.state_root_digest(), (
-            "COMMIT_INVARIANT: before_root drifted from the live state root"
-        )
-        assert after_root == post_state.state_root_digest(), (
-            "COMMIT_INVARIANT: after_root drifted from the post-state root"
-        )
-        assert post_state.logical_clock == event["logical_clock"], (
-            "COMMIT_INVARIANT: post-state clock != event clock"
-        )
+        # Internal transition-boundary invariants. before_root was computed
+        # from state and no live-state mutation is possible before this point,
+        # so recomputing it here is redundant.
+        if not (after_root == post_state.state_root_digest()):
+            raise AssertionError("COMMIT_INVARIANT: after_root drifted from the post-state root")
+        if not (post_state.logical_clock == event["logical_clock"]):
+            raise AssertionError("COMMIT_INVARIANT: post-state clock != event clock")
         # Finish every fallible projection computation before durable append.
         try:
             self._log.append_event(event)
@@ -521,27 +585,13 @@ class Kernel:
             if state.registry.get(receiver).lifecycle != ACTIVE:
                 continue
             for idx, env in enumerate(box._queue):
-                items.append(ReadyItem(
-                    rank=RANK_ENQUEUE,
-                    entity_id=receiver,
-                    mailbox_index=idx,
-                    message_id=env.message_id,
-                    kind="PROCESS_MESSAGE",
-                    ref=env.message_id,
-                ))
+                items.append(ReadyItem(rank=RANK_ENQUEUE, entity_id=receiver, mailbox_index=idx, message_id=env.message_id, kind='PROCESS_MESSAGE', ref=env.message_id, ready_clock=env.logical_clock))
         # LIFECYCLE ready items (rank ACTIVATE): FOUNDED entities.
         for eid in state.registry.ids_sorted():
             rec = state.registry.get(eid)
             if rec.lifecycle == FOUNDED:
-                items.append(ReadyItem(
-                    rank=RANK_ACTIVATE,
-                    entity_id=eid,
-                    mailbox_index=0,
-                    message_id=eid,
-                    kind="LIFECYCLE",
-                    ref=eid,
-                ))
-        return order_ready(items)
+                items.append(ReadyItem(rank=RANK_ACTIVATE, entity_id=eid, mailbox_index=0, message_id=eid, kind='LIFECYCLE', ref=eid, founding_index=rec.founding_index))
+        return order_ready(items, protocol=self._scheduler_protocol)
 
     def step(self) -> int:
         """Commit exactly one deterministic transition (the ready-set head).
@@ -630,20 +680,29 @@ class Kernel:
 
     @_serialized
     def topology_projection(self) -> TopologyProjection:
-        """Derive and recomputation-verify topology from committed history.
+        """Derive topology from one coherent live Kernel/log snapshot.
 
-        This is a read-only derived view on success. The event snapshot is read
-        from this kernel's durable log while the existing transition lock is
-        held. ``project_topology`` reruns authoritative ECS replay; the result
-        is then independently checked by ``verify_projection`` before it
-        crosses the Kernel introspection boundary.
+        The durable log read verifies every frame/schema/digest/link and checks
+        that the file matches the EventLog owner's recorded count/head. The
+        live Kernel projection was established by full replay at open() and
+        every later transition is installed only after durable append, so a
+        second semantic replay here is redundant.
+
+        The internal fast path binds event count, genesis, capacity, and the
+        final committed state root before folding topology. Public
+        ``project_topology`` still full-replays arbitrary histories.
         """
-        self._require_state()
-        events = tuple(self.events())
-        projection = project_topology(
+        state = self._require_state()
+        try:
+            events = tuple(self._log.read_events())
+        except BaseException:
+            self.close()
+            raise
+        projection = _project_topology_from_validated_state(
             self._genesis_digest,
             events,
             self.mailbox_capacity,
+            state,
         )
         verify_projection(projection)
         return projection

@@ -133,7 +133,8 @@ class DigestBoundResolvedTopologyObserverV1:
         return receipt
 
 
-assert issubclass(
+if not (issubclass(
     DigestBoundResolvedTopologyObserverV1,
     object,
-)
+)):
+    raise AssertionError('PRODUCTION_ASSERTION_FAILED:src/elpis_reference/structural_guidance/observer.py:136')

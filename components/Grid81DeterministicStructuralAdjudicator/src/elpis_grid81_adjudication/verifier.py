@@ -2,6 +2,7 @@
 
 import json
 import os
+from .import_boundary import check_import_boundary
 from .upstream import consume_upstream_seals, file_sha256
 from .source_join import load_jsonl, load_source_inventories, build_row_map
 from .input_envelope import verify_input_envelope
@@ -40,6 +41,8 @@ class Verifier:
 
     def verify_static(self):
         """Static structural verification."""
+        clean, violations = check_authority_boundary(os.path.dirname(__file__))
+        self.check("static_import_boundary", clean, "; ".join(violations))
         # Check all expected inventory files exist
         expected_files = [
             "G51B_ADJUDICATION_INPUT_INVENTORY.jsonl",
@@ -179,7 +182,19 @@ class Verifier:
             self.check("review_request_is_not_capability", no_capability and no_activation and has_claims)
 
         # Authority boundary
-        self.check("authority_boundary", True, "No activation/runtime/authority fields found")
+        def has_forbidden_field(value):
+            if isinstance(value, dict):
+                return any(key in FORBIDDEN_FIELDS or has_forbidden_field(item)
+                           for key, item in value.items())
+            if isinstance(value, list):
+                return any(has_forbidden_field(item) for item in value)
+            return False
+
+        boundary_ok = (len(inventories) == 4
+                       and all(inventories.values())
+                       and not has_forbidden_field(inventories))
+        self.check("authority_boundary", boundary_ok,
+                   "Required inventories must be nonempty and contain no forbidden fields")
 
         # Request state consistency
         if "review_requests" in inventories and "abstentions" in inventories:
@@ -203,16 +218,11 @@ FORBIDDEN_IMPORTS = [
 
 
 def check_authority_boundary(package_dir):
-    """Check that package source contains no forbidden imports or fields."""
-    violations = []
-    for root, dirs, files in os.walk(package_dir):
-        dirs[:] = [d for d in dirs if d not in ("__pycache__", ".pytest_cache")]
-        for fname in files:
-            if fname.endswith(".py"):
-                fpath = os.path.join(root, fname)
-                with open(fpath) as f:
-                    content = f.read()
-                for imp in FORBIDDEN_IMPORTS:
-                    if f"import {imp}" in content:
-                        violations.append(f"{fpath}: imports {imp}")
-    return len(violations) == 0, violations
+    """Check statically resolvable forbidden Python module imports only.
+
+    CUDA, llama.cpp, scheduler, router, and capability modules are literal
+    Python module paths, including dotted/relative imports and loader calls.
+    This does not claim native CUDA/llama runtime or dynamic-code detection.
+    Field validation is separate from this source import check.
+    """
+    return check_import_boundary(package_dir, FORBIDDEN_IMPORTS)

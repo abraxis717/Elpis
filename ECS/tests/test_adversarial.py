@@ -361,8 +361,6 @@ class TestCorruptCheckpoint:
             logical_clock=k.state.logical_clock,
         )
         k._checkpoints.write(cp)
-        good_root = k.state_root_digest()
         k.close()
-        k2 = Kernel(d).open()  # mismatched checkpoint rejected -> full replay
-        assert k2.state_root_digest() == good_root
-        k2.close()
+        with pytest.raises(WrongAuthorityError, match="HISTORY_DIVERGENCE"):
+            Kernel(d).open()

@@ -193,7 +193,8 @@ def _attempt(
             ):
                 break
 
-    assert outputs is not None
+    if not (outputs is not None):
+        raise AssertionError('PRODUCTION_ASSERTION_FAILED:src/elpis_reference/refinement.py:196')
 
     proposal = _proposal_from_outputs(outputs)
 

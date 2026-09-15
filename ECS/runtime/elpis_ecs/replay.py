@@ -73,6 +73,14 @@ from .persistence import (
     event_intent_digest,
 )
 
+from .scheduler import (
+    KNOWN_SCHEDULERS,
+    ReadyItem,
+    RANK_ENQUEUE,
+    SCHEDULER_V1,
+    order_ready,
+)
+
 # ---------------------------------------------------------------------------
 # Kernel state (a pure projection of the event history)
 # ---------------------------------------------------------------------------
@@ -87,6 +95,7 @@ class KernelState:
     logical_clock: int = 0
     next_founding_index: int = 0
     mailbox_capacity: int = DEFAULT_MAILBOX_CAPACITY
+    scheduler_protocol: str = SCHEDULER_V1
     registry: EntityRegistry = field(default_factory=EntityRegistry)
     mailboxes: MailboxSet = field(default_factory=MailboxSet)
     watermarks: SequenceWatermark = field(default_factory=SequenceWatermark)
@@ -98,6 +107,8 @@ class KernelState:
         # lazily with this capacity, so it must be set before any box is
         # created.
         self.mailboxes.capacity = self.mailbox_capacity
+        if self.scheduler_protocol not in KNOWN_SCHEDULERS:
+            raise ReplayError("SCHEDULER_PROTOCOL_INVALID")
 
     def state_root(self) -> dict:
         """The canonical state root (integration v3).
@@ -133,17 +144,16 @@ class KernelState:
         return state_root_digest(self.state_root())
 
 
-def initial_state(genesis_digest: str,
-                  mailbox_capacity: int = DEFAULT_MAILBOX_CAPACITY) -> KernelState:
-    """The initial durable state (before any event).
-
-    The mailbox capacity is bound into the initial state root: opening an
-    empty new kernel with capacity 1 versus capacity 64 produces different
-    initial state roots.
-    """
-    return KernelState(genesis_digest=genesis_digest,
-                       mailbox_capacity=mailbox_capacity)
-
+def initial_state(
+    genesis_digest: str,
+    mailbox_capacity: int = DEFAULT_MAILBOX_CAPACITY,
+    scheduler_protocol: str = SCHEDULER_V1,
+) -> KernelState:
+    return KernelState(
+        genesis_digest=genesis_digest,
+        mailbox_capacity=mailbox_capacity,
+        scheduler_protocol=scheduler_protocol,
+    )
 
 # ---------------------------------------------------------------------------
 # Event application (pure: state -> state)
@@ -263,10 +273,40 @@ def _apply_event(state: KernelState, ev: Mapping[str, Any]) -> None:
         if eid != receiver or state.registry.get(receiver).lifecycle != ACTIVE:
             raise ReplayError("PROCESS_RECEIVER_NOT_ACTIVE_OR_MISMATCH")
         # Only the deterministic scheduler's head may be consumed.
-        ready_receivers = sorted(r for r, b in state.mailboxes._boxes.items()
-                                 if len(b) and state.registry.get(r).lifecycle == ACTIVE)
-        if not ready_receivers or receiver != ready_receivers[0]:
-            raise ReplayError("PROCESS_SCHEDULER_ORDER")
+        if state.scheduler_protocol == SCHEDULER_V1:
+            ready_receivers = sorted(
+                r
+                for r, b in state.mailboxes._boxes.items()
+                if len(b) and state.registry.get(r).lifecycle == ACTIVE
+            )
+            if not ready_receivers or receiver != ready_receivers[0]:
+                raise ReplayError("PROCESS_SCHEDULER_ORDER")
+        else:
+            ready = []
+            for candidate_receiver in sorted(state.mailboxes._boxes):
+                candidate_box = state.mailboxes._boxes[candidate_receiver]
+                if state.registry.get(candidate_receiver).lifecycle != ACTIVE:
+                    continue
+                for mailbox_index, envelope in enumerate(candidate_box._queue):
+                    ready.append(
+                        ReadyItem(
+                            rank=RANK_ENQUEUE,
+                            entity_id=candidate_receiver,
+                            mailbox_index=mailbox_index,
+                            message_id=envelope.message_id,
+                            kind="PROCESS_MESSAGE",
+                            ref=envelope.message_id,
+                            ready_clock=envelope.logical_clock,
+                        )
+                    )
+            ordered = order_ready(ready, protocol=state.scheduler_protocol)
+            if (
+                not ordered
+                or receiver != ordered[0].entity_id
+                or mid != ordered[0].message_id
+            ):
+                raise ReplayError("PROCESS_SCHEDULER_ORDER")
+
         box = state.mailboxes.box(receiver)
         head = box.peek()
         if head is None or head.message_id != mid:
@@ -298,6 +338,7 @@ def replay_from_events(
     genesis_digest: str,
     events: Sequence[Mapping[str, Any]],
     mailbox_capacity: int = DEFAULT_MAILBOX_CAPACITY,
+    scheduler_protocol: str = SCHEDULER_V1,
 ) -> KernelState:
     """Reconstruct the kernel state from the genesis authority + event chain.
 
@@ -315,7 +356,9 @@ def replay_from_events(
     # includes the exact clock-progression check.
     verify_event_chain(events)
 
-    state = initial_state(genesis_digest, mailbox_capacity)
+    state = initial_state(
+        genesis_digest, mailbox_capacity, scheduler_protocol
+    )
     initial_root = state.state_root_digest()
 
     for i, ev in enumerate(events):
@@ -358,11 +401,40 @@ def replay_with_checkpoint(
     events: Sequence[Mapping[str, Any]],
     checkpoint: Mapping[str, Any] | None,
     mailbox_capacity: int = DEFAULT_MAILBOX_CAPACITY,
+    scheduler_protocol: str = SCHEDULER_V1,
 ) -> KernelState:
-    """Checkpoint is an advisory marker; every event uses full replay.
+    """Full replay plus a valid-local monotonic rollback-floor check.
 
-    v1 checkpoints contain no projection snapshot and cannot skip replay work.
-    Ignoring a malformed/mismatched marker is safe: history is always validated
-    with the identical schema, chain and transition path. No weaker tail path.
+    The checkpoint is never a state snapshot and never skips replay. Event
+    history remains authoritative. A valid marker rejects complete-frame
+    rollback behind its event index and divergence at that event. Appended
+    valid history remains legal. Missing/corrupt marker data is represented as
+    ``None`` by CheckpointStore and supplies no rollback anchor.
     """
-    return replay_from_events(genesis_digest, events, mailbox_capacity)
+    state = replay_from_events(genesis_digest, events, mailbox_capacity, scheduler_protocol=scheduler_protocol)
+    if checkpoint is None:
+        return state
+    index = checkpoint.get("event_index")
+    if type(index) is not int or index < 0:
+        raise WrongAuthorityError("CHECKPOINT_INVALID: event_index")
+    if index >= len(events):
+        raise WrongAuthorityError(
+            "HISTORY_ROLLBACK: checkpoint event index "
+            f"{index} is beyond recovered history tail {len(events) - 1}"
+        )
+    observed_digest = events[index]["event_digest"]
+    expected_digest = checkpoint.get("event_digest")
+    if observed_digest != expected_digest:
+        raise WrongAuthorityError(
+            "HISTORY_DIVERGENCE: checkpoint event digest mismatch "
+            f"at index {index} (history={observed_digest} checkpoint={expected_digest})"
+        )
+    if index == len(events) - 1:
+        replayed_root = state.state_root_digest()
+        expected_root = checkpoint.get("state_root_digest")
+        if replayed_root != expected_root:
+            raise WrongAuthorityError(
+                "HISTORY_DIVERGENCE: checkpoint state root mismatch at tail "
+                f"(replayed={replayed_root} checkpoint={expected_root})"
+            )
+    return state

@@ -46,9 +46,25 @@ def test_main_push_verification_does_not_require_future_tag() -> None:
     )
     assert guard_at != -1
 
-    # Reference-runtime uses only the tag-aware default verifier, so a
-    # pre-tag main push cannot be blocked solely by a future tag.
+    # Reference-runtime verifies the immutable tag tree when VERSION's
+    # release tag exists, but must verify the current candidate when that
+    # future tag does not yet exist. This preserves push -> hosted CI -> tag.
     assert strict not in reference
+    tag_probe = (
+        'if git rev-parse --verify --quiet "${release_tag}^{}" '
+        '>/dev/null; then'
+    )
+    candidate = (
+        "python tools/verify_public_release.py "
+        "--verify-candidate-repository-identity"
+    )
+    assert tag_probe in reference
+    assert 'git worktree add --detach "${release_dir}" "${release_tag}^{}"' in reference
+    assert candidate in reference
+    probe_at = reference.index(tag_probe)
+    else_at = reference.index("          else\n", probe_at)
+    candidate_at = reference.index(candidate, else_at)
+    assert probe_at < else_at < candidate_at
 
 
 def test_ci_explicitly_proves_candidate_identity_on_main_push() -> None:

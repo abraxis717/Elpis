@@ -4,6 +4,9 @@ import hashlib
 import json
 import os
 
+from .import_boundary import check_import_boundary
+from .source_binding import _hex64
+
 from .canonical import GateResult, REJECTION_PRECEDENCE, SourceChain, _sha256_str, _canonical_json
 
 
@@ -11,24 +14,23 @@ from .canonical import GateResult, REJECTION_PRECEDENCE, SourceChain, _sha256_st
 GATE_DEFINITIONS = [
     ("GATE_SOURCE_MANIFEST_CLOSURE", 1, "1.0.0"),
     ("GATE_SOURCE_HASH_SIZE_VALIDITY", 2, "1.0.0"),
-    ("GATE_ALL_PHASE_DISPOSITIONS_PRESENT", 3, "1.0.0"),
-    ("GATE_ARTIFACT_IDENTITY_CONTINUITY", 4, "1.0.0"),
-    ("GATE_CAPABILITY_IDENTITY_CONTINUITY", 5, "1.0.0"),
-    ("GATE_COMPILER_IDENTITY_CONTINUITY", 6, "1.0.0"),
-    ("GATE_SHADOW_APPLICATION_ACCEPTED", 7, "1.0.0"),
-    ("GATE_RECEIPT_INTEGRITY", 8, "1.0.0"),
-    ("GATE_SHADOW_STATE_TRANSITION_INTEGRITY", 9, "1.0.0"),
-    ("GATE_LEDGER_HEAD_CONTINUITY", 10, "1.0.0"),
-    ("GATE_REPLAY_PROTECTION_QUALIFIED", 11, "1.0.0"),
-    ("GATE_MUTATION_EXACTNESS_QUALIFIED", 12, "1.0.0"),
-    ("GATE_ATOMICITY_QUALIFIED", 13, "1.0.0"),
-    ("GATE_CANONICAL_NONMUTATION_QUALIFIED", 14, "1.0.0"),
-    ("GATE_AUTHORITY_BOUNDARY_QUALIFIED", 15, "1.0.0"),
-    ("GATE_THREE_SEED_DETERMINISM_QUALIFIED", 16, "1.0.0"),
-    ("GATE_G53D_BUNDLE_CONSISTENCY", 17, "1.0.0"),
-    ("GATE_CAPABILITY_CANONICALLY_UNCONSUMED", 18, "1.0.0"),
-    ("GATE_SOURCE_REPORTS_UNCHANGED", 19, "1.0.0"),
-    ("GATE_NO_EXECUTABLE_AUTHORITY", 20, "1.0.0"),
+    ("GATE_ARTIFACT_IDENTITY_CONTINUITY", 3, "1.0.0"),
+    ("GATE_CAPABILITY_IDENTITY_CONTINUITY", 4, "1.0.0"),
+    ("GATE_COMPILER_IDENTITY_CONTINUITY", 5, "1.0.0"),
+    ("GATE_SHADOW_APPLICATION_ACCEPTED", 6, "1.0.0"),
+    ("GATE_RECEIPT_INTEGRITY", 7, "1.0.0"),
+    ("GATE_SHADOW_STATE_TRANSITION_INTEGRITY", 8, "1.0.0"),
+    ("GATE_LEDGER_HEAD_CONTINUITY", 9, "1.0.0"),
+    ("GATE_REPLAY_PROTECTION_QUALIFIED", 10, "1.0.0"),
+    ("GATE_MUTATION_EXACTNESS_QUALIFIED", 11, "1.0.0"),
+    ("GATE_ATOMICITY_QUALIFIED", 12, "1.0.0"),
+    ("GATE_CANONICAL_NONMUTATION_QUALIFIED", 13, "1.0.0"),
+    ("GATE_AUTHORITY_BOUNDARY_QUALIFIED", 14, "1.0.0"),
+    ("GATE_THREE_SEED_DETERMINISM_QUALIFIED", 15, "1.0.0"),
+    ("GATE_G53D_BUNDLE_CONSISTENCY", 16, "1.0.0"),
+    ("GATE_CAPABILITY_CANONICALLY_UNCONSUMED", 17, "1.0.0"),
+    ("GATE_SOURCE_REPORTS_UNCHANGED", 18, "1.0.0"),
+    ("GATE_NO_EXECUTABLE_AUTHORITY", 19, "1.0.0"),
 ]
 
 
@@ -82,43 +84,83 @@ def _verify_file_hashes(directory: str, evidence_files: tuple) -> bool:
     return True
 
 
-def _check_dispositions(chain: SourceChain) -> bool:
-    for phase in [chain.g53b1, chain.g53c, chain.g53d]:
-        if not phase.disposition:
-            return False
-    return True
+def _bound_jsonl(phase, filename: str) -> list:
+    """Read structured evidence only after checking its census hash and size."""
+    entries = tuple(e for e in phase.evidence_files if e[0] == filename)
+    if _file_sha256(phase.manifest_path) != phase.manifest_digest:
+        raise ValueError("STRUCTURED_IDENTITY_MANIFEST_CHANGED")
+    meta = _read_json(phase.manifest_path)["evidence_files"][filename]
+    if entries != ((filename, meta["sha256"], meta["size"]),):
+        raise ValueError("STRUCTURED_IDENTITY_MANIFEST_BINDING_MISMATCH")
+    if len(entries) != 1 or not _verify_file_hashes(phase.source_directory, entries):
+        raise ValueError("STRUCTURED_IDENTITY_EVIDENCE_MISSING_OR_CHANGED")
+    with open(os.path.join(phase.source_directory, filename)) as source:
+        records = [json.loads(line) for line in source if line.strip()]
+    if not records or any(type(record) is not dict for record in records):
+        raise ValueError("STRUCTURED_IDENTITY_EVIDENCE_EMPTY_OR_INVALID")
+    return records
+
+
+def _identity_bindings(chain: SourceChain) -> tuple:
+    """Join downstream receipts to independently rehashed upstream artifacts.
+
+    Artifact identity follows consumption_compiler.artifact's full-record
+    digest contract (all fields except artifact_digest). These are evidence
+    bindings relative to the supplied manifests, not an external seal pin.
+    """
+    artifacts = _bound_jsonl(
+        chain.g53b1, "G53B_STRUCTURAL_INFLUENCE_ARTIFACT_INVENTORY.jsonl")
+    receipts = _bound_jsonl(chain.g53c, "G53C_APPLICATION_RECEIPTS.jsonl")
+    by_digest = {}
+    for artifact in artifacts:
+        digest = artifact.get("artifact_digest")
+        actual = _sha256_str(_canonical_json(
+            {k: v for k, v in artifact.items() if k != "artifact_digest"}))
+        if (artifact.get("schema_version") != "structural-influence-artifact.v1"
+                or digest != actual or digest in by_digest):
+            raise ValueError("UPSTREAM_ARTIFACT_IDENTITY_INVALID")
+        by_digest[digest] = artifact
+    return receipts, by_digest
 
 
 def _check_artifact_identity(chain: SourceChain) -> bool:
-    """G5.3C receipts must reference artifacts produced by G5.3B.1."""
-    if not chain.g53c.artifact_digest:
-        return False
-    return True
+    """Every G5.3C artifact reference must resolve to a rehashed G5.3B artifact."""
+    receipts, artifacts = _identity_bindings(chain)
+    return (all(r.get("artifact_digest") in artifacts for r in receipts)
+            and chain.g53c.artifact_digest == ":".join(
+                sorted(r["artifact_digest"] for r in receipts)))
 
 
 def _check_capability_identity(chain: SourceChain) -> bool:
-    """Capability digests in G5.3C receipts must be consistent."""
-    if not chain.g53c.capability_digest:
-        return False
-    return True
+    """Each receipt capability must equal its upstream artifact's source binding."""
+    receipts, artifacts = _identity_bindings(chain)
+    return (all(_hex64(r.get("capability_digest")) and r.get("capability_digest") ==
+                artifacts[r["artifact_digest"]]["source_capability_digest"]
+                for r in receipts)
+            and chain.g53c.capability_digest == ":".join(
+                sorted(r["capability_digest"] for r in receipts)))
 
 
 def _check_compiler_identity(chain: SourceChain) -> bool:
-    """G5.3C compiler must reference G5.3B.1 upstream identity."""
-    g53b_upstream = os.path.join(
-        chain.g53b1.source_directory,
-        "G53B_POST_EXECUTION_UPSTREAM_IDENTITY.json",
+    """Check compiler *contract* identity along the receipt/artifact join.
+
+    The authoritative constructor defines StructuralInfluenceCompilerContractV1.
+    Compare both compiler and consumer references on each downstream-referenced
+    upstream artifact. This does not establish compiler source-byte identity:
+    the legacy upstream-identity/audit files have no repository-defined binding
+    contract and cannot establish that broader claim.
+    """
+    from elpis_grid81_consumption_compiler.policy import create_compiler_contract
+
+    contract = create_compiler_contract()
+    expected = _sha256_str(_canonical_json(
+        {k: v for k, v in contract.items() if k != "compiler_contract_digest"}))
+    receipts, artifacts = _identity_bindings(chain)
+    return all(
+        artifacts[r["artifact_digest"]].get("compiler_contract_digest") == expected
+        and artifacts[r["artifact_digest"]].get("consumer_contract_digest") == expected
+        for r in receipts
     )
-    if not os.path.exists(g53b_upstream):
-        return False
-    # G5.3C authority should reference G5.3B
-    g53c_authority = os.path.join(
-        chain.g53c.source_directory,
-        "G53C_AUTHORITY_AUDIT.json",
-    )
-    if not os.path.exists(g53c_authority):
-        return False
-    return True
 
 
 def _check_shadow_application_accepted(chain: SourceChain) -> bool:
@@ -351,52 +393,40 @@ def _check_source_reports_unchanged(chain: SourceChain) -> bool:
 
 
 def _check_no_executable_authority(chain: SourceChain) -> bool:
-    """Planner must have no executable authority — structural check.
-    Verify the planner contains no forbidden imports (torch, subprocess,
-    socket, urllib, requests, http.client). Exclude this file and the
-    verifier from self-scanning since they mention these strings in checks."""
-    import elpis_grid81_promotion_planner
-    pkg_dir = os.path.dirname(elpis_grid81_promotion_planner.__file__)
+    """Check statically resolvable forbidden imports in every package Python file.
+
+    This is a bounded import policy, not arbitrary dynamic-code detection or
+    proof of absence of every possible executable authority.
+    """
+    pkg_dir = os.path.dirname(__file__)
     forbidden = {"torch", "subprocess", "socket", "urllib", "requests", "http.client"}
-    # Exclude the gate, verifier, adversarial matrix, and execution harness
-    # that mention these names in test fixture strings, not as actual imports
-    exclude = {"gates.py", "verifier.py", "adversarial_matrix.py"}
-    for fname in os.listdir(pkg_dir):
-        if fname.endswith(".py") and fname != "__init__.py" and fname not in exclude:
-            fpath = os.path.join(pkg_dir, fname)
-            with open(fpath) as f:
-                content = f.read()
-            for mod in forbidden:
-                if f"import {mod}" in content:
-                    return False
-    return True
+    return check_import_boundary(pkg_dir, forbidden)[0]
 
 
 # Gate function dispatch table — deterministic order
 _GATE_FUNCTIONS = [
     (0, _all_phases_have_manifests, REJECTION_PRECEDENCE[0]),
-    (1, _check_dispositions, REJECTION_PRECEDENCE[3]),
-    (2, lambda c: _verify_file_hashes(c.g53b1.source_directory, c.g53b1.evidence_files) and
+    (1, lambda c: _verify_file_hashes(c.g53b1.source_directory, c.g53b1.evidence_files) and
                   _verify_file_hashes(c.g53c.source_directory, c.g53c.evidence_files) and
                   _verify_file_hashes(c.g53d.source_directory, c.g53d.evidence_files),
      REJECTION_PRECEDENCE[1]),
-    (3, _check_artifact_identity, REJECTION_PRECEDENCE[4]),
-    (4, _check_capability_identity, REJECTION_PRECEDENCE[5]),
-    (5, _check_compiler_identity, REJECTION_PRECEDENCE[6]),
-    (6, _check_shadow_application_accepted, REJECTION_PRECEDENCE[7]),
-    (7, _check_receipt_integrity, REJECTION_PRECEDENCE[8]),
-    (8, _check_shadow_state_transition, REJECTION_PRECEDENCE[9]),
-    (9, _check_ledger_head_continuity, REJECTION_PRECEDENCE[10]),
-    (10, _check_replay_protection, REJECTION_PRECEDENCE[11]),
-    (11, _check_mutation_exactness, REJECTION_PRECEDENCE[12]),
-    (12, _check_atomicity, REJECTION_PRECEDENCE[13]),
-    (13, _check_canonical_nonmutation, REJECTION_PRECEDENCE[14]),
-    (14, _check_authority_boundary, REJECTION_PRECEDENCE[15]),
-    (15, _check_three_seed_determinism, REJECTION_PRECEDENCE[16]),
-    (16, _check_g53d_bundle_consistency, REJECTION_PRECEDENCE[17]),
-    (17, _check_capability_canonically_unconsumed, REJECTION_PRECEDENCE[18]),
-    (18, _check_source_reports_unchanged, REJECTION_PRECEDENCE[19]),
-    (19, _check_no_executable_authority, REJECTION_PRECEDENCE[19]),
+    (2, _check_artifact_identity, REJECTION_PRECEDENCE[4]),
+    (3, _check_capability_identity, REJECTION_PRECEDENCE[5]),
+    (4, _check_compiler_identity, REJECTION_PRECEDENCE[6]),
+    (5, _check_shadow_application_accepted, REJECTION_PRECEDENCE[7]),
+    (6, _check_receipt_integrity, REJECTION_PRECEDENCE[8]),
+    (7, _check_shadow_state_transition, REJECTION_PRECEDENCE[9]),
+    (8, _check_ledger_head_continuity, REJECTION_PRECEDENCE[10]),
+    (9, _check_replay_protection, REJECTION_PRECEDENCE[11]),
+    (10, _check_mutation_exactness, REJECTION_PRECEDENCE[12]),
+    (11, _check_atomicity, REJECTION_PRECEDENCE[13]),
+    (12, _check_canonical_nonmutation, REJECTION_PRECEDENCE[14]),
+    (13, _check_authority_boundary, REJECTION_PRECEDENCE[15]),
+    (14, _check_three_seed_determinism, REJECTION_PRECEDENCE[16]),
+    (15, _check_g53d_bundle_consistency, REJECTION_PRECEDENCE[17]),
+    (16, _check_capability_canonically_unconsumed, REJECTION_PRECEDENCE[18]),
+    (17, _check_source_reports_unchanged, REJECTION_PRECEDENCE[19]),
+    (18, _check_no_executable_authority, REJECTION_PRECEDENCE[20]),
 ]
 
 
@@ -407,10 +437,13 @@ def evaluate_gates(chain: SourceChain) -> list:
         gate_id, ordinal, version = GATE_DEFINITIONS[idx]
         try:
             passed = func(chain)
-        except Exception:
+        except Exception as exc:
             passed = False
+            detail = str(exc) if isinstance(exc, ValueError) else ""
+        else:
+            detail = ""
 
-        observed = "PASS" if passed else "FAIL"
+        observed = "PASS" if passed else (detail or "FAIL")
         expected = "PASS"
 
         results.append(

@@ -193,7 +193,8 @@ class FixedPointOptimizer(nn.Module):
 class VariationalDropout(nn.Module):
     def __init__(self, dropout: float = 0.0):
         super().__init__()
-        assert 0.0 <= dropout < 1.0, f"dropout must be in [0, 1), got {dropout}"
+        if not (0.0 <= dropout < 1.0):
+            raise AssertionError(f"dropout must be in [0, 1), got {dropout}")
         self.dropout = dropout
         self._mask: torch.Tensor | None = None
 
@@ -213,7 +214,8 @@ class VariationalDropout(nn.Module):
 class VariationalDropToken1d(nn.Module):
     def __init__(self, dropout: float = 0.0, token_first: bool = True):
         super().__init__()
-        assert 0.0 <= dropout < 1.0, f"dropout must be in [0, 1), got {dropout}"
+        if not (0.0 <= dropout < 1.0):
+            raise AssertionError(f"dropout must be in [0, 1), got {dropout}")
         self.dropout = dropout
         self.token_first = token_first
         self._mask: torch.Tensor | None = None

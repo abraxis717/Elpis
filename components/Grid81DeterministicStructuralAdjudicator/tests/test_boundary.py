@@ -2,11 +2,13 @@
 
 import os
 import sys
+from pathlib import Path
 
 BASE = os.environ.get("ELPIS_BASE", "$ELPIS_CANON_ROOT/Elpis_Canon")
 sys.path.insert(0, os.path.join(BASE, "Grid81DeterministicStructuralAdjudicator", "src"))
 
 from elpis_grid81_adjudication.source_join import load_jsonl
+from elpis_grid81_adjudication import verifier
 
 
 FORBIDDEN_IMPORTS = [
@@ -23,16 +25,8 @@ FORBIDDEN_FIELDS = [
 
 class TestForbiddenImports:
     def test_no_forbidden_imports_in_source(self):
-        src_dir = os.path.join(BASE, "Grid81DeterministicStructuralAdjudicator", "src")
-        for root, dirs, files in os.walk(src_dir):
-            dirs[:] = [d for d in dirs if d != "__pycache__"]
-            for fname in files:
-                if fname.endswith(".py"):
-                    fpath = os.path.join(root, fname)
-                    with open(fpath) as f:
-                        content = f.read()
-                    for imp in FORBIDDEN_IMPORTS:
-                        assert f"import {imp}" not in content, f"Forbidden import '{imp}' in {fpath}"
+        ok, violations = verifier.check_authority_boundary(Path(verifier.__file__).parent)
+        assert ok, violations
 
 
 class TestForbiddenPaths:

@@ -48,9 +48,10 @@ def test_kernel_runtime_edge_matches_direct_qualified_derivation_and_is_read_onl
         verify_analysis(analysis)
 
         expected_projection = project_topology(
-            genesis_descriptor_digest(kernel.genesis_label),
+            kernel._genesis_digest,
             before_events,
             kernel.mailbox_capacity,
+            scheduler_protocol=kernel.scheduler_protocol,
         )
         verify_projection(expected_projection)
         expected_analysis = analyze_projection(expected_projection)
@@ -86,14 +87,14 @@ def test_kernel_topology_analysis_executes_the_explicit_composition_chain(
         _build_runtime_scenario(kernel)
 
         calls: list[str] = []
-        original_project = kernel_module.project_topology
+        original_fast_project = kernel_module._project_topology_from_validated_state
         original_verify_projection = kernel_module.verify_projection
         original_analyze = kernel_module.analyze_projection
         original_verify_analysis = kernel_module.verify_analysis
 
-        def project(*args, **kwargs):
-            calls.append("project_topology")
-            return original_project(*args, **kwargs)
+        def fast_project(*args, **kwargs):
+            calls.append("project_validated_state")
+            return original_fast_project(*args, **kwargs)
 
         def verify_projection_call(*args, **kwargs):
             calls.append("verify_projection")
@@ -107,7 +108,11 @@ def test_kernel_topology_analysis_executes_the_explicit_composition_chain(
             calls.append("verify_analysis")
             return original_verify_analysis(*args, **kwargs)
 
-        monkeypatch.setattr(kernel_module, "project_topology", project)
+        monkeypatch.setattr(
+            kernel_module,
+            "_project_topology_from_validated_state",
+            fast_project,
+        )
         monkeypatch.setattr(
             kernel_module,
             "verify_projection",
@@ -120,11 +125,22 @@ def test_kernel_topology_analysis_executes_the_explicit_composition_chain(
             verify_analysis_call,
         )
 
+        import elpis_ecs.topology as topology_module
+
+        def forbidden_replay(*args, **kwargs):
+            raise AssertionError("duplicate semantic replay invoked")
+
+        monkeypatch.setattr(
+            topology_module,
+            "replay_from_events",
+            forbidden_replay,
+        )
+
         analysis = kernel.topology_analysis()
         verify_analysis(analysis)
 
         assert calls == [
-            "project_topology",
+            "project_validated_state",
             "verify_projection",
             "analyze_projection",
             "verify_analysis",

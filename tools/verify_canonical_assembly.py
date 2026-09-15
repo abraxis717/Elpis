@@ -212,10 +212,14 @@ def verify(root: Path) -> list[str]:
     ):
         return errors
 
-    assert canonical is not None
-    assert component_registry is not None
-    assert public is not None
-    assert graph is not None
+    if not (canonical is not None):
+        raise AssertionError('PRODUCTION_ASSERTION_FAILED:tools/verify_canonical_assembly.py:215')
+    if not (component_registry is not None):
+        raise AssertionError('PRODUCTION_ASSERTION_FAILED:tools/verify_canonical_assembly.py:216')
+    if not (public is not None):
+        raise AssertionError('PRODUCTION_ASSERTION_FAILED:tools/verify_canonical_assembly.py:217')
+    if not (graph is not None):
+        raise AssertionError('PRODUCTION_ASSERTION_FAILED:tools/verify_canonical_assembly.py:218')
 
     canonical_items, canonical_ids = _id_list(
         canonical, "components", "CANONICAL", errors

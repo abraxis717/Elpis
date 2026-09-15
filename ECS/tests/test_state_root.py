@@ -13,6 +13,7 @@ deterministic state root:
     have different initial roots).
 """
 from __future__ import annotations
+from elpis_ecs.scheduler import SCHEDULER_V1
 
 import pytest
 
@@ -75,14 +76,14 @@ class TestFoundingCounterAuthority:
     def test_founding_counter_replayed_exactly(self, tmp_path):
         """Found entities 0,1,2; replay; the next founding gets index 3."""
         d = str(tmp_path)
-        k = Kernel(d).open()
+        k = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         e0 = k.found_entity("e0")
         e1 = k.found_entity("e1")
         e2 = k.found_entity("e2")
         assert k.state.next_founding_index == 3
         k.close()
 
-        k2 = Kernel(d).open()
+        k2 = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         assert k2.state.next_founding_index == 3
         # The next newly founded entity after restart receives exactly index 3.
         e3 = k2.found_entity("e3")
@@ -101,7 +102,7 @@ class TestFoundingCounterAuthority:
         """A replay that reconstructs the wrong founding counter fails the
         after-root verification (the counter is bound into the root)."""
         d = str(tmp_path)
-        k = Kernel(d).open()
+        k = Kernel(d, scheduler_protocol=SCHEDULER_V1).open()
         k.found_entity("e0")
         k.found_entity("e1")
         events = k.events()
@@ -126,23 +127,23 @@ class TestMailboxCapacityAuthority:
         """Opening an existing non-empty history with a different capacity
         fails state-root/genesis authority reconciliation."""
         d = str(tmp_path)
-        k = Kernel(d, mailbox_capacity=16).open()
+        k = Kernel(d, mailbox_capacity=16, scheduler_protocol=SCHEDULER_V1).open()
         a = k.found_entity("alpha")
         k.close()
 
-        k2 = Kernel(d, mailbox_capacity=64)
+        k2 = Kernel(d, mailbox_capacity=64, scheduler_protocol=SCHEDULER_V1)
         with pytest.raises(WrongAuthorityError):
             k2.open()
         k2.close()
 
     def test_open_nonempty_history_same_capacity_ok(self, tmp_path):
         d = str(tmp_path)
-        k = Kernel(d, mailbox_capacity=16).open()
+        k = Kernel(d, mailbox_capacity=16, scheduler_protocol=SCHEDULER_V1).open()
         a = k.found_entity("alpha")
         root = k.state_root_digest()
         k.close()
 
-        k2 = Kernel(d, mailbox_capacity=16).open()
+        k2 = Kernel(d, mailbox_capacity=16, scheduler_protocol=SCHEDULER_V1).open()
         assert k2.state_root_digest() == root
         k2.close()
 
@@ -151,7 +152,7 @@ class TestMailboxCapacityAuthority:
         the state root binds it, so a history cannot be reopened under a
         different capacity without failing reconciliation."""
         d = str(tmp_path)
-        k = Kernel(d, mailbox_capacity=3).open()
+        k = Kernel(d, mailbox_capacity=3, scheduler_protocol=SCHEDULER_V1).open()
         a = k.found_entity("alpha")
         b = k.found_entity("beta")
         k.run_until_quiescent()
@@ -160,17 +161,17 @@ class TestMailboxCapacityAuthority:
         k.close()
 
         # Reopening under the SAME capacity works.
-        k2 = Kernel(d, mailbox_capacity=3).open()
+        k2 = Kernel(d, mailbox_capacity=3, scheduler_protocol=SCHEDULER_V1).open()
         assert k2.state.next_founding_index == 2
         k2.close()
         # Reopening under a DIFFERENT capacity fails.
-        k3 = Kernel(d, mailbox_capacity=4)
+        k3 = Kernel(d, mailbox_capacity=4, scheduler_protocol=SCHEDULER_V1)
         with pytest.raises(WrongAuthorityError):
             k3.open()
         k3.close()
 
     def test_invalid_capacity_rejected(self, tmp_path):
         with pytest.raises(Exception):
-            Kernel(str(tmp_path), mailbox_capacity=0).open()
+            Kernel(str(tmp_path), mailbox_capacity=0, scheduler_protocol=SCHEDULER_V1).open()
         with pytest.raises(Exception):
-            Kernel(str(tmp_path), mailbox_capacity=True).open()
+            Kernel(str(tmp_path), mailbox_capacity=True, scheduler_protocol=SCHEDULER_V1).open()

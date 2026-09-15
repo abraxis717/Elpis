@@ -449,7 +449,8 @@ class ReproductionResult:
                 == self.parent_before
             )
 
-        assert self.child is not None
+        if not (self.child is not None):
+            raise AssertionError('PRODUCTION_ASSERTION_FAILED:components/DarwinianMatrix/life/reproduction.py:452')
 
         return (
             self.parent_before.energy

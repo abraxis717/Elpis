@@ -38,7 +38,8 @@ def execute(directory, restart_every=0, replay=False):
                 before = result(k)
                 k.close()
                 k.open()
-                assert result(k) == before
+                if not (result(k) == before):
+                    raise AssertionError('PRODUCTION_ASSERTION_FAILED:ECS/qualification/scenario.py:41')
             return value
         a = do(lambda: k.found_entity("alpha-α"))
         b = do(lambda: k.found_entity("beta-β"))

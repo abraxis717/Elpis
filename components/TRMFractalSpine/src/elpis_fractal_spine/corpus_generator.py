@@ -899,9 +899,8 @@ class CorpusGenerator:
         # Generate all cases
         all_cases = self.generate_all()
 
-        assert len(all_cases) == TOTAL_CASES, (
-            f"Generated {len(all_cases)} != {TOTAL_CASES}"
-        )
+        if not (len(all_cases) == TOTAL_CASES):
+            raise AssertionError(f"Generated {len(all_cases)} != {TOTAL_CASES}")
 
         # -----------------------------------------------------------------
         # Deterministic split allocator with zero leakage

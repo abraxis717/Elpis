@@ -89,12 +89,19 @@ class TestReplay:
         _scenario(k)
         events = k.events()
         genesis = k._genesis_digest
+        scheduler_protocol = k.scheduler_protocol
         k.close()
 
-        from elpis_ecs.persistence import genesis_descriptor_digest
-        g = genesis_descriptor_digest("ecs-m1a-genesis")
-        s1 = replay_from_events(g, events)
-        s2 = replay_from_events(g, events)
+        s1 = replay_from_events(
+            genesis,
+            events,
+            scheduler_protocol=scheduler_protocol,
+        )
+        s2 = replay_from_events(
+            genesis,
+            events,
+            scheduler_protocol=scheduler_protocol,
+        )
         assert s1.state_root_digest() == s2.state_root_digest()
 
     def test_wrong_genesis_fails_closed(self, tmp_path):

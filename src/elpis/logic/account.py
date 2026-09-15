@@ -398,18 +398,15 @@ class RequestAccount:
             for a in AXES:
                 initial_val = getattr(st.initial_budget, a)
                 if initial_val is None:
-                    assert getattr(st.remaining_budget, a) is None, (
-                        f"conservation: axis {a} initial NOT_GRANTED but remaining is not None"
-                    )
-                    assert getattr(st.spent, a) == 0, (
-                        f"conservation: axis {a} NOT_GRANTED but spent > 0"
-                    )
+                    if not (getattr(st.remaining_budget, a) is None):
+                        raise AssertionError(f"conservation: axis {a} initial NOT_GRANTED but remaining is not None")
+                    if not (getattr(st.spent, a) == 0):
+                        raise AssertionError(f"conservation: axis {a} NOT_GRANTED but spent > 0")
                     for rec in st.children.values():
                         if not rec.closed:
                             child_alloc_val = getattr(rec.allocated_budget, a)
-                            assert child_alloc_val is None, (
-                                f"conservation: axis {a} NOT_GRANTED but child allocation granted"
-                            )
+                            if not (child_alloc_val is None):
+                                raise AssertionError(f"conservation: axis {a} NOT_GRANTED but child allocation granted")
                 else:
                     remaining_val = getattr(st.remaining_budget, a)
                     spent_val = getattr(st.spent, a)
@@ -420,11 +417,10 @@ class RequestAccount:
                         and getattr(rec.allocated_budget, a) is not None
                     )
                     total = remaining_val + spent_val + child_sum
-                    assert total == initial_val, (
-                        f"conservation: axis {a}: "
+                    if not (total == initial_val):
+                        raise AssertionError(f"conservation: axis {a}: "
                         f"remaining({remaining_val}) + spent({spent_val}) + "
-                        f"children({child_sum}) = {total} != initial({initial_val})"
-                    )
+                        f"children({child_sum}) = {total} != initial({initial_val})")
 
     # ---------------------------------------------------------------
     # Internal checks

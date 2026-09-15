@@ -57,7 +57,14 @@ import threading
 import fcntl
 from functools import wraps
 
-from .limits import MAX_INT, MAX_FRAME_BYTES, MAX_PAYLOAD_BYTES, MAX_STRING_BYTES, PROTOCOL
+from .limits import (
+    MAX_INT,
+    MAX_FRAME_BYTES,
+    MAX_PAYLOAD_BYTES,
+    MAX_STRING_BYTES,
+    PROTOCOL,
+    SUPPORTED_SCHEDULER_PROTOCOLS,
+)
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
@@ -169,15 +176,34 @@ def empty_state_root(
 # ---------------------------------------------------------------------------
 
 
-def genesis_descriptor_digest(genesis_label: str) -> str:
-    """Domain-separated digest of the genesis descriptor (trusted authority)."""
-    if not isinstance(genesis_label, str) or not genesis_label or len(genesis_label.encode("utf-8")) > MAX_STRING_BYTES:
+def genesis_descriptor_digest(
+    genesis_label: str,
+    scheduler_protocol: str | None = None,
+) -> str:
+    # With no override, preserve historical PROTOCOL exactly.
+    if (
+        not isinstance(genesis_label, str)
+        or not genesis_label
+        or len(genesis_label.encode("utf-8")) > MAX_STRING_BYTES
+    ):
         raise PersistenceError("GENESIS_LABEL_INVALID")
+
+    if scheduler_protocol is None:
+        protocol = dict(PROTOCOL)
+    else:
+        if scheduler_protocol not in SUPPORTED_SCHEDULER_PROTOCOLS:
+            raise PersistenceError("SCHEDULER_PROTOCOL_INVALID")
+        protocol = dict(PROTOCOL)
+        protocol["scheduler"] = scheduler_protocol
+
     return canonical.domain_digest(
         canonical.DOMAIN_GENESIS,
-        {"schema_version": canonical.SCHEMA_VERSION, "genesis_label": genesis_label, "protocol": PROTOCOL},
+        {
+            "schema_version": canonical.SCHEMA_VERSION,
+            "genesis_label": genesis_label,
+            "protocol": protocol,
+        },
     )
-
 
 def build_event(
     event_index: int,
@@ -274,7 +300,7 @@ def verify_event_fields(event: Mapping[str, Any], index: int) -> None:
         checked by verify_event_chain);
       * transaction_id (non-empty str);
       * event_kind (non-empty str);
-      * entity_id (None or str — the nullable/string contract);
+      * entity_id (non-empty str for every admitted current event kind);
       * payload (dict);
       * payload_digest (64-hex, and must equal the recomputed digest);
       * before_state_root / after_state_root (64-hex);
@@ -302,8 +328,8 @@ def verify_event_fields(event: Mapping[str, Any], index: int) -> None:
     if not isinstance(event.get("event_kind"), str) or not event.get("event_kind"):
         raise CorruptEventError("EVENT_FIELD_TYPE: event_kind must be a non-empty str")
     entity_id = event.get("entity_id")
-    if entity_id is not None and not isinstance(entity_id, str):
-        raise CorruptEventError("EVENT_FIELD_TYPE: entity_id must be None or str")
+    if not isinstance(entity_id, str) or not entity_id:
+        raise CorruptEventError("EVENT_FIELD_TYPE: entity_id must be a non-empty str")
     payload = event.get("payload")
     if not isinstance(payload, dict):
         raise CorruptEventError("EVENT_FIELD_TYPE: payload must be a mapping")
@@ -652,16 +678,19 @@ def _parse_records(data):
 
 
 # ---------------------------------------------------------------------------
-# Checkpoint (optimization, NOT an alternate authority)
+# Checkpoint (local rollback marker, NOT an alternate history authority)
 # ---------------------------------------------------------------------------
 
 
 @dataclass(frozen=True)
 class Checkpoint:
-    """Advisory history marker, never a projection or alternate authority.
+    """Local history marker, never a projection or alternate authority.
 
-    v1 contains no state snapshot and offers no replay acceleration. It remains
-    accepted for compatibility with local tooling; full replay always runs.
+    A valid marker can establish a process-local monotonic rollback floor
+    against later complete-frame truncation. v1 contains no state snapshot and
+    offers no replay acceleration: full replay always runs. Missing/corrupt
+    marker data provides no rollback anchor, and deletion/replacement of the
+    marker is outside this local guarantee.
     """
 
     event_index: int
@@ -701,7 +730,7 @@ def verify_checkpoint_fields(cp: Mapping[str, Any]) -> None:
 
 
 class CheckpointStore:
-    """Writes/reads a single checkpoint file (optimization only)."""
+    """Writes/reads one local checkpoint rollback marker."""
 
     def __init__(self, path: str) -> None:
         self.path = path
@@ -729,10 +758,11 @@ class CheckpointStore:
 
     @_locked
     def read(self) -> Checkpoint | None:
-        """Read and verify the checkpoint; return None if absent/corrupt.
+        """Read and verify the local marker; return None if absent/corrupt.
 
-        A corrupt checkpoint is rejected (returns None) so the caller falls
-        back to full replay. This is explicit and deterministic.
+        Returning None preserves authoritative full replay but means no local
+        rollback floor is available for that open. A corrupt marker is not
+        silently treated as an authenticated history anchor.
         """
         if not os.path.exists(self.path):
             return None

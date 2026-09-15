@@ -67,7 +67,8 @@ class CastedSparseEmbeddingSignSGD_Distributed(Optimizer):
             local_ids = None
             weights = None
             
-            assert len(group["params"]) == 3
+            if not (len(group["params"]) == 3):
+                raise AssertionError('PRODUCTION_ASSERTION_FAILED:src/elpis_reference/vendor/fprm/models/sparse_embedding.py:70')
             for p in group["params"]:
                 if p.requires_grad:
                     local_weights_grad = p.grad
@@ -76,10 +77,13 @@ class CastedSparseEmbeddingSignSGD_Distributed(Optimizer):
                 elif p.ndim == 2:
                     weights = p
                 else:
-                    assert False
+                    if not (False):
+                        raise AssertionError('PRODUCTION_ASSERTION_FAILED:src/elpis_reference/vendor/fprm/models/sparse_embedding.py:79')
                 
-            assert local_ids is not None
-            assert weights is not None
+            if not (local_ids is not None):
+                raise AssertionError('PRODUCTION_ASSERTION_FAILED:src/elpis_reference/vendor/fprm/models/sparse_embedding.py:81')
+            if not (weights is not None):
+                raise AssertionError('PRODUCTION_ASSERTION_FAILED:src/elpis_reference/vendor/fprm/models/sparse_embedding.py:82')
         
             # Apply SignSGD
             # Adam ≈ SignSGD if gradient is very sparse

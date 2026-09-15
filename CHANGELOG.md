@@ -1,3 +1,14 @@
+## Elpis2.2.8 — Red-team hardening and release-lifecycle successor
+
+- Close the qualified F1/F1b/F1c/F3/F4/F5 authority, rollback, CI-coverage, and fail-closed hardening findings without reopening closed milestones.
+- Ratify canonical identity v1, topology replay elision for trusted live state, incremental DurableApplicationLedger v2 validation, and scheduler v2 with exact historical-v1 compatibility.
+- Refresh only the drifted structural-feature frozen authority pin identified by hosted CI.
+- Verify immutable release-tag trees after publication while preserving the pre-tag candidate path required by push-before-tag release ordering.
+- Sanitize three host-local path literals from the imported Elpis2.2.7 red-team report so the public private-path scanner and mutation-suite clean control are truthful again.
+- Keep release-manifest v3 opt-in; Elpis2.2.8 remains on the historical v2 release-manifest contract.
+- Preserve F2C performance debt, source-blocked F8, F9 documentation debt, and external phase-manifest anchoring as non-release backlog.
+- Keep `PUBLISHED_RELEASES.json` unchanged until immutable-tag and publication admission.
+
 ## Elpis2.2.7 — Hosted repository-hygiene corrective successor
 
 - Preserve sealed Elpis2.2.6 unchanged as failed, untagged hosted-main evidence.

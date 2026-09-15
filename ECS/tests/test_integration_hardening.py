@@ -10,7 +10,7 @@ import pytest
 
 from elpis_ecs import canonical
 from elpis_ecs.bus import verify_envelope, seal_envelope
-from elpis_ecs.errors import EcsError, CorruptEventError, PersistenceError
+from elpis_ecs.errors import EcsError, CorruptEventError, PersistenceError, WrongAuthorityError
 from elpis_ecs.kernel import Kernel
 from elpis_ecs.limits import MAX_FRAME_BYTES, MAX_INT, MAX_PAYLOAD_BYTES, MAX_STRING_BYTES
 from elpis_ecs.persistence import LENGTH_PREFIX, _parse_records, Checkpoint, verify_event_chain
@@ -134,7 +134,7 @@ def test_missing_event_field_rejected(tmp_path, field):
         events = k.events()
         del events[0][field]
         with pytest.raises(EcsError):
-            replay_from_events(k._genesis_digest, events)
+            replay_from_events(k._genesis_digest, events, scheduler_protocol=k.scheduler_protocol)
 
 
 ENVELOPE_CORRUPTIONS = [
@@ -168,7 +168,7 @@ def test_exact_clock_hostile_values(tmp_path, value):
         events[0]["logical_clock"] = value
         reseal(events[0])
         with pytest.raises(EcsError):
-            replay_from_events(k._genesis_digest, events)
+            replay_from_events(k._genesis_digest, events, scheduler_protocol=k.scheduler_protocol)
 
 
 @pytest.mark.parametrize("payload", [
@@ -241,7 +241,7 @@ def test_founding_payload_semantics(tmp_path, field, value):
         events[-1]["payload"][field] = value
         reseal(events[-1])
         with pytest.raises(EcsError):
-            replay_from_events(k._genesis_digest, events)
+            replay_from_events(k._genesis_digest, events, scheduler_protocol=k.scheduler_protocol)
 
 
 @pytest.mark.parametrize("field,value", [("from", "DORMANT"), ("to", "TERMINATED"), ("extra", 1)])
@@ -253,7 +253,7 @@ def test_lifecycle_payload_semantics(tmp_path, field, value):
         events[-1]["payload"][field] = value
         reseal(events[-1])
         with pytest.raises(EcsError):
-            replay_from_events(k._genesis_digest, events)
+            replay_from_events(k._genesis_digest, events, scheduler_protocol=k.scheduler_protocol)
 
 
 def test_corrupt_semantic_prefix_plus_partial_tail_never_truncates(tmp_path):
@@ -383,7 +383,7 @@ def test_concurrent_mixed_operations_and_introspection(tmp_path):
         events, root = k.events(), k.state_root_digest()
         verify_event_chain(events)
         assert k.state.registry.get(b).state.payload == {"delivered": 24}
-        assert replay_from_events(k._genesis_digest, events, 128).state_root_digest() == root
+        assert replay_from_events(k._genesis_digest, events, 128, scheduler_protocol=k.scheduler_protocol).state_root_digest() == root
     with Kernel(str(tmp_path), mailbox_capacity=128) as k:
         assert k.state_root_digest() == root
 
@@ -406,8 +406,12 @@ def test_checkpoint_record_corruption_falls_back(tmp_path, field, value):
         cp["checkpoint_digest"] = checkpoint_digest(cp)
     raw = canonical.canonical_bytes(cp)
     path.write_bytes(LENGTH_PREFIX.pack(len(raw)) + raw)
-    with Kernel(str(tmp_path)) as k:
-        assert k.state_root_digest() == root
+    if field in {"event_digest", "state_root_digest"}:
+        with pytest.raises(WrongAuthorityError, match="HISTORY_DIVERGENCE"):
+            Kernel(str(tmp_path)).open()
+    else:
+        with Kernel(str(tmp_path)) as k:
+            assert k.state_root_digest() == root
 
 
 @pytest.mark.parametrize("digest", ["A" * 64, "+" + "0" * 63, " " + "0" * 63, "0" * 63, "０" * 64])
@@ -418,7 +422,7 @@ def test_digest_format_is_exact_lowercase_hex(tmp_path, digest):
         events[0]["prev_event_digest"] = digest
         reseal(events[0])
         with pytest.raises(EcsError):
-            replay_from_events(k._genesis_digest, events)
+            replay_from_events(k._genesis_digest, events, scheduler_protocol=k.scheduler_protocol)
 
 
 def test_ambiguous_scheduler_keys_rejected():

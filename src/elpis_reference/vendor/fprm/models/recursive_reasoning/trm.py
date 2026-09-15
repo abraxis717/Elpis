@@ -69,7 +69,8 @@ class TinyRecursiveReasoningModel_ACTV1_Inner(nn.Module):
         # with-grad cycle with attention over the loop-state history. zero-init
         # pseudo-query => uniform average over sources at init (AttnRes stabilizer).
         if self.config.loop_attnres:
-            assert self.config.loop_attnres_mode == "state", "only 'state' mode wired for TRM loop-attn"
+            if not (self.config.loop_attnres_mode == "state"):
+                raise AssertionError("only 'state' mode wired for TRM loop-attn")
             grid = self.config.loop_attnres_grid
             if grid == "loop1d":
                 self.loop_attn = LoopAttn(self.config.hidden_size, self.config.num_heads,

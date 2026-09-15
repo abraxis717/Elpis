@@ -33,7 +33,7 @@ M1A provides:
 - recoverable framed-log persistence;
 - serialized local mutation and introspection;
 - crash/restart recovery;
-- nonauthoritative checkpoint markers;
+- valid-local checkpoint rollback-floor markers (full replay remains authoritative);
 - fail-closed corruption handling.
 
 M1A does **not** establish cross-process transport, federation, semantic truth, topology authority, Structural R0 mutation admission, Grid81/Semantic-IR integration, Projector/TRM/DarwinianMatrix efficacy, or autonomous semantic authority.
@@ -223,7 +223,7 @@ Public mutation, observation, checkpoint, open/close, and recovery boundaries ar
 
 The event log also owns a process-local reentrant lock. Live log reads never perform recovery truncation.
 
-The durable storage path uses an exclusive inode lock to reject another cooperative live owner, including supported path aliases. This is not a defense against a hostile privileged process replacing files underneath the kernel.
+The durable storage path uses an exclusive inode lock to reject another cooperative live owner, including supported path aliases. `flock` is an advisory/cooperative local-filesystem exclusion primitive; it is not a distributed lock, an NFS authority primitive, or a defense against a hostile privileged process replacing files underneath the kernel.
 
 ## Persistence format and recovery
 
@@ -294,15 +294,15 @@ Replay does not trust a stored after-root merely because its hash syntax is vali
 
 ## Checkpoints
 
-Current checkpoints are nonauthoritative history markers.
+Current checkpoints are local history markers, not alternate state authority.
 
-They do not currently provide a claimed replay-performance acceleration because they do not contain a complete authoritative projection snapshot.
+A valid checkpoint establishes a **local monotonic rollback floor** for the history position it records: after full replay, reopening rejects a complete event history that has been truncated behind the marker or diverges at the marker. Valid events appended after the marker remain legal.
 
-A checkpoint may assist validation/restart bookkeeping, but full event history remains authoritative.
+Checkpoints do not provide replay-performance acceleration because they contain no authoritative projection snapshot. Full event history is still replayed and validated in full.
 
-Checkpoint corruption or mismatch cannot weaken event-chain verification. The full history is verified with the same strength whether a checkpoint exists or not. Invalid checkpoint data falls back to authoritative full replay where the contract permits.
+A missing or corrupt checkpoint falls back to authoritative full replay and therefore supplies **no rollback anchor for that open**. Deleting/replacing the checkpoint is outside this local-marker guarantee. Detecting a wholly rewritten otherwise-valid history requires an external trusted head/seal and remains a nonclaim.
 
-Future snapshot acceleration must preserve this same verification strength before it can replace full replay work.
+Future snapshot acceleration must preserve full-history verification strength or establish an independently qualified equivalent before replacing replay work.
 
 ## Canonical serialization
 
@@ -377,11 +377,11 @@ M1A does not reinterpret or extend those claims.
 
 ## Topology
 
-Interaction-derived topology is intentionally deferred.
+Interaction-derived topology projection and deterministic structural analysis are available as **derived views** of kernel-verified committed interaction history.
 
-A future topology layer should derive canonical connectivity only from kernel-verifiable committed interaction facts. An entity's self-reported topology observation must not by itself manufacture an authoritative graph edge.
+They do not create a second mutable authority, grant semantic/topology truth, authenticate endpoints, or authorize mutation. An entity's self-reported topology observation cannot manufacture an authoritative graph edge.
 
-No current M1A API grants topology authority.
+The kernel verifies the derived projection before analysis; topology remains a mechanical structural view rather than an independent authority domain.
 
 ## Projector, TRM, DarwinianMatrix and Grid81
 
@@ -471,13 +471,12 @@ Packaging does not widen runtime authority; it only makes the qualified M1A mech
 
 The next ECS milestones remain separate admission decisions:
 
-1. interaction-derived topology projection;
-2. bounded Structural R0 proposal/admission bridge;
-3. observability/health/resource accounting where they affect runtime operation;
-4. transport and authenticated cross-process authority;
-5. federation;
-6. Projector/TRM/DarwinianMatrix integration;
-7. future Semantic IR/Grid81 successor work where supported by new evidence.
+1. bounded Structural R0 proposal/admission bridge;
+2. observability/health/resource accounting where they affect runtime operation;
+3. transport and authenticated cross-process authority;
+4. federation;
+5. Projector/TRM/DarwinianMatrix integration;
+6. future Semantic IR/Grid81 successor work where supported by new evidence.
 
 Each later milestone must preserve the M1A invariants: deterministic authority boundaries, replayability, provenance, local sovereignty, capability-scoped mutation, and no silent semantic-authority escalation.
 

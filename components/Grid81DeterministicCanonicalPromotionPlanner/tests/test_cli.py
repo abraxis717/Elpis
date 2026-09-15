@@ -46,7 +46,7 @@ def test_cli_gates():
     r = _cli_command(["gates", "--source-config", CONFIG])
     assert r.returncode == 0
     data = json.loads(r.stdout)
-    assert len(data) == 20
+    assert len(data) == 19
     for gate in data:
         assert "gate_id" in gate
         assert "passed" in gate

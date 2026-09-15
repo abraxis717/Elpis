@@ -106,7 +106,7 @@ def test_authority_audit_defaults():
 
 
 def test_rejection_precedence_length():
-    assert len(REJECTION_PRECEDENCE) == 20
+    assert len(REJECTION_PRECEDENCE) == 21
 
 
 def test_rejection_precedence_deterministic():
