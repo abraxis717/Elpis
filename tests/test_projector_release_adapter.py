@@ -2,11 +2,16 @@ from __future__ import annotations
 
 import ast
 import hashlib
+import importlib.util
 import inspect
 
 import pytest
 
-pytest.importorskip("torch", reason="TRM tests require optional torch dependency", exc_type=ImportError)
+TORCH_AVAILABLE = importlib.util.find_spec("torch") is not None
+requires_torch = pytest.mark.skipif(
+    not TORCH_AVAILABLE,
+    reason="TRM test requires optional torch dependency",
+)
 
 import elpis_reference.projector_release as adapter_module
 from DarwinianMatrix.projector.constraints import (
@@ -107,6 +112,7 @@ def _resolved(cell=10):
     return diagnostic, residual, resolved
 
 
+@requires_torch
 def test_release_uses_precommitted_owner_not_live_owner_copy():
     diagnostic, residual, resolved = _resolved()
     state = _state()
@@ -126,6 +132,7 @@ def test_release_uses_precommitted_owner_not_live_owner_copy():
     assert transaction.proposals[0].operation == ClampOperation.RELEASE
 
 
+@requires_torch
 def test_wrong_precommitted_owner_fails_before_projector_mutation():
     _, residual, resolved = _resolved()
     state = _state()
@@ -138,6 +145,7 @@ def test_wrong_precommitted_owner_fails_before_projector_mutation():
         )
 
 
+@requires_torch
 def test_release_binding_is_exact_state_bound():
     _, residual, resolved = _resolved()
     state = _state()
@@ -163,6 +171,7 @@ def test_release_binding_is_exact_state_bound():
         )
 
 
+@requires_torch
 def test_multi_cell_release_is_rejected_instead_of_truncated():
     diagnostic = _diagnostic()
     residual = diagnostic.to_task_residual()
@@ -190,6 +199,7 @@ def test_multi_cell_release_is_rejected_instead_of_truncated():
         )
 
 
+@requires_torch
 def test_missing_binding_for_active_resolved_support_fails_closed():
     _, residual, resolved = _resolved(cell=20)
     state = _state()
@@ -202,6 +212,7 @@ def test_missing_binding_for_active_resolved_support_fails_closed():
         )
 
 
+@requires_torch
 def test_release_preserves_unrelated_clamps():
     _, residual, resolved = _resolved()
     state = _state()
@@ -220,6 +231,7 @@ def test_release_preserves_unrelated_clamps():
         assert result.state.owners[cell] == f"slot-{cell}"
 
 
+@requires_torch
 def test_inactive_resolved_support_is_deterministic_noop():
     _, residual, resolved = _resolved()
     state = _state()
@@ -253,6 +265,7 @@ def test_inactive_resolved_support_is_deterministic_noop():
     assert second is None
 
 
+@requires_torch
 def test_stale_projector_transaction_still_rejected():
     _, residual, resolved = _resolved()
     state = _state()

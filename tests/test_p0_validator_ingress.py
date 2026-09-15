@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 from dataclasses import replace
+import importlib.util
 import inspect
 from types import SimpleNamespace
 
 import pytest
 
-pytest.importorskip("torch", reason="TRM tests require optional torch dependency", exc_type=ImportError)
+TORCH_AVAILABLE = importlib.util.find_spec("torch") is not None
+requires_torch = pytest.mark.skipif(
+    not TORCH_AVAILABLE,
+    reason="TRM test requires optional torch dependency",
+)
 
 from DarwinianMatrix.projector.constraints import (
     ClampOperation,
@@ -256,6 +261,7 @@ def test_supported_validator_failure_loci_remain_six_distinct_cells():
     assert len(cells) == len(set(cells)) == 6
 
 
+@requires_torch
 def test_authorized_failure_still_releases_exactly_one_prebound_cell():
     _, ingress, result, authorized, trace = rejected()
     evidence = result.evidence[0]

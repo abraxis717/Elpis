@@ -113,3 +113,12 @@ def test_replay_protection_conflicting_status_fields_fail_closed(tmp_path):
         },
     )
     assert _check_replay_protection(chain) is False
+
+def test_replay_protection_non_mapping_payloads_fail_closed(tmp_path):
+    payloads = ([], "qualified", 1, True, None)
+    for index, payload in enumerate(payloads):
+        case = tmp_path / f"case-{index}"
+        case.mkdir()
+        chain = _replay_chain(case, payload)
+        assert _check_replay_protection(chain) is False
+

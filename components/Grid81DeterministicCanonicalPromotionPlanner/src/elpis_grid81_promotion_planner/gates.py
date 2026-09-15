@@ -254,6 +254,8 @@ def _check_replay_protection(chain: SourceChain) -> bool:
     if not os.path.exists(replay_path):
         return False
     audit = _read_json(replay_path)
+    if not isinstance(audit, dict):
+        return False
     fields = [
         audit[name]
         for name in ("replay_protection_qualified", "replay_protection")
