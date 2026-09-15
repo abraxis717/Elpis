@@ -309,6 +309,42 @@ jobs:
           fi
           echo "Model weight scan: CLEAN"
 
+  base-install-no-torch:
+    name: Base install without optional Torch
+    runs-on: ubuntu-latest
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONNOUSERSITE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Create isolated base-only environment
+        run: |
+          python -m venv /tmp/elpis-base-no-torch
+          /tmp/elpis-base-no-torch/bin/python -m pip install --upgrade pip
+          /tmp/elpis-base-no-torch/bin/python -m pip install . pytest==9.0.2
+      - name: Prove optional Torch is absent
+        run: |
+          /tmp/elpis-base-no-torch/bin/python -c 'import importlib.util; assert importlib.util.find_spec("torch") is None; print("BASE_INSTALL_TORCH_ABSENT")'
+      - name: Qualify torch-free retained coverage with exact cardinality
+        run: |
+          set -eu
+          OUT="$(
+            PYTHONPATH="" /tmp/elpis-base-no-torch/bin/python -m pytest               -o addopts=               -q -p no:cacheprovider               tests/test_optional_torch_collection_contract.py               tests/test_p0_validator_ingress.py               tests/test_projector_release_adapter.py               tests/test_direct_semantic_replay.py
+          )"
+          printf '%s\n' "$OUT"
+          printf '%s\n' "$OUT" | grep -F "21 passed, 9 skipped"
+      - name: Qualify wholly Torch-dependent feedback module skip
+        run: |
+          set -eu
+          OUT="$(
+            PYTHONPATH="" /tmp/elpis-base-no-torch/bin/python -m pytest               -o addopts=               -q -p no:cacheprovider               tests/test_feedback_refinement.py
+          )"
+          printf '%s\n' "$OUT"
+          printf '%s\n' "$OUT" | grep -F "1 skipped"
+
   canonical-projector-release:
     name: Canonical Projector RELEASE adapter
     runs-on: ubuntu-latest

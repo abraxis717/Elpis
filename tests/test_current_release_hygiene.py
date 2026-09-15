@@ -8,6 +8,38 @@ import tomllib
 
 ROOT = Path(__file__).resolve().parents[1]
 
+_FORWARD_LIFECYCLE_MARKERS = (
+    "pre-seal",
+    "pre-publication",
+    "remain separate later gates",
+    "remains a separate later gate",
+    "remain later gates",
+    "remains a later gate",
+)
+
+
+def _published_versions() -> set[str]:
+    payload = json.loads(
+        (ROOT / "PUBLISHED_RELEASES.json").read_text(encoding="utf-8")
+    )
+    return {
+        entry["version"]
+        for entry in payload["published_releases"]
+    }
+
+
+def _assert_release_note_lifecycle_neutral(text: str) -> None:
+    normalized = " ".join(text.lower().split())
+    offenders = [
+        marker
+        for marker in _FORWARD_LIFECYCLE_MARKERS
+        if marker in normalized
+    ]
+    assert not offenders, (
+        "RELEASE_NOTE_FORWARD_LIFECYCLE_CLAIM:"
+        + ",".join(offenders)
+    )
+
 
 def _current_version() -> str:
     return (ROOT / "VERSION").read_text(encoding="utf-8").strip()
@@ -32,6 +64,13 @@ def test_current_release_metadata_and_registration_are_atomic():
 
     note = ROOT / f"RELEASE_NOTES/Elpis{version}.md"
     assert note.is_file()
+    # Historical published notes are immutable evidence. For every current
+    # unpublished successor, the note itself must remain lifecycle-neutral so
+    # sealing/tagging/publication cannot make its prose stale.
+    if version not in _published_versions():
+        _assert_release_note_lifecycle_neutral(
+            note.read_text(encoding="utf-8")
+        )
 
     index = (ROOT / "RELEASE_NOTES/README.md").read_text(encoding="utf-8")
     assert f"Current: [`Elpis{version}.md`](Elpis{version}.md)" in index
@@ -125,3 +164,51 @@ def test_repository_completeness_explicitly_separates_source_only_integrations()
         assert root in ci
 
     assert "Qualify installed assembly from pristine throwaway source copy" in ci
+
+def test_release_note_lifecycle_guard_rejects_forward_state_claims():
+    for phrase in (
+        "This is a pre-seal successor candidate.",
+        "This is a pre-publication candidate.",
+        "Manifest sealing and tag creation remain separate later gates.",
+        "Publication remains a later gate.",
+    ):
+        try:
+            _assert_release_note_lifecycle_neutral(
+                "# Release\n\n" + phrase + "\n"
+            )
+        except AssertionError as exc:
+            assert "RELEASE_NOTE_FORWARD_LIFECYCLE_CLAIM" in str(exc)
+        else:
+            raise AssertionError(
+                f"forward lifecycle phrase unexpectedly accepted: {phrase}"
+            )
+
+
+def test_release_note_lifecycle_guard_accepts_lifecycle_neutral_text():
+    _assert_release_note_lifecycle_neutral(
+        "# ElpisX\n\n"
+        "This release records qualified corrective behavior and its "
+        "sealed technical scope.\n"
+    )
+
+
+def test_base_install_no_torch_ci_contract_is_exact():
+    ci = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    start = ci.index("  base-install-no-torch:\n")
+    end = ci.index("\n  canonical-projector-release:\n", start)
+    job = ci[start:end]
+
+    assert "name: Base install without optional Torch" in job
+    assert "python -m venv /tmp/elpis-base-no-torch" in job
+    assert "/tmp/elpis-base-no-torch/bin/python -m pip install . pytest==9.0.2" in job
+    assert "[trm]" not in job
+    assert 'find_spec("torch") is None' in job
+    assert "tests/test_optional_torch_collection_contract.py" in job
+    assert "tests/test_p0_validator_ingress.py" in job
+    assert "tests/test_projector_release_adapter.py" in job
+    assert "tests/test_direct_semantic_replay.py" in job
+    assert 'grep -F "21 passed, 9 skipped"' in job
+    assert "tests/test_feedback_refinement.py" in job
+    assert 'grep -F "1 skipped"' in job
+    assert "-o addopts=" in job
+
