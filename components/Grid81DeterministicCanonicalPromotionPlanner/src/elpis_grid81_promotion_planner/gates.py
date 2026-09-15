@@ -254,7 +254,15 @@ def _check_replay_protection(chain: SourceChain) -> bool:
     if not os.path.exists(replay_path):
         return False
     audit = _read_json(replay_path)
-    return audit.get("replay_protection_qualified", False) or audit.get("replay_protection", True)
+    fields = [
+        audit[name]
+        for name in ("replay_protection_qualified", "replay_protection")
+        if name in audit
+    ]
+    # At least one recognized status must be explicitly present. If both legacy
+    # and qualified statuses are present they must agree on True. Missing,
+    # false, conflicting, or non-boolean evidence fails closed.
+    return bool(fields) and all(type(value) is bool and value is True for value in fields)
 
 
 def _check_mutation_exactness(chain: SourceChain) -> bool:

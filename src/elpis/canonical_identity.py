@@ -33,6 +33,11 @@ def _normalize(value: Any) -> Any:
     if isinstance(value, dict):
         if any(type(key) is not str for key in value):
             raise CanonicalIdentityError("CANONICAL_MAP_KEY_NOT_STRING")
+        # "__bytes__" is the v1 type sentinel used to encode raw bytes. Ordinary
+        # mappings may not claim that key, otherwise raw bytes and an ordinary
+        # mapping can canonicalize to identical JSON bytes.
+        if "__bytes__" in value:
+            raise CanonicalIdentityError("CANONICAL_RESERVED_MAP_KEY:__bytes__")
         return {key: _normalize(value[key]) for key in sorted(value)}
     if value is None or type(value) in (str, int, bool):
         return value

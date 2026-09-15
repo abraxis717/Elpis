@@ -374,9 +374,17 @@ class DurableApplicationLedgerV2:
                 (artifact_digest, sequence, receipt_digest),
             )
             self._verify_new_entry_association(connection, entry)
+
+            # Advance only owner-known state while the write lock is still held.
+            # PRAGMA data_version is deliberately NOT refreshed here: SQLite does
+            # not advance it for this connection's own commit, and retaining the
+            # previously validated external baseline guarantees that any foreign
+            # commit after our commit remains detectable on the next operation.
+            self._verified_count = entry.sequence
+            self._verified_head = entry.entry_digest
+            self._verified_total_changes = connection.total_changes
             committed_entry = entry
 
-        self._capture_verified_owner_snapshot(self._connection)
         return committed_entry
 
     @staticmethod

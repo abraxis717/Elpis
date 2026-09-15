@@ -1,3 +1,13 @@
+# Frozen structural-guidance authority contains load-bearing assert-based
+# invariants whose bytes are immutable release authority. Optimized Python
+# removes those checks, so the supported package import path must fail closed
+# rather than execute frozen authority with weakened semantics.
+if not __debug__:
+    raise RuntimeError(
+        "FROZEN_AUTHORITY_REQUIRES_DEBUG: structural_guidance frozen authority "
+        "contains assert-based invariants removed by -O/PYTHONOPTIMIZE"
+    )
+
 from .admission import (
     StructuralGuidanceAdmissionConfig,
     StructuralGuidanceAdmissionResult,

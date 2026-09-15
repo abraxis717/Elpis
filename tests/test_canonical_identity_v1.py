@@ -68,3 +68,8 @@ def test_non_string_mapping_key_rejected():
 def test_invalid_domain_rejected(domain):
     with pytest.raises(CanonicalIdentityError):
         content_digest(domain, {"a": 1})
+
+def test_bytes_type_sentinel_cannot_alias_ordinary_mapping():
+    assert canonical_json_bytes(b"\x00") == b'{"__bytes__":"00"}'
+    with pytest.raises(CanonicalIdentityError, match="RESERVED_MAP_KEY"):
+        canonical_json_bytes({"__bytes__": "00"})

@@ -3,6 +3,7 @@
 import json
 import os
 import sys
+from types import SimpleNamespace
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src"))
 
@@ -11,6 +12,7 @@ from elpis_grid81_promotion_planner.gates import (
     evaluate_gates,
     GATE_DEFINITIONS,
     first_failure,
+    _check_replay_protection,
 )
 from elpis_grid81_promotion_planner.decision import make_decision, DECISION_NOT_READY
 
@@ -79,3 +81,35 @@ def test_gate_ordinal_ascending():
     ordinals = [ord_ for _, ord_, _ in GATE_DEFINITIONS]
     for i in range(len(ordinals) - 1):
         assert ordinals[i] < ordinals[i + 1]
+
+def _replay_chain(tmp_path, payload):
+    source = tmp_path / "g53b1"
+    source.mkdir()
+    (source / "G53B_REPLAY_AUDIT.json").write_text(
+        json.dumps(payload),
+        encoding="utf-8",
+    )
+    return SimpleNamespace(
+        g53b1=SimpleNamespace(source_directory=str(source))
+    )
+
+
+def test_replay_protection_missing_status_fields_fails_closed(tmp_path):
+    chain = _replay_chain(tmp_path, {"audit": "present"})
+    assert _check_replay_protection(chain) is False
+
+
+def test_replay_protection_explicit_legacy_true_is_accepted(tmp_path):
+    chain = _replay_chain(tmp_path, {"replay_protection": True})
+    assert _check_replay_protection(chain) is True
+
+
+def test_replay_protection_conflicting_status_fields_fail_closed(tmp_path):
+    chain = _replay_chain(
+        tmp_path,
+        {
+            "replay_protection_qualified": True,
+            "replay_protection": False,
+        },
+    )
+    assert _check_replay_protection(chain) is False
