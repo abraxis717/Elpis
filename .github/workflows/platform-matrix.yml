@@ -18,6 +18,9 @@ jobs:
           - ubuntu-latest
           - macos-latest
           - windows-latest
+        python-version:
+          - '3.11'
+          - '3.12'
 
     runs-on: ${{ matrix.os }}
 
@@ -26,7 +29,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ matrix.python-version }}
 
       - run: python tools/setup.py --profile reference --dry-run
 
@@ -34,6 +37,13 @@ jobs:
 
       - run: python -m pip install pytest==9.0.2
 
-      - run: python -m pip install -e . --no-deps
+      - name: Install supported base dependency set
+        run: python -m pip install -e .
 
-      - run: python -m pytest -q -p no:cacheprovider tests/test_platform_setup.py tests/test_semantic_refinement_contract.py
+      - name: Report resolved numerical stack
+        run: python -c "import numpy, scipy, sys; print(sys.version); print('numpy=' + numpy.__version__); print('scipy=' + scipy.__version__)"
+
+      - name: Prove optional Torch is not part of the base dependency set
+        run: python -c "import importlib.util; assert importlib.util.find_spec('torch') is None; print('PLATFORM_MATRIX_TORCH_ABSENT')"
+
+      - run: python -m pytest -q -p no:cacheprovider tests/test_platform_setup.py tests/test_semantic_refinement_contract.py tests/test_python_support_contract.py
