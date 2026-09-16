@@ -271,11 +271,17 @@ def _load_model_from_reader(
     device: str = "auto",
     seed: int | None = None,
 ):
-    expected_sha256 = getattr(reader, "expected_sha256", None)
-    expected_size = getattr(reader, "size_bytes", None)
+    try:
+        expected_sha256 = reader.expected_sha256
+        expected_size = reader.size_bytes
+    except AttributeError as exc:
+        raise RuntimeError(
+            "checkpoint reader is missing required byte authority"
+        ) from exc
+
     if expected_sha256 != MODEL_SHA256:
         raise RuntimeError("checkpoint reader is not bound to canonical FPRM authority")
-    if expected_size is None or int(expected_size) <= 0:
+    if int(expected_size) <= 0:
         raise RuntimeError("checkpoint reader is missing exact byte authority")
 
     torch = require_torch()
