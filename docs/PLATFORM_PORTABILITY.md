@@ -26,3 +26,18 @@ aware of accelerator families.
 
 `tools/setup.py` performs platform discovery and derives the build plan. It
 contains no developer-workstation absolute paths.
+
+## Checkpoint-artifact FMS adapter
+
+The first FMS inference adapter owns only the verified checkpoint byte object.
+It registers those bytes with FMS, obtains a real FMS lease, and exposes the
+lease through the existing inference port. The CPU reference executor consumes
+that lease-backed reader.
+
+This does not claim that decoded PyTorch parameters, activations, or
+accelerator allocations are FMS-resident. Those allocations remain outside FMS
+until a PAL/backend actually owns them. Proxy accounting for memory owned
+elsewhere is forbidden.
+
+Under the POSIX PAL, HOT is unavailable. HOT + FOLD_DOWN therefore resolves
+through FMS to actual WARM CPU-addressable residency.

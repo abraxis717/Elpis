@@ -90,3 +90,28 @@ else()
     m
   )
 endif()
+
+# FMS inference checkpoint-residency bridge.
+# Thin ABI only: placement/fold-down/lease policy remains in FMS/PAL.
+add_library(fms_inference_bridge SHARED fms_inference_bridge.c)
+target_include_directories(fms_inference_bridge PRIVATE ${HACF_INCLUDE_DIR})
+set_target_properties(fms_inference_bridge PROPERTIES
+  OUTPUT_NAME "fms_inference_bridge"
+  PREFIX "lib"
+)
+if(APPLE)
+  target_link_libraries(fms_inference_bridge PRIVATE Threads::Threads)
+  target_link_options(fms_inference_bridge PRIVATE
+    "-Wl,-force_load,${HACF_FMS_LIB}"
+    "-Wl,-force_load,${HACF_HASH_LIB}"
+  )
+else()
+  target_link_libraries(fms_inference_bridge PRIVATE
+    "-Wl,--start-group"
+    ${HACF_FMS_LIB}
+    ${HACF_HASH_LIB}
+    "-Wl,--end-group"
+    Threads::Threads
+    m
+  )
+endif()

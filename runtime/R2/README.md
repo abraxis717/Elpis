@@ -57,3 +57,12 @@ does not import Torch or the learned feedback implementation. The learned path i
 resolved lazily only when `execute_feedback_transaction()` is invoked.
 
 The bounded profile was admitted only after the pinned real FPRM checkpoint qualification. Hosted CI remains regression-only: it uses deterministic dud/fake solvers and must not require model weights, CUDA, GPU access, checkpoint download, or real inference.
+
+### R0 checkpoint-artifact FMS adapter
+
+The first concrete residency provider binds the pinned checkpoint bytes to the
+existing FMS/POSIX PAL. R2 itself remains hardware-agnostic and receives the
+provider through residency_port / execution_port.
+
+R0 coverage is intentionally limited to checkpoint-artifact residency. Live
+PyTorch tensor/parameter memory is not claimed as FMS-managed.

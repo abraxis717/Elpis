@@ -213,6 +213,94 @@ def _extract_state_dict(payload: object) -> dict[str, torch.Tensor]:
     return state
 
 
+
+def _load_checkpoint_state_reader(
+    reader,
+    *,
+    expected_sha256: str = MODEL_SHA256,
+    expected_size: int | None = None,
+) -> dict[str, torch.Tensor]:
+    # Stream the existing byte authority for SHA verification, then rewind and
+    # pass the same reader directly to torch.load. This hook does not create a
+    # second whole-checkpoint Python bytes object.
+    torch = require_torch()
+    if not all(hasattr(reader, name) for name in ("read", "seek", "tell")):
+        raise TypeError("checkpoint reader must be seekable and readable")
+
+    reader.seek(0)
+    digest = hashlib.sha256()
+    total = 0
+    while True:
+        chunk = reader.read(1024 * 1024)
+        if not chunk:
+            break
+        if not isinstance(chunk, (bytes, bytearray, memoryview)):
+            raise TypeError("checkpoint reader returned non-bytes data")
+        digest.update(chunk)
+        total += len(chunk)
+
+    if expected_size is not None and total != int(expected_size):
+        raise RuntimeError(
+            f"FPRM checkpoint byte-count mismatch: {total} != {expected_size}"
+        )
+    observed = digest.hexdigest()
+    if observed != expected_sha256:
+        raise RuntimeError(
+            f"FPRM checkpoint SHA-256 mismatch: {observed} != {expected_sha256}"
+        )
+
+    reader.seek(0)
+    payload = torch.load(reader, map_location="cpu", weights_only=True)
+    state = _extract_state_dict(payload)
+    if len(state) != STATE_KEY_COUNT:
+        raise RuntimeError(
+            f"FPRM state-key ABI mismatch: {len(state)} != {STATE_KEY_COUNT}"
+        )
+    elements = sum(int(tensor.numel()) for tensor in state.values())
+    if elements != STATE_ELEMENTS:
+        raise RuntimeError(
+            f"FPRM state-element ABI mismatch: {elements} != {STATE_ELEMENTS}"
+        )
+    reader.seek(0)
+    return state
+
+
+def _load_model_from_reader(
+    reader,
+    *,
+    device: str = "auto",
+    seed: int | None = None,
+):
+    expected_sha256 = getattr(reader, "expected_sha256", None)
+    expected_size = getattr(reader, "size_bytes", None)
+    if expected_sha256 != MODEL_SHA256:
+        raise RuntimeError("checkpoint reader is not bound to canonical FPRM authority")
+    if expected_size is None or int(expected_size) <= 0:
+        raise RuntimeError("checkpoint reader is missing exact byte authority")
+
+    torch = require_torch()
+    target_device = _device_from_name(device)
+    state = _load_checkpoint_state_reader(
+        reader,
+        expected_sha256=expected_sha256,
+        expected_size=int(expected_size),
+    )
+    if seed is not None:
+        torch.manual_seed(seed)
+        if target_device.type == "cuda":
+            torch.cuda.manual_seed_all(seed)
+
+    model = _new_model(target_device)
+    model.load_state_dict(state, strict=True)
+    model.eval()
+    model.config.max_iter_eval = FPRM_MAX_ITER
+    model.set_num_iters()
+    inner = model.inner
+    inner.L_optimizer.stepsize_decay = FPRM_STEPSIZE_DECAY
+    inner.L_optimizer.decay_patience = FPRM_DECAY_PATIENCE
+    return model, target_device
+
+
 def _load_checkpoint_state(path: Path) -> dict[str, torch.Tensor]:
     torch = require_torch()
     data = path.read_bytes()
@@ -346,6 +434,15 @@ def load_model(
     device: str = "auto",
     seed: int | None = None,
 ) -> tuple[FPTinyRecursiveReasoningModelSingleZ_ACTV1, torch.device]:
+    if model_path is not None and all(
+        hasattr(model_path, name) for name in ("read", "seek", "tell")
+    ):
+        return _load_model_from_reader(
+            model_path,
+            device=device,
+            seed=seed,
+        )
+
     torch = require_torch()
     path = Path(model_path or default_model_path())
 

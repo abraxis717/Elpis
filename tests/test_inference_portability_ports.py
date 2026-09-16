@@ -73,12 +73,26 @@ def test_residency_contract_is_logical_and_provider_identity_is_opaque():
 
 
 def test_r2_exposes_ports_without_importing_torch():
+    torch_modules_before = frozenset(
+        name
+        for name in sys.modules
+        if name == "torch" or name.startswith("torch.")
+    )
+
     import elpis_runtime_r2.wiring as wiring
 
     signature = inspect.signature(wiring.execute_feedback_transaction)
     assert "execution_port" in signature.parameters
     assert "residency_port" in signature.parameters
-    assert "torch" not in sys.modules
+
+    # R2 remains lazy: importing the wiring surface must not add Torch modules.
+    # This holds both in a no-Torch interpreter and when Torch was preloaded.
+    torch_modules_after = frozenset(
+        name
+        for name in sys.modules
+        if name == "torch" or name.startswith("torch.")
+    )
+    assert torch_modules_after == torch_modules_before
 
 
 @pytest.mark.skipif(
