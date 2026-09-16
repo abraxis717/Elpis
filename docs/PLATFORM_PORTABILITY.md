@@ -66,3 +66,19 @@ providers, or a pre-registered driver all fail before plugin code is loaded.
 `models.toml` and `model_ports.toml` remain data-only authorities and never
 supply Python import targets. Installation of a local plugin wheel is the host
 trust boundary; FMS/PAL remains the runtime residency authority.
+
+
+## Reference POSIX FMS driver wheel
+
+The reference installed implementation of `fms.checkpoint.v1` is a separate
+platform wheel under `drivers/fms_posix/`. Its build reads the root
+`pyproject.toml` version dynamically and exact-pins the same `elpisai` version;
+the driver has no independent release version.
+
+The wheel owns its compiled canonical FMS inference bridge and resolves that
+bridge from package resources. Hosts provide `checkpoint_path` and `cold_root`,
+not `bridge_library` and not `ELPIS_FMS_INFERENCE_BRIDGE`.
+
+This is a host-qualified POSIX/CPU reference provider only. It is not a
+manylinux certification, accelerator provider, or claim that live PyTorch
+tensor residency is FMS-owned.

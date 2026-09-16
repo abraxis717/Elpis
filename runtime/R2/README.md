@@ -79,3 +79,11 @@ An explicit host/bootstrap step may discover the exact abstract driver id named
 by the qualified model port from `elpis.inference_drivers.v1` and register its factory
 into `InferenceDriverRegistry`. R2 itself does not invoke discovery and gains no
 hardware-selection authority.
+
+
+### Reference POSIX FMS driver wheel
+
+A host may install the separate `elpis-inference-driver-fms-posix` wheel and
+explicitly discover `fms.checkpoint.v1`. The wheel carries its own compiled FMS
+bridge; R2 receives only the already-resolved provider through the existing
+execution/residency ports and remains unaware of platform packaging.
