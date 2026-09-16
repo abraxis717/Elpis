@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "elpis-runtime-r2"
+version = "0.1.0"
+description = "Elpis Runtime R2 — bounded Sudoku feedback successor"
+requires-python = ">=3.11,<3.13"
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["elpis_runtime_r2*"]
