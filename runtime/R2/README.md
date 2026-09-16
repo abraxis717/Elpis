@@ -34,7 +34,7 @@ R2 does **not**:
 
 The learned model remains proposal-only.
 
-`runtime_admission = false` remains the authority state during this wiring phase.
+`runtime_admission = true` applies only to the qualified bounded `SUDOKU_FEEDBACK_V1` profile. It does not grant whole-runtime, public-registry, generalized component, semantic-truth, writer, network, or background-execution authority.
 
 ## Packaging boundary
 
@@ -43,4 +43,4 @@ top-level `elpisai` package during the wiring tranche. Importing `elpis_runtime_
 does not import Torch or the learned feedback implementation. The learned path is
 resolved lazily only when `execute_feedback_transaction()` is invoked.
 
-Admission promotion is a separate later gate.
+The bounded profile was admitted only after the pinned real FPRM checkpoint qualification. Hosted CI remains regression-only: it uses deterministic dud/fake solvers and must not require model weights, CUDA, GPU access, checkpoint download, or real inference.

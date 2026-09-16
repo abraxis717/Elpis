@@ -9,7 +9,7 @@ from typing import Any
 
 SCHEMA = "elpis.runtime-r2-feedback-receipt.v1"
 PROFILE = "SUDOKU_FEEDBACK_V1"
-RUNTIME_ADMISSION = False
+RUNTIME_ADMISSION = True
 
 
 def _canonical_bytes(payload: Any) -> bytes:

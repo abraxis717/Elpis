@@ -7,7 +7,7 @@ from typing import Any, Sequence
 
 from .receipt import R2FeedbackRuntimeReceipt
 
-RUNTIME_ADMISSION = False
+RUNTIME_ADMISSION = True
 
 
 def execute_feedback_transaction(

@@ -47,10 +47,13 @@ The top-level public release now additionally provides:
 - qualified R7A task-residual contracts;
 - semantic/topology reverse-trace foundation.
 
-The production task-residual → DarwinianMatrix Projector RELEASE → learned
-re-proposal loop is still being consolidated.
+The bounded task-residual → DarwinianMatrix Projector RELEASE → learned
+re-proposal loop is now qualified and runtime-admitted through R2 only for
+`SUDOKU_FEEDBACK_V1`. That bounded admission does not promote R0/R1,
+component manifests, the public registry, top-level packaging, generalized
+semantic authority, or the Elpis runtime as a whole.
 
-`runtime_admission = false`.
+Whole-runtime `runtime_admission = false` remains in force.
 
 ## Portability note
 

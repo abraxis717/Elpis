@@ -68,7 +68,7 @@ def _receipt():
     )
 
 
-def test_r2_import_is_torch_lazy_and_admission_false():
+def test_r2_import_is_torch_lazy_and_bounded_admission_true():
     code = (
         "import sys;"
         f"sys.path.insert(0,{str(R2_SRC)!r});"
@@ -88,7 +88,7 @@ def test_r2_import_is_torch_lazy_and_admission_false():
     )
     assert proc.returncode == 0, proc.stderr
     assert "torch_loaded=False" in proc.stdout
-    assert "admission=False" in proc.stdout
+    assert "admission=True" in proc.stdout
 
 
 def test_r2_api_requires_prebound_authorities_and_has_no_raw_prompt():
