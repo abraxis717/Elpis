@@ -1,3 +1,13 @@
+## Elpis2.2.12 — Bounded feedback and portable FMS-provider successor
+
+- Add the qualified R2 Sudoku feedback path: task residuals may authorize at most one state-bound Projector release cell per traversal before Samsung FPRM re-proposal, while immutable givens, surviving clamps, deterministic structural authority, and proposal-only learned semantics remain intact.
+- Introduce explicit inference-execution and model-residency ports so R2 no longer selects a physical backend; CPU is the universal baseline and CUDA is optional capability rather than a core requirement.
+- Route verified checkpoint-artifact bytes through the existing FMS/PAL policy, including truthful POSIX HOT-to-WARM folding and exact RAM/WARM accounting, without claiming ownership of decoded/live PyTorch tensors or VRAM.
+- Add explicit model-provider activation and exact installed entry-point discovery for `fms.checkpoint.v1`, with fail-closed missing/duplicate handling and no core hardware probing, package installation, or arbitrary import policy.
+- Add the separate POSIX/CPU reference FMS inference-driver wheel with a package-owned compiled bridge; the driver derives its release version and exact `elpisai` dependency from root metadata rather than owning an independent version.
+- Qualify the base/discovery lane with Torch observably absent while retaining the supported Python `>=3.11,<3.13`, NumPy `>=1.26,<2`, and SciPy `>=1.11,<2` boundary.
+- Preserve frozen structural-guidance authority, historical R0/R1 authority, Elpis2.2.11 publication records, and the separation between release preparation, manifest sealing, hosted/tag qualification, GitHub Release publication, and PyPI publication.
+
 ## Elpis2.2.11 — Post-publication corrective successor
 
 - Close a post-commit DurableApplicationLedger v2 validation race by retaining the last externally validated SQLite `data_version` baseline across owner commits; a foreign commit after the owner commit is therefore revalidated on the next operation instead of being absorbed into a trusted snapshot.

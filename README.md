@@ -2,7 +2,7 @@
 
 **A deterministic structural-reasoning architecture for bounded learned proposals, explicit authority, and falsifiable runtime composition.**
 
-**Release line: Elpis2.2.11**
+**Release line: Elpis2.2.12**
 
 Elpis is a systems-research project about a narrow question: can learned components contribute useful structural proposals while deterministic machinery retains ownership of representation, admissibility, authority, validation, and terminal action?
 
@@ -14,11 +14,15 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 ## Release Notes
 
-**Elpis2.2.11** is the post-publication corrective successor to Elpis2.2.10.
+**Elpis2.2.12** is the bounded-feedback and portability successor to Elpis2.2.11.
 
-The release closes independently reproduced findings in durable-ledger external-commit detection, replay-qualification fail-closed semantics, canonical-identity type disambiguation, optimized-Python safety around frozen assert-based authority, pristine-checkout release lifecycle behavior, optional-Torch test behavior, and child-process import isolation.
+The release adds the qualified R2 Sudoku feedback path with state-bound single-cell release, explicit execution/residency ports, FMS/PAL ownership of verified checkpoint artifacts, exact installed-provider discovery, and a separate POSIX/CPU `fms.checkpoint.v1` reference driver whose compiled FMS bridge is packaged with the driver.
 
-The structural-guidance `_authority` subtree remains byte-identical to sealed Elpis2.2.7. The repository `${ELPIS_CANON}` source-binding fixture, implementation, and regression guard also remain byte-identical to the sealed 2.2.7 contract. Elpis2.2.11 refuses optimized Python before frozen authority can execute with stripped assertions rather than rewriting frozen bytes.
+CPU remains the universal baseline and CUDA is not a core requirement. On the reference POSIX provider, logical HOT checkpoint residency truthfully folds to actual WARM RAM residency. FMS ownership stops at the checkpoint artifact: decoded/live PyTorch tensors and VRAM remain outside the qualified ownership claim.
+
+The base/no-Torch lane remains qualified. Elpis2.2.12 carries Python `>=3.11,<3.13`, NumPy `>=1.26,<2`, and SciPy `>=1.11,<2`; Python 3.13 and NumPy 2.x are not claimed by this release.
+
+The structural-guidance `_authority` subtree and historical R0/R1 authority remain unchanged. Elpis2.2.11 publication evidence remains immutable.
 
 The 2.2.x line includes:
 
@@ -35,7 +39,7 @@ The 2.2.x line includes:
 
 The immutable `Elpis2.2.0` and `Elpis2.2.9` tags are retained as failed-not-published release evidence under `FAILED_RELEASES.json`.
 
-- Current notes: [`RELEASE_NOTES/Elpis2.2.11.md`](RELEASE_NOTES/Elpis2.2.11.md)
+- Current notes: [`RELEASE_NOTES/Elpis2.2.12.md`](RELEASE_NOTES/Elpis2.2.12.md)
 - Public component registry: [`manifests/PUBLIC_COMPONENT_REGISTRY.json`](manifests/PUBLIC_COMPONENT_REGISTRY.json)
 - Qualified writer-chain registry: [`manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json`](manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json)
 - 2.2 qualified-internal adoption policy: [`manifests/ELPIS_2_2_0_ADOPTION_POLICY_R0.json`](manifests/ELPIS_2_2_0_ADOPTION_POLICY_R0.json)
