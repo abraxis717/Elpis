@@ -8,7 +8,13 @@ from typing import Optional, Protocol
 
 import numpy as np
 
-from .contracts import ModelEvidencePacket
+from .contracts import (
+    InferenceExecutionRequest,
+    InferenceExecutionResult,
+    ModelEvidencePacket,
+    ModelResidencyBinding,
+    ModelResidencyRequest,
+)
 
 
 class ModelRegistryPort(Protocol):
@@ -24,6 +30,31 @@ class ModelRegistryPort(Protocol):
 
     def validate_admission(self, model_id: str) -> bool:
         """Check if a model is admitted for evidence emission."""
+        ...
+
+
+class ModelResidencyPort(Protocol):
+    """Injection boundary for FMS-compatible residency policy."""
+
+    def acquire(
+        self,
+        request: ModelResidencyRequest,
+    ) -> ModelResidencyBinding:
+        ...
+
+    def release(self, binding: ModelResidencyBinding) -> None:
+        ...
+
+
+class InferenceExecutionPort(Protocol):
+    """Injection boundary for model execution."""
+
+    def execute(
+        self,
+        request: InferenceExecutionRequest,
+        *,
+        residency: Optional[ModelResidencyBinding] = None,
+    ) -> InferenceExecutionResult:
         ...
 
 

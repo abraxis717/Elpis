@@ -15,6 +15,12 @@ from pathlib import Path
 from typing import Sequence
 
 from DarwinianMatrix.projector.constraints import ClampState, apply_clamp_transaction
+from elpis_fractal_spine.contracts import (
+    InferenceExecutionRequest,
+    ModelResidencyRequest,
+    ResidencyAbsentPolicy,
+)
+from elpis_fractal_spine.ports import InferenceExecutionPort, ModelResidencyPort
 
 from .projector_release import ReleaseBindingTableV1, build_release_transaction
 from .refinement import solve_sudoku
@@ -98,6 +104,8 @@ def execute_samsung_feedback_step(
     model_path: Path | None = None,
     device: str = "auto",
     max_model_steps: int = 1000,
+    execution_port: InferenceExecutionPort | None = None,
+    residency_port: ModelResidencyPort | None = None,
 ) -> SamsungFeedbackTraversalV1:
     if not run_id:
         raise ValueError("run_id cannot be empty")
@@ -216,21 +224,66 @@ def execute_samsung_feedback_step(
     if any(learned_input[cell] != 0 for cell in release_plan.target_cells):
         raise RuntimeError("released support did not become writable Sudoku input")
 
-    learned = solve_sudoku(
-        learned_input,
-        model_path=model_path,
-        device=device,
-        max_steps=max_model_steps,
-    )
-    learned_solution = (
-        tuple(int(value) for value in learned.solution)
-        if learned.solution is not None
-        else None
-    )
-    learned_iteration_count = sum(
-        int(step.step)
-        for step in learned.steps
-    )
+    if residency_port is not None and execution_port is None:
+        raise ValueError(
+            "residency_port requires an injected execution_port"
+        )
+
+    if execution_port is None:
+        # Compatibility path. This preserves the already-qualified direct
+        # reference executor until the FMS-backed adapter tranche replaces it.
+        learned = solve_sudoku(
+            learned_input,
+            model_path=model_path,
+            device=device,
+            max_steps=max_model_steps,
+        )
+        learned_status = learned.status
+        learned_solution = (
+            tuple(int(value) for value in learned.solution)
+            if learned.solution is not None
+            else None
+        )
+        learned_iteration_count = sum(
+            int(step.step)
+            for step in learned.steps
+        )
+    else:
+        residency_binding = None
+        if residency_port is not None:
+            residency_binding = residency_port.acquire(
+                ModelResidencyRequest(
+                    model_id="FPRM.Samsung_TRM",
+                    preferred_tier="HOT",
+                    absent_policy=ResidencyAbsentPolicy.FOLD_DOWN,
+                )
+            )
+
+        request = InferenceExecutionRequest(
+            request_id=run_id,
+            model_id="FPRM.Samsung_TRM",
+            input_space="grid81.sudoku.v1",
+            output_space="grid81.sudoku.v1",
+            input_payload=tuple(learned_input),
+            model_path=str(model_path) if model_path is not None else None,
+            max_steps=max_model_steps,
+        )
+        try:
+            execution = execution_port.execute(
+                request,
+                residency=residency_binding,
+            )
+        finally:
+            if residency_port is not None and residency_binding is not None:
+                residency_port.release(residency_binding)
+
+        learned_status = execution.status
+        learned_solution = (
+            tuple(int(value) for value in execution.output_payload)
+            if execution.output_payload is not None
+            else None
+        )
+        learned_iteration_count = int(execution.iteration_count)
     if learned_solution is not None:
         hard_verdict = validate(hard_givens, learned_solution)
         if not hard_verdict.valid:
@@ -254,7 +307,7 @@ def execute_samsung_feedback_step(
         "released_cells": list(release_plan.target_cells),
         "model_input_changed_cells": list(changed_cells),
         "learned_input": list(learned_input),
-        "learned_status": learned.status,
+        "learned_status": learned_status,
         "learned_solution_digest": learned_solution_digest,
         "learned_iteration_count": learned_iteration_count,
     }
@@ -275,7 +328,7 @@ def execute_samsung_feedback_step(
         released_cells=release_plan.target_cells,
         model_input_changed_cells=changed_cells,
         learned_input=learned_input,
-        learned_status=learned.status,
+        learned_status=learned_status,
         learned_solution=learned_solution,
         learned_iteration_count=learned_iteration_count,
         traversal_digest=domain_digest(

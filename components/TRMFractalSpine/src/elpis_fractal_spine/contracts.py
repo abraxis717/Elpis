@@ -78,6 +78,96 @@ class ModelRegistryEntry:
 
 
 # ---------------------------------------------------------------------------
+# Portability / memory-policy injection contracts
+# ---------------------------------------------------------------------------
+
+LOGICAL_RESIDENCY_TIERS = frozenset({"ABSENT", "HOT", "WARM", "COLD"})
+
+
+class ResidencyAbsentPolicy(str, Enum):
+    """Policy when requested logical residency is unavailable."""
+
+    FOLD_DOWN = "FOLD_DOWN"
+    REJECT = "REJECT"
+
+
+@dataclass(frozen=True)
+class ModelResidencyRequest:
+    """Hardware-neutral residency request."""
+
+    model_id: str
+    preferred_tier: str = "HOT"
+    absent_policy: ResidencyAbsentPolicy = ResidencyAbsentPolicy.FOLD_DOWN
+
+    def __post_init__(self):
+        if not self.model_id:
+            raise ValueError("model_id cannot be empty")
+        if self.preferred_tier not in LOGICAL_RESIDENCY_TIERS:
+            raise ValueError(
+                f"unsupported logical residency tier {self.preferred_tier!r}"
+            )
+
+
+@dataclass(frozen=True)
+class ModelResidencyBinding:
+    """Opaque provider binding returned by a residency implementation."""
+
+    model_id: str
+    requested_tier: str
+    actual_tier: str
+    backend_id: str
+    device_id: str
+    binding_id: str
+
+    def __post_init__(self):
+        if self.requested_tier not in LOGICAL_RESIDENCY_TIERS:
+            raise ValueError("requested_tier is not logical residency")
+        if self.actual_tier not in LOGICAL_RESIDENCY_TIERS:
+            raise ValueError("actual_tier is not logical residency")
+        if not self.backend_id or not self.binding_id:
+            raise ValueError("residency binding identity cannot be empty")
+
+
+@dataclass(frozen=True)
+class InferenceExecutionRequest:
+    """Portable model-execution request."""
+
+    request_id: str
+    model_id: str
+    input_space: str
+    output_space: str
+    input_payload: tuple
+    model_path: Optional[str]
+    max_steps: int
+
+    def __post_init__(self):
+        if not self.request_id or not self.model_id:
+            raise ValueError("execution request identity cannot be empty")
+        if self.max_steps < 1:
+            raise ValueError("max_steps must be positive")
+
+
+@dataclass(frozen=True)
+class InferenceExecutionResult:
+    """Portable execution result with opaque backend/device metadata."""
+
+    status: str
+    output_payload: Optional[tuple]
+    iteration_count: int
+    backend_id: str
+    device_id: str
+    residency_tier: str
+
+    def __post_init__(self):
+        if self.iteration_count < 0:
+            raise ValueError("iteration_count cannot be negative")
+        if self.residency_tier not in LOGICAL_RESIDENCY_TIERS:
+            raise ValueError("result residency_tier is not logical residency")
+        if not self.backend_id:
+            raise ValueError("backend_id cannot be empty")
+
+
+# ---------------------------------------------------------------------------
 # 4. ModelEvidencePacket
 # ---------------------------------------------------------------------------
 

@@ -36,6 +36,19 @@ The learned model remains proposal-only.
 
 `runtime_admission = true` applies only to the qualified bounded `SUDOKU_FEEDBACK_V1` profile. It does not grant whole-runtime, public-registry, generalized component, semantic-truth, writer, network, or background-execution authority.
 
+## Memory / execution portability hook
+
+R2 does not own accelerator selection. The feedback call accepts optional
+`execution_port` and `residency_port` injections. The residency contract
+speaks only logical `HOT` / `WARM` / `COLD` / `ABSENT` tiers and
+`FOLD_DOWN` / `REJECT`; physical backend and device identities are opaque
+provider metadata.
+
+The current direct `device=` path remains only as a compatibility path
+until the dedicated FMS/PAL adapter tranche is qualified. New integrations
+should use the injected ports rather than adding device-specific branches
+to R2.
+
 ## Packaging boundary
 
 R2 is a standalone internal package. It is deliberately not inserted into the

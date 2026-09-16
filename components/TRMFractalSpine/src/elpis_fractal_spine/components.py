@@ -242,6 +242,15 @@ class ModelRegistry:
 
 
 class ModelResidency(str, Enum):
+    # Canonical logical residency vocabulary. These names describe
+    # latency/residency semantics, not physical hardware.
+    ABSENT = "ABSENT"
+    HOT = "HOT"
+    WARM = "WARM"
+    COLD = "COLD"
+
+    # Historical physical-placement vocabulary retained for replay /
+    # compatibility only. New runtime contracts must not emit these.
     DISABLED = "DISABLED"
     PINNED_CPU = "PINNED_CPU"
     PINNED_GPU = "PINNED_GPU"

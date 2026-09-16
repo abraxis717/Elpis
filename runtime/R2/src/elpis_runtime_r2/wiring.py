@@ -24,6 +24,8 @@ def execute_feedback_transaction(
     model_path: Path | None = None,
     device: str = "auto",
     max_model_steps: int = 1000,
+    execution_port: Any | None = None,
+    residency_port: Any | None = None,
 ) -> R2FeedbackRuntimeReceipt:
     """Execute exactly one already-authorized bounded feedback traversal.
 
@@ -51,6 +53,8 @@ def execute_feedback_transaction(
         model_path=model_path,
         device=device,
         max_model_steps=max_model_steps,
+        execution_port=execution_port,
+        residency_port=residency_port,
     )
 
     learned_solution_digest = (
