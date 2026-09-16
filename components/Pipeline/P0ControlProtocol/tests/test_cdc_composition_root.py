@@ -744,7 +744,7 @@ def test_registry_is_parsed_with_tomllib():
 
 
 def test_model_ports_are_parsed_with_tomllib():
-    """model_ports.toml load_policy is NEVER for all entries."""
+    """model_ports.toml permits ON_DEMAND only for the admitted FPRM port."""
     try:
         import tomllib
     except ImportError:
@@ -762,20 +762,26 @@ def test_model_ports_are_parsed_with_tomllib():
     with open(ports_file, "rb") as f:
         data = tomllib.load(f)
 
-    # Walk the parsed structure for load_policy entries
-    def check_load_policy(obj, path=""):
-        if isinstance(obj, dict):
-            if "load_policy" in obj:
-                assert obj["load_policy"] == "NEVER", (
-                    f"{path}.load_policy is {obj['load_policy']}, expected NEVER"
-                )
-            for k, v in obj.items():
-                check_load_policy(v, f"{path}.{k}")
-        elif isinstance(obj, list):
-            for i, v in enumerate(obj):
-                check_load_policy(v, f"{path}[{i}]")
+    ports = data["port"]
+    fprm = [
+        port for port in ports
+        if port["model_id"] == "FPRM.Samsung_TRM"
+    ]
+    assert len(fprm) == 1
+    assert fprm[0]["enabled"] is False
+    assert fprm[0]["load_policy"] == "ON_DEMAND"
+    assert fprm[0]["driver_id"] == "fms.checkpoint.v1"
+    assert fprm[0]["adapter_id"] == "fprm.sudoku-feedback.v1"
 
-    check_load_policy(data)
+    for port in ports:
+        if port["model_id"] == "FPRM.Samsung_TRM":
+            assert port["load_policy"] == "ON_DEMAND", port["port_id"]
+        else:
+            assert port["load_policy"] == "NEVER", port["port_id"]
+
+    assert sum(
+        port["load_policy"] == "ON_DEMAND" for port in ports
+    ) == 1
 
 
 def test_codec_registry_is_parsed_with_tomllib():

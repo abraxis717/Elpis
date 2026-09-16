@@ -340,10 +340,14 @@ jobs:
         run: |
           set -eu
           OUT="$(
-            PYTHONPATH="" /tmp/elpis-base-no-torch/bin/python -m pytest               -o addopts=               -q -p no:cacheprovider               tests/test_feedback_refinement.py
+            PYTHONPATH="" /tmp/elpis-base-no-torch/bin/python -m pytest \
+              -o addopts= \
+              -q -p no:cacheprovider \
+              tests/test_optional_torch_collection_contract.py::test_feedback_refinement_remains_wholly_torch_dependent \
+              tests/test_feedback_refinement.py
           )"
           printf '%s\n' "$OUT"
-          printf '%s\n' "$OUT" | grep -F "1 skipped"
+          printf '%s\n' "$OUT" | grep -F "1 passed, 1 skipped"
 
   canonical-projector-release:
     name: Canonical Projector RELEASE adapter
