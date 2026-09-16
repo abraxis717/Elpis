@@ -38,6 +38,20 @@
       "release_tag": "Elpis2.2.9",
       "tag_object": "2e710c243e055a811aca024639a0b8274514bcef",
       "version": "2.2.9"
+    },
+    {
+      "disposition": "SEALED_TAGGED_CI_FAILED_NOT_PUBLISHED",
+      "failure_classes": [
+        "STALE_DUPLICATE_TEST_CONTRACT_AFTER_QUALIFIED_FPRM_ON_DEMAND_ADMISSION",
+        "PYTEST_SINGLE_SKIPPED_MODULE_EXIT_STATUS_CONTRACT_MISMATCH",
+        "HOSTED_RUNNER_THIRD_PARTY_APT_SOURCE_INTERFERENCE"
+      ],
+      "manifest_path": "manifests/Elpis2.2.12.RELEASE_MANIFEST.json",
+      "manifest_sha256": "3f85ff4f18d34e4349ede0e73b504ed83f616127e8b7b02c62373065e40bb045",
+      "peeled_commit": "397eb05736f591e96b36a63fd6d3b3d7bc4ddca3",
+      "release_tag": "Elpis2.2.12",
+      "tag_object": "906963786120c719d28c45ecceab5d55d64b9d20",
+      "version": "2.2.12"
     }
   ],
   "schema": "elpis.failed-releases.v1"

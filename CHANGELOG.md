@@ -1,3 +1,11 @@
+## Elpis2.2.13 — Corrective CI-convergence successor
+
+- Record immutable tagged-but-unpublished Elpis2.2.12 as failed-release evidence without moving or rewriting its tag or sealed manifest.
+- Synchronize the P0 sole-FPRM load-policy test with the qualified `FPRM.Samsung_TRM` `ON_DEMAND` exception while preserving `model_ports.toml`.
+- Make the no-Torch feedback workflow require the exact executable witness result `1 passed, 1 skipped`, and synchronize the dependent current-release hygiene guard to that same cardinality.
+- Isolate hosted native apt dependency installation to the official Ubuntu source definition so unrelated third-party runner repositories cannot fail the component gate.
+- Preserve the bounded R2 feedback, FMS/PAL checkpoint-residency, installed-provider discovery, and POSIX/CPU reference-driver semantics qualified in Elpis2.2.12.
+
 ## Elpis2.2.12 — Bounded feedback and portable FMS-provider successor
 
 - Add the qualified R2 Sudoku feedback path: task residuals may authorize at most one state-bound Projector release cell per traversal before Samsung FPRM re-proposal, while immutable givens, surviving clamps, deterministic structural authority, and proposal-only learned semantics remain intact.

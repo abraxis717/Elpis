@@ -2,7 +2,7 @@
 
 **A deterministic structural-reasoning architecture for bounded learned proposals, explicit authority, and falsifiable runtime composition.**
 
-**Release line: Elpis2.2.12**
+**Release line: Elpis2.2.13**
 
 Elpis is a systems-research project about a narrow question: can learned components contribute useful structural proposals while deterministic machinery retains ownership of representation, admissibility, authority, validation, and terminal action?
 
@@ -14,15 +14,13 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 ## Release Notes
 
-**Elpis2.2.12** is the bounded-feedback and portability successor to Elpis2.2.11.
+**Elpis2.2.13** is the corrective CI-convergence successor to immutable tagged-but-unpublished Elpis2.2.12.
 
-The release adds the qualified R2 Sudoku feedback path with state-bound single-cell release, explicit execution/residency ports, FMS/PAL ownership of verified checkpoint artifacts, exact installed-provider discovery, and a separate POSIX/CPU `fms.checkpoint.v1` reference driver whose compiled FMS bridge is packaged with the driver.
+The bounded R2 Sudoku feedback path, explicit execution/residency ports, FMS/PAL checkpoint-artifact ownership boundary, installed-provider discovery, and POSIX/CPU `fms.checkpoint.v1` reference driver remain the qualified runtime content inherited from Elpis2.2.12.
 
-CPU remains the universal baseline and CUDA is not a core requirement. On the reference POSIX provider, logical HOT checkpoint residency truthfully folds to actual WARM RAM residency. FMS ownership stops at the checkpoint artifact: decoded/live PyTorch tensors and VRAM remain outside the qualified ownership claim.
+Elpis2.2.13 corrects the release-gate contracts that prevented that tagged candidate from becoming publishable: the P0 sole-FPRM load-policy test now matches the admitted Samsung FPRM `ON_DEMAND` exception; the no-Torch workflow has an executable exact `1 passed, 1 skipped` witness; native apt dependency installation is isolated to the official Ubuntu source definition; and the dependent current-release hygiene guard checks that same exact no-Torch cardinality.
 
-The base/no-Torch lane remains qualified. Elpis2.2.12 carries Python `>=3.11,<3.13`, NumPy `>=1.26,<2`, and SciPy `>=1.11,<2`; Python 3.13 and NumPy 2.x are not claimed by this release.
-
-The structural-guidance `_authority` subtree and historical R0/R1 authority remain unchanged. Elpis2.2.11 publication evidence remains immutable.
+The Elpis2.2.12 tag and sealed manifest remain immutable failed-release evidence. Runtime/provider semantics, `model_ports.toml`, the feedback test, the optional-Torch collection witness, frozen structural-guidance authority, and historical R0/R1 authority remain unchanged.
 
 The 2.2.x line includes:
 
@@ -37,9 +35,9 @@ The 2.2.x line includes:
 - current secret/private-path and runtime-boundary hardening;
 - Branch36-40 science artifacts retained as evidence, not promoted to runtime API.
 
-The immutable `Elpis2.2.0` and `Elpis2.2.9` tags are retained as failed-not-published release evidence under `FAILED_RELEASES.json`.
+The immutable `Elpis2.2.0`, `Elpis2.2.9`, and `Elpis2.2.12` tags are retained as failed-not-published release evidence under `FAILED_RELEASES.json`.
 
-- Current notes: [`RELEASE_NOTES/Elpis2.2.12.md`](RELEASE_NOTES/Elpis2.2.12.md)
+- Current notes: [`RELEASE_NOTES/Elpis2.2.13.md`](RELEASE_NOTES/Elpis2.2.13.md)
 - Public component registry: [`manifests/PUBLIC_COMPONENT_REGISTRY.json`](manifests/PUBLIC_COMPONENT_REGISTRY.json)
 - Qualified writer-chain registry: [`manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json`](manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json)
 - 2.2 qualified-internal adoption policy: [`manifests/ELPIS_2_2_0_ADOPTION_POLICY_R0.json`](manifests/ELPIS_2_2_0_ADOPTION_POLICY_R0.json)
