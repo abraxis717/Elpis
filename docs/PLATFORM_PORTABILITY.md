@@ -50,3 +50,19 @@ through FMS to actual WARM CPU-addressable residency.
 `InferenceDriverRegistry` is caller-owned. The base repository contains no builtin physical-accelerator map and performs no arbitrary import from TOML. Missing or duplicate registration fails closed. FMS/PAL remains the authority for actual residency, fold-down/reject, byte accounting, and leases.
 
 Automatic installed-wheel discovery is a later plugin-boundary phase.
+
+
+## Installed inference-driver plugin discovery
+
+The host may explicitly resolve an already-installed platform driver wheel
+through the fixed Python entry-point group `elpis.inference_drivers.v1`. Entry-point
+names are exact abstract `driver_id` values such as `fms.checkpoint.v1`.
+
+Discovery is never automatic on import, registry parse, or R2 execution. It
+loads no unrelated plugins, performs no network access or package installation,
+and contains no hardware preference order. Zero matches, duplicate exact-name
+providers, or a pre-registered driver all fail before plugin code is loaded.
+
+`models.toml` and `model_ports.toml` remain data-only authorities and never
+supply Python import targets. Installation of a local plugin wheel is the host
+trust boundary; FMS/PAL remains the runtime residency authority.

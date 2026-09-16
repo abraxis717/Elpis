@@ -71,3 +71,11 @@ PyTorch tensor/parameter memory is not claimed as FMS-managed.
 ### Explicit model-port provider activation
 
 `FPRM.Samsung_TRM` has a bounded, globally-disabled `ON_DEMAND` port using driver id `fms.checkpoint.v1`. R2 does not resolve hardware or import providers from TOML. A caller explicitly registers a local factory and passes the resolved provider through the qualified `execution_port` / `residency_port` hooks. No registration means no model load and no inference.
+
+
+### Installed inference-driver discovery
+
+An explicit host/bootstrap step may discover the exact abstract driver id named
+by the qualified model port from `elpis.inference_drivers.v1` and register its factory
+into `InferenceDriverRegistry`. R2 itself does not invoke discovery and gains no
+hardware-selection authority.
