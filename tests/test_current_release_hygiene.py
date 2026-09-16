@@ -209,6 +209,6 @@ def test_base_install_no_torch_ci_contract_is_exact():
     assert "tests/test_direct_semantic_replay.py" in job
     assert 'grep -F "21 passed, 9 skipped"' in job
     assert "tests/test_feedback_refinement.py" in job
-    assert 'grep -F "1 skipped"' in job
+    assert 'grep -F "1 passed, 1 skipped"' in job
     assert "-o addopts=" in job
 
