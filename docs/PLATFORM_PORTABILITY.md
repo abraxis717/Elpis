@@ -41,3 +41,12 @@ elsewhere is forbidden.
 
 Under the POSIX PAL, HOT is unavailable. HOT + FOLD_DOWN therefore resolves
 through FMS to actual WARM CPU-addressable residency.
+
+
+## Model-port provider activation
+
+`models.toml` identifies `FPRM.Samsung_TRM` and requests logical `HOT` residency. `model_ports.toml` binds the bounded profile to `fms.checkpoint.v1` / `fprm.sudoku-feedback.v1` with `ON_DEMAND` while remaining globally `enabled = false`.
+
+`InferenceDriverRegistry` is caller-owned. The base repository contains no builtin physical-accelerator map and performs no arbitrary import from TOML. Missing or duplicate registration fails closed. FMS/PAL remains the authority for actual residency, fold-down/reject, byte accounting, and leases.
+
+Automatic installed-wheel discovery is a later plugin-boundary phase.

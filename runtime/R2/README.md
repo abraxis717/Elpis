@@ -66,3 +66,8 @@ provider through residency_port / execution_port.
 
 R0 coverage is intentionally limited to checkpoint-artifact residency. Live
 PyTorch tensor/parameter memory is not claimed as FMS-managed.
+
+
+### Explicit model-port provider activation
+
+`FPRM.Samsung_TRM` has a bounded, globally-disabled `ON_DEMAND` port using driver id `fms.checkpoint.v1`. R2 does not resolve hardware or import providers from TOML. A caller explicitly registers a local factory and passes the resolved provider through the qualified `execution_port` / `residency_port` hooks. No registration means no model load and no inference.

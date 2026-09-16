@@ -18,6 +18,7 @@ import importlib
 import json
 import os
 import sys
+import tomllib
 
 import pytest
 
@@ -293,30 +294,36 @@ def test_disabled_ports_remain_disabled():
 
 
 def test_all_nonadmitted_ports_use_load_policy_never():
-    """All nonadmitted ports use load_policy = NEVER."""
-    ports_file = (
-        os.path.join(
-            os.path.dirname(os.path.dirname(__file__)),
-            "..",
-            "..",
-            "TRMFractalSpine",
-            "registry",
-            "model_ports.toml",
-        )
+    # Historical ports remain NEVER; bounded FPRM is sole ON_DEMAND exception.
+    ports_file = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)),
+        "..",
+        "..",
+        "TRMFractalSpine",
+        "registry",
+        "model_ports.toml",
     )
+    with open(ports_file) as handle:
+        data = tomllib.loads(handle.read())
+    ports = data["port"]
 
-    with open(ports_file) as f:
-        content = f.read()
-
-    lines = [line.strip() for line in content.splitlines()]
-    load_policy_lines = [
-        line for line in lines if line.startswith("load_policy")
+    fprm = [
+        port for port in ports
+        if port["model_id"] == "FPRM.Samsung_TRM"
     ]
-    for lp_line in load_policy_lines:
-        assert "NEVER" in lp_line, (
-            f"Port without NEVER load_policy: {lp_line}"
-        )
+    assert len(fprm) == 1
+    assert fprm[0]["enabled"] is False
+    assert fprm[0]["load_policy"] == "ON_DEMAND"
+    assert fprm[0]["driver_id"] == "fms.checkpoint.v1"
+    assert fprm[0]["adapter_id"] == "fprm.sudoku-feedback.v1"
 
+    for port in ports:
+        if port["model_id"] != "FPRM.Samsung_TRM":
+            assert port["load_policy"] == "NEVER", port["port_id"]
+
+    assert sum(
+        port["load_policy"] == "ON_DEMAND" for port in ports
+    ) == 1
 
 def test_codec_registry_matches_implementations():
     """Codec registry entries are all TEST_ONLY (no production codec declared)."""
