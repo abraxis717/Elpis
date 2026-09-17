@@ -7,7 +7,13 @@ import hashlib
 import json
 from typing import Any
 
-SCHEMA = "elpis.runtime-r2-feedback-receipt.v1"
+# v1 shipped in Elpis2.2.13 with a bare SHA256(canonical_json(payload)).
+# New receipts use v2 and the cross-component Canonical Identity v1 framing:
+# SHA256(UTF8(schema) || NUL || canonical_json(payload)).
+# Keep v1 verification semantics indefinitely unless a later explicit migration
+# contract retires them.
+LEGACY_SCHEMA = "elpis.runtime-r2-feedback-receipt.v1"
+SCHEMA = "elpis.runtime-r2-feedback-receipt.v2"
 PROFILE = "SUDOKU_FEEDBACK_V1"
 RUNTIME_ADMISSION = True
 
@@ -22,8 +28,26 @@ def _canonical_bytes(payload: Any) -> bytes:
     ).encode("utf-8")
 
 
-def _digest(payload: Any) -> str:
+def _legacy_v1_digest(payload: Any) -> str:
     return hashlib.sha256(_canonical_bytes(payload)).hexdigest()
+
+
+def _canonical_identity_digest(domain: str, payload: Any) -> str:
+    # R2 remains an independently buildable zero-dependency wheel. This is the
+    # exact Canonical Identity v1 framing used by elpis.canonical_identity;
+    # repository-level conformance tests bind these bytes to that authority.
+    if type(domain) is not str or not domain or "\x00" in domain:
+        raise ValueError("R2_CANONICAL_DOMAIN_INVALID")
+    framed = domain.encode("utf-8") + b"\x00" + _canonical_bytes(payload)
+    return hashlib.sha256(framed).hexdigest()
+
+
+def _digest(schema: str, payload: Any) -> str:
+    if schema == LEGACY_SCHEMA:
+        return _legacy_v1_digest(payload)
+    if schema == SCHEMA:
+        return _canonical_identity_digest(schema, payload)
+    raise ValueError(f"R2_RECEIPT_SCHEMA_UNSUPPORTED:{schema}")
 
 
 @dataclass(frozen=True)
@@ -60,11 +84,16 @@ class R2FeedbackRuntimeReceipt:
         return payload
 
     def verify(self) -> bool:
-        if self.schema != SCHEMA or self.profile != PROFILE:
+        if self.profile != PROFILE:
             return False
-        return self.runtime_receipt_digest == _digest(
-            self._payload_without_receipt_digest()
-        )
+        try:
+            expected = _digest(
+                self.schema,
+                self._payload_without_receipt_digest(),
+            )
+        except ValueError:
+            return False
+        return self.runtime_receipt_digest == expected
 
     def to_canonical_json(self) -> str:
         payload = asdict(self)
@@ -78,11 +107,16 @@ class R2FeedbackRuntimeReceipt:
     def create(cls, **kwargs: Any) -> "R2FeedbackRuntimeReceipt":
         if "runtime_receipt_digest" in kwargs:
             raise TypeError("runtime_receipt_digest is derived")
+        if "schema" in kwargs:
+            raise TypeError("schema is derived")
         candidate = cls(
             schema=SCHEMA,
             profile=PROFILE,
             runtime_receipt_digest="",
             **kwargs,
         )
-        digest = _digest(candidate._payload_without_receipt_digest())
+        digest = _digest(
+            candidate.schema,
+            candidate._payload_without_receipt_digest(),
+        )
         return replace(candidate, runtime_receipt_digest=digest)
