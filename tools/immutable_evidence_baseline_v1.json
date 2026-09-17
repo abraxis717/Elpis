@@ -1,0 +1,349 @@
+{
+  "append_only_registries": {
+    "FAILED_RELEASES.json": {
+      "list_key": "failed_releases",
+      "metadata": {
+        "schema": "elpis.failed-releases.v1"
+      },
+      "records": [
+        {
+          "sha256": "af99ea633bb0bab791de592aa0ca6c5b9a8fcde50ae00b688ca6a91a576d7fde",
+          "version": "2.1.24"
+        },
+        {
+          "sha256": "48506f792426c97ff411eb2e3b9ed97e0a8f77348ea631f647d1a904d6f8daa8",
+          "version": "2.2.0"
+        },
+        {
+          "sha256": "895883336b880e828fcafa20dd6d0a23d25880c9d39e1fc03ce4e2c3b9fcefe7",
+          "version": "2.2.9"
+        },
+        {
+          "sha256": "2f4be8b0ae41751d40726dc263ebafee9fbbe1be085a6ae5a41c038ec42e5f84",
+          "version": "2.2.12"
+        }
+      ]
+    },
+    "PUBLISHED_RELEASES.json": {
+      "list_key": "published_releases",
+      "metadata": {
+        "schema": "elpis.published-releases.v1",
+        "source_of_truth": "refs/tags/Elpis<semver>"
+      },
+      "records": [
+        {
+          "sha256": "281075ffade05a377413e74cbf4ecb09eaf7359ae515ace40c4a1d167138131b",
+          "version": "2.0.0"
+        },
+        {
+          "sha256": "c7ef1cd25654f11324a93faca7830db57be1bc8e6b064f2b1e32310d011fc18e",
+          "version": "2.1.0"
+        },
+        {
+          "sha256": "951b781f98eb43b7ab99066e092d977cb1bce2ff6e6466715500c9a3e17616e7",
+          "version": "2.1.1"
+        },
+        {
+          "sha256": "d9bd9b8ff648e69ab50aa74a63a315699cdbe56b94ea7887c7d82448721d0778",
+          "version": "2.1.2"
+        },
+        {
+          "sha256": "904931ee1408751a5e9d9da9c806640382b650ef319b8c16bcafd5b001185c0f",
+          "version": "2.1.3"
+        },
+        {
+          "sha256": "0bff2d292aecaf2f18fed01391b6a0f978e02c18dcf6427bb4ae850321d9d03e",
+          "version": "2.1.4"
+        },
+        {
+          "sha256": "75426ebece361df72c49423da4c84ba0ec101831a7280e4e6e989135fb90dbf3",
+          "version": "2.1.5"
+        },
+        {
+          "sha256": "1903b64e1b56df7622ec2a3a3f77f7aa8e7aad6c36a46ef94992f8665ee3a52d",
+          "version": "2.1.6"
+        },
+        {
+          "sha256": "73d27c16bea1271e762838ffa601a06acd95244e7e101f1260c518963e3062e9",
+          "version": "2.1.7"
+        },
+        {
+          "sha256": "a95a342d8c7cc64a625475f2f4f9a3c2ab82f4732cb8269b62a82bf7f910acdf",
+          "version": "2.1.8"
+        },
+        {
+          "sha256": "c1bf59eebd3a7ca1ec93221009b0371787f0dc62462f52c9742d92fdfeb0759d",
+          "version": "2.1.9"
+        },
+        {
+          "sha256": "c46360ddb29b43ec9af77ff49b0c6b1c38b2fb3603dab3c1ce7df8888932f491",
+          "version": "2.1.10"
+        },
+        {
+          "sha256": "adbb8f8ed5e331277710dd865ce0451f8a4194379b7c0557974cc08b301370ea",
+          "version": "2.1.11"
+        },
+        {
+          "sha256": "3615ab221ae5e3ba6e35909bdf136b8ee2f5acb00dc2c69bc1f08890e0dd3e70",
+          "version": "2.1.12"
+        },
+        {
+          "sha256": "1ee60f4db4621607560a3ab0cfea5a223d1c4c2b385bcf093edb8c0a1330f4d5",
+          "version": "2.1.15"
+        },
+        {
+          "sha256": "2d1fcd162b149f1f81b756e5f22e2b5bce272caa988d70b389af7ac1c354d665",
+          "version": "2.1.16"
+        },
+        {
+          "sha256": "23b759fa832aa06d100437b39d0046c2fe74acc123c2705e81e332e40264c21f",
+          "version": "2.1.21"
+        },
+        {
+          "sha256": "92b47ebe3836ab51a279e8377313e4bc206a85c9cd77f71500c7abc48e0cc140",
+          "version": "2.1.22"
+        },
+        {
+          "sha256": "5860a334d520a2043f6258b68996c0fdac25ac80cdc9a030126f666ed8b6f655",
+          "version": "2.1.23"
+        },
+        {
+          "sha256": "b33ffd98fcab2e6fb78640605bcf61b7e21b64d9e5784b53454c3b5d105045bc",
+          "version": "2.1.25"
+        },
+        {
+          "sha256": "8198f99922b79bc1fa49c9bf3f4251c04b5374a34931cc283647b0be4a7db2d1",
+          "version": "2.1.26"
+        },
+        {
+          "sha256": "26017397fb4c5e53d9d2a1d4fcc10a707ff3252ca00a0f72b1e26501253e9fb4",
+          "version": "2.1.27"
+        },
+        {
+          "sha256": "89a87801b4a336d7188f0a1f84b2b1d00986f6fa43bc99b97af71d6eb6b273c9",
+          "version": "2.2.2"
+        },
+        {
+          "sha256": "5c6a8debff7b7e6c7d540627b42f9c79abebdd4e0bc239daf05aeb16a8f3f69e",
+          "version": "2.2.7"
+        },
+        {
+          "sha256": "03c7b8cb63d650526b4b5977d3a94f69a3377a45f10797948773b96d2bd34dc7",
+          "version": "2.2.10"
+        },
+        {
+          "sha256": "17a4e84724bb9e2a6606f93666154912d03bd7c383fe3cf2264218d26be6840b",
+          "version": "2.2.11"
+        },
+        {
+          "sha256": "8703c2f06a1dc21af532cdcc14f04cdcaa450ade692011d09f4c015dbbb17330",
+          "version": "2.2.13"
+        }
+      ]
+    }
+  },
+  "bootstrap_source_commit": "e5e6e0d6007ecb27d6136d6ce67566d10d075dde",
+  "identity_generations": [
+    {
+      "generation_id": "ELPIS_2_2_14_BOOTSTRAP_R0",
+      "pins": [
+        {
+          "kind": "python_constant",
+          "name": "MODEL_SHA256",
+          "path": "src/elpis_reference/model.py",
+          "value": "6daec5f499d115beb14e23f3a9cf56d1166b99c1ccd36b185a19ea5dfec9a137"
+        },
+        {
+          "kind": "python_constant",
+          "name": "FROZEN_TRM0_CHECKPOINT_SHA256",
+          "path": "src/elpis_reference/structural_guidance/authority.py",
+          "value": "e58e44c9227d68971d0ab5f5e4f0eaf2e05d4faa97ec8232108aa73898273129"
+        },
+        {
+          "kind": "json_pointer",
+          "path": "src/elpis_reference/vendor/fprm/AUTHORITY.json",
+          "pointer": "/checkpoint/sha256",
+          "value": "6daec5f499d115beb14e23f3a9cf56d1166b99c1ccd36b185a19ea5dfec9a137"
+        },
+        {
+          "kind": "json_pointer",
+          "path": "src/elpis_reference/vendor/fprm/AUTHORITY.json",
+          "pointer": "/checkpoint/size",
+          "value": 54637557
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/TRMFractalSpine/registry/model_ports.toml",
+          "value": "c31562b8503b5f41e4d17e213792942da53f90b6222e708a85d54a927b4a3a61"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/TRMFractalSpine/registry/models.toml",
+          "value": "cfa7457091632f34678252544a47f001b74acd7a20f61eb35224425ae14f2692"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/CNumPyCortex/COMPONENT_MANIFEST.json",
+          "value": "0fa0b04d6da10a13bed4bfcd2a661ae73562c95df3ddf50a153a4a6f94b2ebc9"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/DarwinianMatrix/COMPONENT_MANIFEST.json",
+          "value": "af86c3eaf908124edc26a63c79f83dde350947a63d854689f5295e44e99abd0e"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/Grid81/COMPONENT_MANIFEST.json",
+          "value": "b3d79b251f4ef162d8b959de0c4adb06c5a82e83b40bfe5d2609e0ad75560256"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/Grid81DeterministicCanonicalPromotionPlanner/COMPONENT_MANIFEST.json",
+          "value": "03f5365570fd3305b4eec8a6bc981fc52ba21df3e2fc60469ae4472877afacb6"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/Grid81DeterministicCapabilityApplicationExecutor/COMPONENT_MANIFEST.json",
+          "value": "5f73748d359a888e812e1ea3b7f734aeba8e98485b8dfee6f698591012ae8139"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/Grid81DeterministicCapabilityAuthorityEvaluator/COMPONENT_MANIFEST.json",
+          "value": "3da3367cb41c8110631d6f618f0a340670c1d710b5daee2e6b6bd317abf6f7ed"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/Grid81DeterministicCapabilityConsumptionCompiler/COMPONENT_MANIFEST.json",
+          "value": "0473cdb413e43069d5ddf97bc0c5cbb667c46a3214502b60fbdd97522a79af28"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/Grid81DeterministicStructuralAdjudicator/COMPONENT_MANIFEST.json",
+          "value": "1d63549fd096568f16f12601ab286903032d61a36e978a877de32c9e54775987"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/Grid81StructuralGroupProjectionCompiler/COMPONENT_MANIFEST.json",
+          "value": "21a0aaa41f28dfb91a0f36f99d450d755f01ebcfc106ccaaa50dc5b7c7d77018"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/Grid81StructuralSemantics/COMPONENT_MANIFEST.json",
+          "value": "b91500fa7e341c835b218dc671945e693a91cbc926d172cdee88e8395d2ca878"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/Grid81TypedProjectionCompiler/COMPONENT_MANIFEST.json",
+          "value": "904b94c7ec615fcbb7acaa80becead0a704522b1a5b21bb5d29395405d4f3a9a"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/Pipeline/P0ControlProtocol/COMPONENT_MANIFEST.json",
+          "value": "704186993a52f7504a3d4abdf33cf4f24b22cfbbee8a1ba85992614677c2a4fd"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/TRMFractalSpine/COMPONENT_MANIFEST.json",
+          "value": "8de90921fc8956dddccaa2dbb9856ca326850d8032eae1de65a551210ebeb94e"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "native/elpis-header/COMPONENT_MANIFEST.json",
+          "value": "8958a3693512bb1ea2aa33e06dece114d5a965bf4240e9b34fd34fc682af0f59"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "native/hacf/COMPONENT_MANIFEST.json",
+          "value": "ee996fccd75c0f23152b09a639721999c0df9857635d55f54bd0dbebb4ef8fbc"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "native/semantic-spine/COMPONENT_MANIFEST.json",
+          "value": "53222d2538847688f1998e7d21c68365a05218f4b10ca3f9f885aa845f5b30e7"
+        }
+      ],
+      "source_commit": "e5e6e0d6007ecb27d6136d6ce67566d10d075dde",
+      "supersession_rule": "APPEND_NEW_GENERATION_NEVER_EDIT_PRIOR_GENERATION"
+    }
+  ],
+  "permanent_files": {
+    "ECS/ECS_AUTHORITY/STRUCTURAL_R0/FROZEN_WRITABLE_BOUNDARY.json": "fca454fa84c6da890fc60994f4beb42b7078258b08872842db077cd991c31240",
+    "ECS/science/34_BRANCH35_ECS_STABLE_CHECKPOINT_THIRD_MOMENT_SUFFICIENCY_PASS/EVIDENCE_AUTHORITY.json": "0da2bab8089cdce04264e774474743bb6c3c1eb8a8665371b2e06b6772df9e1c",
+    "ECS/science/34_BRANCH35_ECS_STABLE_CHECKPOINT_THIRD_MOMENT_SUFFICIENCY_PASS/SHA256SUMS": "5e81046c9a7dd5825ba1d5babe38065b4a083581a3b780c6cfe63565b90e5239",
+    "ECS/science/BRANCH36_ECS_S3_WIDTH_TRANSFER/BRANCH36_CLOSURE_EVIDENCE_AUTHORITY.json": "a66c2fbc0dfd603d17b35ead5660cb59f390f45a6dde9516f53696dbb868a314",
+    "ECS/science/BRANCH36_ECS_S3_WIDTH_TRANSFER/SHA256SUMS": "44b8f161857b56f2c58c0242593ccac42e10196fa6862f573061a1edbd01009b",
+    "ECS/science/BRANCH37_S3_FEATURE_MATRIX_IDENTIFIABILITY/BRANCH37_CLOSURE_EVIDENCE_AUTHORITY.json": "198ec11c78bab2c13edce1720a44edc60e9c688803638731f7a69f1a510188ff",
+    "ECS/science/BRANCH37_S3_FEATURE_MATRIX_IDENTIFIABILITY/SHA256SUMS": "85221c2c659605af01a399369cf3c99e796a209ed21bc04aea20519d1868d706",
+    "ECS/science/BRANCH38_S3_WEAK_NUMERICAL_TAIL/BRANCH38_CLOSURE_EVIDENCE_AUTHORITY.json": "65aff82ce8692a15c8117d89fdc93f35ac7b319aa7c3438425213b0485784f44",
+    "ECS/science/BRANCH38_S3_WEAK_NUMERICAL_TAIL/SHA256SUMS": "b0a1aaa4490f26533b71a55177ba5cf478623ebe983f929fce518e67b6c794e3",
+    "ECS/science/BRANCH39_WEAK_S3_MICROSCOPIC_CONTROL/EVIDENCE_AUTHORITY.json": "b753d48d80b331a38e5e383633a5ad9071eeca59f2220f9ff6835253d3696fd1",
+    "ECS/science/BRANCH39_WEAK_S3_MICROSCOPIC_CONTROL/SHA256SUMS": "86744150d28e8d188573d42b4ce273fa1f301202ca63250b0f08eded795a8d16",
+    "ECS/science/BRANCH39_WEAK_S3_MICROSCOPIC_CONTROL_FINAL_ADJUDICATION_V0/FINAL_ADJUDICATION.json": "e7f978379d1671ee1e0f7996c8591b8ea93f67a515d9c5abc9c0167e02a2461c",
+    "ECS/science/BRANCH39_WEAK_S3_MICROSCOPIC_CONTROL_FINAL_ADJUDICATION_V0/SHA256SUMS": "dac581fbedb6ea31627a3641cc600e8efbf556dc08b97c3cd642d96e12e5a159",
+    "ECS/science/BRANCH39_WEAK_S3_MICROSCOPIC_CONTROL_PRECOMMIT_V0/SHA256SUMS": "0aaf9d2897ad1a4ce23729fe0b786bdfb604d2f7739aa6664c5833a368101c68",
+    "ECS/science/BRANCH40_WEAK_S3_DYNAMICAL_RELEVANCE/EVIDENCE_AUTHORITY.json": "f0c9e653e4d37280fa6cb773e2b3f833fb8c971009314e31e3a353f81c174e61",
+    "ECS/science/BRANCH40_WEAK_S3_DYNAMICAL_RELEVANCE/SHA256SUMS": "9e54619959ea2d884e417086f9af7320d1fd63b8fce57e1031b80b7de7a92aab",
+    "ECS/science/BRANCH40_WEAK_S3_DYNAMICAL_RELEVANCE_FINAL_ADJUDICATION_V0/FINAL_ADJUDICATION.json": "226a454a3bb5216303eab74c498e8261cf94c655a43e6b9c5f99cb51d431d99e",
+    "ECS/science/BRANCH40_WEAK_S3_DYNAMICAL_RELEVANCE_FINAL_ADJUDICATION_V0/SHA256SUMS": "cc1e877466a512f52ffe66a87d4e1c6644160c437fbbf0d03b49a3469a4716a6",
+    "ECS/science/BRANCH40_WEAK_S3_DYNAMICAL_RELEVANCE_PRECOMMIT_V0/INTERVENTION_CONSTRUCTION_AUTHORITY.json": "0a559e559a5c07103e21b2695fe2048252301ab93a057413caa6337601225a7a",
+    "ECS/science/BRANCH40_WEAK_S3_DYNAMICAL_RELEVANCE_PRECOMMIT_V0/PREDECESSOR_AUTHORITY_CENSUS.json": "96c1d9cfbd3aba7aa360d7434be47eb894f1511399865161f1cb8c8485762b17",
+    "ECS/science/BRANCH40_WEAK_S3_DYNAMICAL_RELEVANCE_PRECOMMIT_V0/SHA256SUMS": "f00ec4cc11ce1e7aa7faf72d689ecf23a8c917ca9a8e08848c1199742e3b17cc",
+    "components/Grid81/state/Canonical/Grid81/HEAD.json": "1b0fbe02d123698f9cba2568b0967e860ec4957119feb02f29c0e3c783a8f7eb",
+    "components/Grid81/state/Canonical/Grid81/generations/000001.json": "9b12c19386bfd7ef4ecf57c2c114bfaa6087a7caf14c415990f35d3b02fd0187",
+    "docs/redteam/ELPIS_REDTEAM_2.2.7.md": "cfa89d93c879f0d1f9e1d72913ea8e9985191f66be7e34054bc466422ffe60f0",
+    "docs/redteam/ELPIS_REDTEAM_2.2.7_SOURCE_SHA256SUMS": "49e33e5561e0af22423b54d3582df9ee4ba7492cc7351595d47735733ebc8c50",
+    "health/PUBLICATION_AUTHORITY.json": "a1fc612d1263108d6f68f4f4fc2425f8999fb7cffb7ff234605676f1027a7c95",
+    "manifests/Elpis2.0.0.DISTRIBUTION_MANIFEST.json": "7851ea64731e0f6a6745a7b6e3a15d26c9b6085f1e6668975c7c67c8206ae62e",
+    "manifests/Elpis2.0.0.RELEASE_MANIFEST.json": "c7b89d3fe705aa870731fb1f4324275bac2f698d19f1b5ca8cd4769927348f82",
+    "manifests/Elpis2.1.0.RELEASE_MANIFEST.json": "98726f106ae361de0433ee316bf609878246c74241f249138762aeda5ac8a4e2",
+    "manifests/Elpis2.1.1.RELEASE_MANIFEST.json": "0328767c13ec97af0696ab0c581b59d1e30b9f0c37c18de241b3e1574952b49a",
+    "manifests/Elpis2.1.10.RELEASE_MANIFEST.json": "638c31acbe52d57abe286a95dff2e5c79c71f886d86cc2859c769945ff669c02",
+    "manifests/Elpis2.1.11.RELEASE_MANIFEST.json": "8e0caf5a9c326b616fe3e8e71c2ea63da1321eecb20670d6e9df01ade6567d8b",
+    "manifests/Elpis2.1.12.RELEASE_MANIFEST.json": "b036956a85aee57055cd242548d3a8d7976e600a372e7c8bea46bdcf4e408ffd",
+    "manifests/Elpis2.1.13.RELEASE_MANIFEST.json": "37aacdfec75dbbf340ece877d25122ae5096e5c90769064a9015a8a3aa15a873",
+    "manifests/Elpis2.1.14.RELEASE_MANIFEST.json": "1ee8973aac9f08e88eb6081cd3141bf094f83c69c1f76d74aa593e1dc680fb8d",
+    "manifests/Elpis2.1.15.RELEASE_MANIFEST.json": "0a8b0d641b3e2d6703f58167824b01c1e14aeb18e31131aa25b5872463235868",
+    "manifests/Elpis2.1.16.RELEASE_MANIFEST.json": "5daccf7f8bce2a9964b4e7beaa91a320a99f701b597d93f83461bbd8114703c9",
+    "manifests/Elpis2.1.17.RELEASE_MANIFEST.json": "78b36e16ccdd18256a61d984a22af131ae89b6dbdf97a87024bb25851bf9e23d",
+    "manifests/Elpis2.1.18.RELEASE_MANIFEST.json": "a5e83696ad5be0b9fbd6869165480fb03e07a4274f1412a254ae36d4b5d7031d",
+    "manifests/Elpis2.1.19.RELEASE_MANIFEST.json": "a096442df8b14957e538afa66c0228393b1c2cd64922e22142c860122f18d0e8",
+    "manifests/Elpis2.1.2.RELEASE_MANIFEST.json": "889a5831372a92856ea3506dc71ff2c0a8a4177f8e3637e9f696df590476a3c5",
+    "manifests/Elpis2.1.20.RELEASE_MANIFEST.json": "112504049904e7722dbd6549a27c82b3070bff08bacbbca1421e41def9cbf4e0",
+    "manifests/Elpis2.1.21.RELEASE_MANIFEST.json": "83597eb4353688875f03618dd7ec548df83e6e601676f4e328e8a9cc25452f25",
+    "manifests/Elpis2.1.22.RELEASE_MANIFEST.json": "55440da7c1e9e3be285a2d09a4ab2cffb943f10cb7a7e340eacabcc13fc33ee0",
+    "manifests/Elpis2.1.23.RELEASE_MANIFEST.json": "1a03676db4b0a8cd6f9f13953944bfee5fd638693ef4cce6e1a4f4d33fa17c81",
+    "manifests/Elpis2.1.24.RELEASE_MANIFEST.json": "57fe5f176e6cedb7d3275729ee4254d45f1825d597603be2c5ad1e16e334e94c",
+    "manifests/Elpis2.1.25.RELEASE_MANIFEST.json": "a519a3a5ccb442fa01f07ad240b7e615004c2e38f252078e4640ea85bfb13d90",
+    "manifests/Elpis2.1.26.RELEASE_MANIFEST.json": "5bd23ef75f748acf5f6b36323d4d0a1119b2bbe5970e46fbfd45e2f8a304c571",
+    "manifests/Elpis2.1.27.RELEASE_MANIFEST.json": "25dac4c04bd0ec482bfe7d3d8fd3b572b746ea1b9bf25241b1f5e79a57a58c0b",
+    "manifests/Elpis2.1.3.RELEASE_MANIFEST.json": "0461419cd5c21a8ad498fb5c314dd55c227037e90c76d15c56b9ac8bbe4c6c76",
+    "manifests/Elpis2.1.4.RELEASE_MANIFEST.json": "b8904753d97964761ff2a328b4331c4e4df4ec13e7176e0eb13722e627bd482b",
+    "manifests/Elpis2.1.5.RELEASE_MANIFEST.json": "86b5e850c2c59e36fc41b2973fb114657622359c70945999376d3465f4066c9e",
+    "manifests/Elpis2.1.6.RELEASE_MANIFEST.json": "eae0b7b5acb5ab54d06396c4002f300e3051a4d636b9b86a1a4e26157c126ce6",
+    "manifests/Elpis2.1.7.RELEASE_MANIFEST.json": "d6820c436075cbe75ab620fd84315904c391b90a0ff8022eac7f8fc199403db4",
+    "manifests/Elpis2.1.8.RELEASE_MANIFEST.json": "2cfb7b7c1d8ff13d19c4b6e5e1e4bdc3b9d24bc2422ce4ee29ac661ba2df750d",
+    "manifests/Elpis2.1.9.RELEASE_MANIFEST.json": "9e7eb7be9e04f57c0c9ae781f8164bae2e4b6a994fe2a30826266aee5115a3c0",
+    "manifests/Elpis2.2.0.RELEASE_MANIFEST.json": "1558ea7c4ee5187f28ca177eddaf16e755aadb2b53a1cbd68536148fa700c593",
+    "manifests/Elpis2.2.1.RELEASE_MANIFEST.json": "c3b31cc74e2d5e417a462f61bb20b38801674f4a47661b8da0a8ce04ead5ac16",
+    "manifests/Elpis2.2.10.RELEASE_MANIFEST.json": "4bb9eea8f5f05fbeaf46f31af0a22138d2f32112754b0f562edd373a0bb8a9b7",
+    "manifests/Elpis2.2.11.RELEASE_MANIFEST.json": "8a129f306689deb306046401867e4b5b2633ef34d6bb31a242394ffb8aec9148",
+    "manifests/Elpis2.2.12.RELEASE_MANIFEST.json": "3f85ff4f18d34e4349ede0e73b504ed83f616127e8b7b02c62373065e40bb045",
+    "manifests/Elpis2.2.13.RELEASE_MANIFEST.json": "576149c689572907f664f7bbb2433dd80d39910e6b90a8536955b80ea06bd06b",
+    "manifests/Elpis2.2.2.RELEASE_MANIFEST.json": "57934169b83ac1a64c1b1b47cfccbd087753c308e44f5bbef9e2c78d88c7211f",
+    "manifests/Elpis2.2.3.RELEASE_MANIFEST.json": "79fc431abf8bea24a4e591386a28f93359e26e4faf75378451f42f8d02b6cb89",
+    "manifests/Elpis2.2.4.RELEASE_MANIFEST.json": "63e05c2ac12c3cd5bc3ccbf36a0b367ba6e1efb6a69b6a9916d7810bbcedc287",
+    "manifests/Elpis2.2.5.RELEASE_MANIFEST.json": "cee67d9b39735b853e284f72320142ea5f94a27a9a289c59121310433f1673c6",
+    "manifests/Elpis2.2.6.RELEASE_MANIFEST.json": "96c6023c4ccf154d70a8364873f101f40631333ab7333a9e062704cafdd4c7eb",
+    "manifests/Elpis2.2.7.RELEASE_MANIFEST.json": "cdf97712c659abf84a426815eb184e46a8084430cd849c853729e27f9068f157",
+    "manifests/Elpis2.2.8.RELEASE_MANIFEST.json": "fc8a88b9af9a511d2eb0723988d060f6f2c63090fc3a5479a788305123c73a79",
+    "manifests/Elpis2.2.9.RELEASE_MANIFEST.json": "0163b5c857653d1edc95f4566acbd041289ee4088c178f22e3d28d502ab63796",
+    "src/elpis_reference/structural_guidance/RUNTIME_E2E_SEAL_R0.json": "a6f8f2b0b15b570901140e4be1aa59874bb8332c4290a7d2773a59b24042996c"
+  },
+  "policy": {
+    "identity_generations": "LATEST_MUST_MATCH_TREE_PRIOR_GENERATIONS_IMMUTABLE",
+    "not_frozen": "contracts_tests_tools_docs_versioned_policies",
+    "permanent_evidence": "BYTE_IMMUTABLE_AND_PATHSET_CLOSED",
+    "release_registries": "EXISTING_RECORDS_IMMUTABLE_APPEND_ONLY"
+  },
+  "schema": "elpis.repository-immutability.v1"
+}
