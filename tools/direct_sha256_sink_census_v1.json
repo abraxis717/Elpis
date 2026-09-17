@@ -1,0 +1,2563 @@
+{
+  "baseline_commit": "b7606061417db38a1f36a0db5a565cfe3bf2906e",
+  "excluded_path_parts": [
+    ".venv",
+    "__pycache__",
+    "tests",
+    "venv"
+  ],
+  "policy": {
+    "historical_direct_sha256": "MUST_BE_PROVABLY_PRESENT_AT_BASELINE_COMMIT",
+    "new_direct_sha256_default": "FORBIDDEN_UNTIL_EXPLICITLY_CLASSIFIED",
+    "new_structured_identity": "MUST_USE_ELPIS_CANONICAL_IDENTITY",
+    "raw_bytes_digest": "ALLOWED_ONLY_WITH_EXPLICIT_CENSUS_ENTRY_AND_NO_STRUCTURED_MARKERS"
+  },
+  "production_roots": [
+    "src",
+    "components",
+    "runtime",
+    "ECS/runtime",
+    "native/elpis-header/src"
+  ],
+  "schema": "elpis.direct-sha256-sink-census.v1",
+  "sinks": [
+    {
+      "call": "hashlib.sha256(data)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "51d0ceb20d18717f24518a30f97f3d11f876dd90f40aee3a14e30afa2c7e47f1",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 63,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "ECS/runtime/elpis_ecs/canonical.py",
+      "qualname": "sha256_hex",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( json.dumps( { \"path\": self.config.model_path, \"device\": self.config.device, \"local_only\": True, }, sort_keys=True, ).encode() )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "d1b4413defdfa3d55e3f5328e6d359c71a4597cd7c689d0867cf387032c7ebf5",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 169,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/CNumPyCortex/src/c_numpy_cortex/chronos2.py",
+      "qualname": "ChronosWorker._load",
+      "structured_markers": [
+        "json"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(canonical.encode())",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "1088b69eb62023eea8e77c90c05ace2a97aee07389b6b6fde97702dd2a8cf916",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 120,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/CNumPyCortex/src/c_numpy_cortex/contracts.py",
+      "qualname": "compute_schema_digest",
+      "structured_markers": [
+        "canonical"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(parts)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "218dc674df74cb0fd96d6c30b90f0e7c6197729ca65febbc216ec3a1aa50edde",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 194,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/CNumPyCortex/src/c_numpy_cortex/encoding.py",
+      "qualname": "compute_normalizer_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 15,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/CNumPyCortex/src/c_numpy_cortex/packets.py",
+      "qualname": "_file_sha256",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( bitplanes.tobytes() )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "7ac4cd3a7966f3811eefa81e20cf19fe60dc48a38eb3570be4585130e63a2fa4",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 326,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/CNumPyCortex/src/c_numpy_cortex/runtime.py",
+      "qualname": "build_runtime.compile_grid",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( tokens.tobytes() )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a5b3529e6859173836b843f2a454e297d950b4d5d325f7ba33dfb46cc53e0233",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 323,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/CNumPyCortex/src/c_numpy_cortex/runtime.py",
+      "qualname": "build_runtime.compile_grid",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( json.dumps( {\"type\": \"synthetic\", \"drift\": self._drift}, sort_keys=True, ).encode() )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "e785860e461b5d32bc7ab5857c140109bc75d803d04b2c04c45a0e9c67f7793b",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 76,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/CNumPyCortex/src/c_numpy_cortex/vintages.py",
+      "qualname": "SyntheticForecastPort.model_digest",
+      "structured_markers": [
+        "json"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( b\"darwinian.climate-dynamics-state.v1\\x00\" + encoded )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "6bf64c322b1d8791837c3199d863748f7ca2da515afb0acf159d35824797e27b",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 489,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/DarwinianMatrix/climate/state.py",
+      "qualname": "ClimateDynamicsState.digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 50,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/DarwinianMatrix/climate/state.py",
+      "qualname": "_tensor_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"utf-8\") + b\"\\x00\" + _canonical_json_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "7da42687f08c5f655e77d2798e6a1bfd29e5117d58a3495dbfd2ed663eac58ec",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 73,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/DarwinianMatrix/controller/episode.py",
+      "qualname": "_domain_digest",
+      "structured_markers": [
+        "_canonical_json_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"utf-8\") + b\"\\x00\" + _canonical_json_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "7da42687f08c5f655e77d2798e6a1bfd29e5117d58a3495dbfd2ed663eac58ec",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 66,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/DarwinianMatrix/controller/frame.py",
+      "qualname": "_domain_digest",
+      "structured_markers": [
+        "_canonical_json_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"utf-8\") + b\"\\x00\" + _canonical_json_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "7da42687f08c5f655e77d2798e6a1bfd29e5117d58a3495dbfd2ed663eac58ec",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 70,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/DarwinianMatrix/controller/structural_frame.py",
+      "qualname": "_domain_digest",
+      "structured_markers": [
+        "_canonical_json_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( b\"darwinian.frame-assessment.v1\\x00\" + encoded )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "701e04046f75ab772f1a6091b6c4ecb1d3afc908f0fd07dae6be6fffecb8c378",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 303,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/DarwinianMatrix/controller/verdict.py",
+      "qualname": "FrameAssessment.digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( b\"darwinian.meta-episode-state.v1\\x00\" + encoded )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "f0e5f9c54a185e2181e9b92e8c0698d49356848e6f476f248e2124643d6e2a8b",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 522,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/DarwinianMatrix/controller/verdict.py",
+      "qualname": "MetaEpisodeState.digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 258,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/DarwinianMatrix/ecology/engine.py",
+      "qualname": "EcologyState.digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( b\"darwinian.ecology-step-telemetry.v1\\x00\" + encoded )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "13c684d53f537f400d497527769a6a7a6c0b7755f631eabb3a6b5b9ea33802ba",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 218,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/DarwinianMatrix/ecology/transaction.py",
+      "qualname": "EcologyStepTelemetry.digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( (grid // bucket).to(torch.uint8).cpu().numpy().tobytes() )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "b318d477da1aedbb1a80ecb7a744280c376ed0170ce8e8d5de683d94cfe708e3",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 5,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/DarwinianMatrix/evaluation/cascade_graph.py",
+      "qualname": "context_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( b\"darwinian.grid81.v1\\x00\" + validated.to(torch.uint8).numpy().tobytes() )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "1b701630651740f3756d062b6adc59224d4d29e6278a897d341abf9c3a4af15e",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 87,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/DarwinianMatrix/evaluation/marginal_probe.py",
+      "qualname": "grid_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( b\"darwinian.arrangement-probe.v1\\x00\" + encoded )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "e24921069a65b893919f4426d1c834e7879c16b6365b72c730826a031d9a590e",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 388,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/DarwinianMatrix/evaluation/marginal_probe.py",
+      "qualname": "probe_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"utf-8\") + b\"\\x00\" + canonical_json_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "0fb4a5e28a2c2c925f7826b5d40fb6f565c60c841d95ae51ccf944076bfef237",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 87,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/DarwinianMatrix/ledger/episode_archive.py",
+      "qualname": "domain_digest",
+      "structured_markers": [
+        "canonical_json_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"utf-8\") + b\"\\x00\" + canonical_json_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "0fb4a5e28a2c2c925f7826b5d40fb6f565c60c841d95ae51ccf944076bfef237",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 38,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/DarwinianMatrix/ledger/records.py",
+      "qualname": "domain_digest",
+      "structured_markers": [
+        "canonical_json_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 51,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/DarwinianMatrix/ledger/records.py",
+      "qualname": "tensor_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( canonical_json_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "c4e1ea9e06ab101fc5b25700f65860170f38f5a81a18fb9af56b0fa385a841b3",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 25,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/DarwinianMatrix/life/canonical.py",
+      "qualname": "payload_digest",
+      "structured_markers": [
+        "canonical_json_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(payload)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "95906ebdac64aa83b00f3c381c7936646eaf3c7a309c85326e0010904d73e7b9",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 339,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/DarwinianMatrix/life/mutation.py",
+      "qualname": "_locus_entropy",
+      "structured_markers": [
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"utf-8\") + b\"\\x00\" + _canonical_json_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "7da42687f08c5f655e77d2798e6a1bfd29e5117d58a3495dbfd2ed663eac58ec",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 56,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/DarwinianMatrix/projector/constraints.py",
+      "qualname": "_domain_digest",
+      "structured_markers": [
+        "_canonical_json_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( b\"darwinian.runtime-policy.v1\\x00\" + encoded )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "f0b97699f1a79b864e71e60ec0058577ca6aefbd26b89f220c2c12616dcced0b",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 48,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/DarwinianMatrix/runtime.py",
+      "qualname": "DeterministicRuntimePolicy.digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"utf-8\") + b\"\\x00\" + canonical_json_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "0fb4a5e28a2c2c925f7826b5d40fb6f565c60c841d95ae51ccf944076bfef237",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 45,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/DarwinianMatrix/trm/contract.py",
+      "qualname": "domain_digest",
+      "structured_markers": [
+        "canonical_json_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( _canonical_json_bytes( self.canonical_payload() ) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "667f539f54e63295de969a8e205be3014e3a54f08994db2e9028af6a47787ee5",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 193,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/DarwinianMatrix/trm/p01_identity.py",
+      "qualname": "P01ArtifactIdentity.digest",
+      "structured_markers": [
+        "_canonical_json_bytes",
+        "canonical_payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 30,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/DarwinianMatrix/trm/p01_identity.py",
+      "qualname": "_sha256_file",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( _canonical_json_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "cf1de5c53508e343fbf067c2a873e2e4c0d54f0fb3d3dd84d0f86aae46fe5d4e",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 56,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/DarwinianMatrix/trm/p01_materializer.py",
+      "qualname": "_digest_payload",
+      "structured_markers": [
+        "_canonical_json_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( b\"darwinian.reference-sudoku-solver.v1\\x00\" + json.dumps( implementation_payload, sort_keys=True, separators=(\",\", \":\"), ).encode(\"utf-8\") )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a38321a033f808d0b0e969497cb6f497ef145f1109fcbd5f1f6128356fe330c8",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 53,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/DarwinianMatrix/trm/reference_solver.py",
+      "qualname": "DeterministicSudokuReferenceAdapter.__init__",
+      "structured_markers": [
+        "implementation_payload",
+        "json"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(canonical(value))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "c37d027f704933694ba2ee5c1d16306c1bc7d0ad50868a7b78f0a8e986eff85c",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 16,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/FuryanLocusOracle/contract.py",
+      "qualname": "digest",
+      "structured_markers": [
+        "canonical"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(canonical_payload.encode())",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "acb0f1c59703f3fd6f626264054c21ae4173399c432ddf9c217f8b27922b9bab",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 357,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81/canonical_reader.py",
+      "qualname": "_load_current_grid81_locked",
+      "structured_markers": [
+        "canonical_payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 88,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81/canonical_reader.py",
+      "qualname": "_sha256_file",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"ascii\") + b\"\\0\" + _canonical_bytes(value) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "aef1260322454b9b06d72c64a209f3ad8116804babae2abfd0bab345e9efd177",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 125,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCanonicalCandidateConstructor/src/elpis_grid81_candidate_constructor/constructor.py",
+      "qualname": "_domain_digest",
+      "structured_markers": [
+        "_canonical_bytes"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(path.read_bytes())",
+      "category": "RAW_BYTES_DIGEST",
+      "fingerprint": "193ab7bd212e8d3e0b45ad45b8db21b5395c0ee41709b8dd5498303e314c90ab",
+      "justification": "AST proves SHA-256 input is direct raw bytes or Path.read_bytes()",
+      "lineno": 131,
+      "obvious_raw_bytes": true,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCanonicalCandidateConstructor/src/elpis_grid81_candidate_constructor/constructor.py",
+      "qualname": "_sha",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"ascii\") + b\"\\0\" + _canonical_bytes(value) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "aef1260322454b9b06d72c64a209f3ad8116804babae2abfd0bab345e9efd177",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 117,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCanonicalPromotionAuthority/src/elpis_grid81_promotion_authority/authority.py",
+      "qualname": "_domain_digest",
+      "structured_markers": [
+        "_canonical_bytes"
+      ]
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 731,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCanonicalPromotionPlanner/src/elpis_grid81_promotion_planner/adversarial_matrix.py",
+      "qualname": "_compute_source_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 30,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCanonicalPromotionPlanner/src/elpis_grid81_promotion_planner/adversarial_matrix.py",
+      "qualname": "_file_sha256",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( record_json.encode(\"utf-8\") )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "42d1f62c45a1b520b98d16b7b7ec2affba12117c3c36efc46ba3211cba69aae6",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 688,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCanonicalPromotionPlanner/src/elpis_grid81_promotion_planner/adversarial_matrix.py",
+      "qualname": "run_full_adversarial_matrix",
+      "structured_markers": [
+        "record_json"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( record_json.encode(\"utf-8\") )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "42d1f62c45a1b520b98d16b7b7ec2affba12117c3c36efc46ba3211cba69aae6",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 717,
+      "obvious_raw_bytes": false,
+      "occurrence": 1,
+      "path": "components/Grid81DeterministicCanonicalPromotionPlanner/src/elpis_grid81_promotion_planner/adversarial_matrix.py",
+      "qualname": "run_full_adversarial_matrix",
+      "structured_markers": [
+        "record_json"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(data.encode(\"utf-8\"))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "9e81288baca7d50b797d2b881fdd2e90125ccac9f0fd0121a7a0d82ea902ad0b",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 10,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCanonicalPromotionPlanner/src/elpis_grid81_promotion_planner/canonical.py",
+      "qualname": "_sha256_str",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( json.dumps(receipts, sort_keys=True, separators=(\",\", \":\")).encode() )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "001f0a8b7c6025ce27ca8b1a55745131aa5891c4dcff70036df406fe770c4c9c",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 200,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCanonicalPromotionPlanner/src/elpis_grid81_promotion_planner/gates.py",
+      "qualname": "_check_receipt_integrity",
+      "structured_markers": [
+        "json"
+      ]
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 38,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCanonicalPromotionPlanner/src/elpis_grid81_promotion_planner/gates.py",
+      "qualname": "_file_sha256",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(payload)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "95906ebdac64aa83b00f3c381c7936646eaf3c7a309c85326e0010904d73e7b9",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 166,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCanonicalPromotionPlanner/src/elpis_grid81_promotion_planner/source_binding.py",
+      "qualname": "_canonical_digest",
+      "structured_markers": [
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 14,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCanonicalPromotionPlanner/src/elpis_grid81_promotion_planner/source_binding.py",
+      "qualname": "_file_sha256",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(chain.encode(\"utf-8\"))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "e1c965bed3841c301137d2e1f5c1a32941ad3c9c6544a727bfd51da5164cddfe",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 262,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCanonicalPromotionPlanner/src/elpis_grid81_promotion_planner/source_binding.py",
+      "qualname": "_receipt_chain_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 24,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCanonicalPromotionPlanner/src/elpis_grid81_promotion_planner/verifier.py",
+      "qualname": "_file_sha256",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(json.dumps( observation, sort_keys=True, separators=(\",\", \":\"), allow_nan=False, ).encode())",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "8db8aed368e17830c4b10765da2b7d0aec8642b434f4049839dd5bbbb6b6afeb",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 257,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCanonicalPromotionPlanner/src/elpis_grid81_promotion_planner/verifier.py",
+      "qualname": "generate_authority_audit",
+      "structured_markers": [
+        "json"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(_canonical_bytes(value))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "03f827cf82a44d10442aeeefbda1655e27785cdd6d73f34f052ef96b76dbbff9",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 90,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCanonicalPublisher/src/elpis_grid81_canonical_publisher/publisher.py",
+      "qualname": "_digest",
+      "structured_markers": [
+        "_canonical_bytes"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(path.read_bytes())",
+      "category": "RAW_BYTES_DIGEST",
+      "fingerprint": "193ab7bd212e8d3e0b45ad45b8db21b5395c0ee41709b8dd5498303e314c90ab",
+      "justification": "AST proves SHA-256 input is direct raw bytes or Path.read_bytes()",
+      "lineno": 94,
+      "obvious_raw_bytes": true,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCanonicalPublisher/src/elpis_grid81_canonical_publisher/publisher.py",
+      "qualname": "_sha256_file",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(canonical.encode(\"utf-8\"))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "4397855256c8514d387ec5cd6e985a2ec02079786f6d2c897117785b5b7deecf",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 21,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCapabilityApplicationExecutor/src/elpis_grid81_application_executor/canonical.py",
+      "qualname": "canonical_digest",
+      "structured_markers": [
+        "canonical"
+      ]
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 37,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCapabilityApplicationExecutor/src/elpis_grid81_application_executor/canonical.py",
+      "qualname": "sha256_file",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 50,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCapabilityAuthorityEvaluator/src/elpis_grid81_capability_authority/canonical.py",
+      "qualname": "domain_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(data)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "51d0ceb20d18717f24518a30f97f3d11f876dd90f40aee3a14e30afa2c7e47f1",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 18,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCapabilityAuthorityEvaluator/src/elpis_grid81_capability_authority/canonical.py",
+      "qualname": "sha256_bytes",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 23,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCapabilityAuthorityEvaluator/src/elpis_grid81_capability_authority/canonical.py",
+      "qualname": "sha256_file",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 27,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCapabilityAuthorityEvaluator/src/elpis_grid81_capability_authority/nonce.py",
+      "qualname": "compute_nonce_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(data)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "51d0ceb20d18717f24518a30f97f3d11f876dd90f40aee3a14e30afa2c7e47f1",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 49,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCapabilityAuthorityEvaluator/verify_g52b.py",
+      "qualname": "sha256_bytes",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 38,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCapabilityAuthorityEvaluator/verify_g52b.py",
+      "qualname": "sha256_file",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(canonical.encode(\"utf-8\"))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "4397855256c8514d387ec5cd6e985a2ec02079786f6d2c897117785b5b7deecf",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 26,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCapabilityConsumptionCompiler/src/elpis_grid81_consumption_compiler/canonical.py",
+      "qualname": "canonical_digest",
+      "structured_markers": [
+        "canonical"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(payload)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "95906ebdac64aa83b00f3c381c7936646eaf3c7a309c85326e0010904d73e7b9",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 33,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCapabilityConsumptionCompiler/src/elpis_grid81_consumption_compiler/canonical.py",
+      "qualname": "domain_digest",
+      "structured_markers": [
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 23,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicCapabilityConsumptionCompiler/verify_g53b.py",
+      "qualname": "sha256_file",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 30,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicStructuralAdjudicator/src/elpis_grid81_adjudication/canonical.py",
+      "qualname": "file_sha256",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(data)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "51d0ceb20d18717f24518a30f97f3d11f876dd90f40aee3a14e30afa2c7e47f1",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 20,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicStructuralAdjudicator/src/elpis_grid81_adjudication/canonical.py",
+      "qualname": "sha256_bytes",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(data.encode(\"utf-8\"))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "9e81288baca7d50b797d2b881fdd2e90125ccac9f0fd0121a7a0d82ea902ad0b",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 15,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicStructuralAdjudicator/src/elpis_grid81_adjudication/canonical.py",
+      "qualname": "sha256_hex",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 45,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81DeterministicStructuralAdjudicator/src/elpis_grid81_adjudication/canonical.py",
+      "qualname": "tree_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(separator_bytes + payload_bytes)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "274e80b82a2e5ec7780c9ff79d50eb87df08180dcc196bef0c78625a75e4988d",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 38,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81StructuralGroupProjectionCompiler/src/elpis_grid81_groups/canonical.py",
+      "qualname": "compute_digest",
+      "structured_markers": [
+        "payload_bytes"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(data)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "51d0ceb20d18717f24518a30f97f3d11f876dd90f40aee3a14e30afa2c7e47f1",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 43,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81StructuralGroupProjectionCompiler/src/elpis_grid81_groups/canonical.py",
+      "qualname": "sha256_of_bytes",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 48,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81StructuralGroupProjectionCompiler/src/elpis_grid81_groups/canonical.py",
+      "qualname": "sha256_of_file",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256((contract_tree_sha + contract_tree_sha2).encode())",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "533960cd960e5f61e82c23d5af005e2d73197e043c46af7c7ba8fb1480eb4a1d",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 125,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81StructuralGroupProjectionCompiler/src/elpis_grid81_groups/compiler.py",
+      "qualname": "run_compiler",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(separator + min_bytes)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "9158c1090cf0af182ed2a2b1537d680889c2b67572916f11222a952099a469f5",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 178,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81StructuralGroupProjectionCompiler/src/elpis_grid81_groups/orbit.py",
+      "qualname": "compute_orbit_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 13,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81StructuralGroupProjectionCompiler/src/elpis_grid81_groups/upstream.py",
+      "qualname": "sha256_of_file",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 104,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81StructuralGroupProjectionCompiler/src/elpis_grid81_groups/upstream.py",
+      "qualname": "tree_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 52,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81StructuralGroupProjectionCompiler/src/elpis_grid81_groups/verifier.py",
+      "qualname": "sha256_file",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(canonical_bytes(payload))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "dd3df320f3139fb0d5678f775682807d70e2479cbb234eafb776b4a5042e784d",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 25,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81StructuralSemantics/src/elpis_grid81_semantics/canonical.py",
+      "qualname": "canonical_digest",
+      "structured_markers": [
+        "canonical_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(combined)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "6e72b970227b4fbe22466121d876ba18791cc5a10e1d07a2ee8b0e3522559045",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 34,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81StructuralSemantics/src/elpis_grid81_semantics/canonical.py",
+      "qualname": "pair_orbit_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(cb)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "69158017cef3e59798cd37d5731fdcf99f8d007c280937224ba7be8465acc947",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 67,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81StructuralSemantics/src/elpis_grid81_semantics/orbit.py",
+      "qualname": "compute_orbit",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(combined)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "6e72b970227b4fbe22466121d876ba18791cc5a10e1d07a2ee8b0e3522559045",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 98,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81StructuralSemantics/src/elpis_grid81_semantics/orbit.py",
+      "qualname": "compute_orbit",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(canonical_b)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "29df8e6448e96c753b98607e1e4eb1b6128903ce680ac9ca3f58d6506aff96fb",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 49,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81StructuralSemantics/src/elpis_grid81_semantics/quarantine.py",
+      "qualname": "compute_quarantine_from_pair",
+      "structured_markers": [
+        "canonical_b"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(b\"\")",
+      "category": "RAW_BYTES_DIGEST",
+      "fingerprint": "47de25f96518492eafbaf6edb77b01f501773ab8f905a265a1bf4165ca743efb",
+      "justification": "AST proves SHA-256 input is direct raw bytes or Path.read_bytes()",
+      "lineno": 53,
+      "obvious_raw_bytes": true,
+      "occurrence": 0,
+      "path": "components/Grid81StructuralSemantics/src/elpis_grid81_semantics/quarantine.py",
+      "qualname": "compute_quarantine_from_pair",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(canonical_b)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "29df8e6448e96c753b98607e1e4eb1b6128903ce680ac9ca3f58d6506aff96fb",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 32,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81StructuralSemantics/src/elpis_grid81_semantics/quarantine.py",
+      "qualname": "compute_quarantine_identity",
+      "structured_markers": [
+        "canonical_b"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(provenance_data.encode(\"utf-8\"))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "6a660966360b55d2d8dd2ba09ecfead2e7954f4cdd088c16853d1810ea160744",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 34,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81StructuralSemantics/src/elpis_grid81_semantics/quarantine.py",
+      "qualname": "compute_quarantine_identity",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(raw_bytes)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "c29127a4ab3cdf1582f9c1c25d29e22374bf1c646f62354336dd6a7855ec400c",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 33,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81StructuralSemantics/src/elpis_grid81_semantics/quarantine.py",
+      "qualname": "compute_quarantine_identity",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( json.dumps(registry_content, sort_keys=True, separators=(\",\", \":\")).encode(\"utf-8\") )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "137741b64254070c34d18726d717df2fa4544ebc85b96d50f8e40b2130f41d50",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 94,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81StructuralSemantics/src/elpis_grid81_semantics/registry_contracts.py",
+      "qualname": "default_structural_symbol_registry",
+      "structured_markers": [
+        "json"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(combined)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "6e72b970227b4fbe22466121d876ba18791cc5a10e1d07a2ee8b0e3522559045",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 96,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Grid81TypedProjectionCompiler/src/elpis_grid81_typed/canonical.py",
+      "qualname": "domain_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"utf-8\") + b\"\\x00\" + _canonical_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "c8a1c257f474218a8835bd969082f365937e4b7a35822e079aa671af323a7861",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 29,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Pipeline/P0ControlProtocol/src/elpis_p0/artifact_lineage.py",
+      "qualname": "_domain_digest",
+      "structured_markers": [
+        "_canonical_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(f.read())",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "0cd5eccb5b98abf614cc78790a8d00b5baf924530d828ce6236cbbafd8022c74",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 411,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Pipeline/P0ControlProtocol/src/elpis_p0/composition_root.py",
+      "qualname": "CoreRuntimeBundle._source_sha256",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(raw.encode(\"utf-8\"))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "022700940641e40823dc7eaf4fc2ad35b7afa8ffa023a24a0324a5869af56b20",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 833,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Pipeline/P0ControlProtocol/src/elpis_p0/composition_root.py",
+      "qualname": "CoreRuntimeBundle.full_identity_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(raw.encode(\"utf-8\"))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "022700940641e40823dc7eaf4fc2ad35b7afa8ffa023a24a0324a5869af56b20",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 810,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Pipeline/P0ControlProtocol/src/elpis_p0/composition_root.py",
+      "qualname": "CoreRuntimeBundle.identity_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(data)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "51d0ceb20d18717f24518a30f97f3d11f876dd90f40aee3a14e30afa2c7e47f1",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 34,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Pipeline/P0ControlProtocol/src/elpis_p0/contracts.py",
+      "qualname": "_p0_sha256_hex",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(data.encode(\"utf-8\"))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "9e81288baca7d50b797d2b881fdd2e90125ccac9f0fd0121a7a0d82ea902ad0b",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 33,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Pipeline/P0ControlProtocol/src/elpis_p0/expansion_contracts.py",
+      "qualname": "_sha256_hex",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"utf-8\") + b\"\\x00\" + _canonical_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "c8a1c257f474218a8835bd969082f365937e4b7a35822e079aa671af323a7861",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 43,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Pipeline/P0ControlProtocol/src/elpis_p0/lineage_authority.py",
+      "qualname": "_domain_digest",
+      "structured_markers": [
+        "_canonical_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(payload.encode(\"utf-8\"))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "285a07253c9524474252a502477e895055656db78cd92a61bef69a48b9af948f",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 67,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Pipeline/P0ControlProtocol/src/elpis_p0/p02_runner.py",
+      "qualname": "_structural_digest",
+      "structured_markers": [
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(data)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "51d0ceb20d18717f24518a30f97f3d11f876dd90f40aee3a14e30afa2c7e47f1",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 57,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Pipeline/P0ControlProtocol/src/elpis_p0/refinement_proposer.py",
+      "qualname": "_sha256_hex",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(data)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "51d0ceb20d18717f24518a30f97f3d11f876dd90f40aee3a14e30afa2c7e47f1",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 34,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Pipeline/P0ControlProtocol/src/elpis_p0/refinement_receipt.py",
+      "qualname": "_sha256_hex",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(data)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "51d0ceb20d18717f24518a30f97f3d11f876dd90f40aee3a14e30afa2c7e47f1",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 28,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Pipeline/P0ControlProtocol/src/elpis_p0/refinement_scope.py",
+      "qualname": "_sha256_hex",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(data)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "51d0ceb20d18717f24518a30f97f3d11f876dd90f40aee3a14e30afa2c7e47f1",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 32,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Pipeline/P0ControlProtocol/src/elpis_p0/refinement_validation.py",
+      "qualname": "_sha256_hex",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(data)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "51d0ceb20d18717f24518a30f97f3d11f876dd90f40aee3a14e30afa2c7e47f1",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 43,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Pipeline/P0ControlProtocol/src/elpis_p0/scoped_refinement_result.py",
+      "qualname": "_sha256_hex",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"utf-8\") + b\"\\x00\" + _canonical_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "c8a1c257f474218a8835bd969082f365937e4b7a35822e079aa671af323a7861",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 41,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Pipeline/P0ControlProtocol/src/elpis_p0/semantic_binding.py",
+      "qualname": "_domain_digest",
+      "structured_markers": [
+        "_canonical_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( P0_SEMANTIC_REQUEST_DIGEST_DOMAIN.encode(\"utf-8\") + b\"\\x00\" + _canonical_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "aa7836000f71b51788679864d1c2e7e33a7b0508353b4a326b3d5d43e50c454b",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 40,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Pipeline/P0ControlProtocol/src/elpis_p0/semantic_ir.py",
+      "qualname": "_digest",
+      "structured_markers": [
+        "_canonical_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(_canonical_bytes(semantic_space_payload()))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "8c39a3a7c9fc281e9b93a019c03c8d597a79dce9ecfbab5e6bcc002fdb877727",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 219,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Pipeline/P0ControlProtocol/src/elpis_p0/semantic_space.py",
+      "qualname": "p0_semantic_space_digest",
+      "structured_markers": [
+        "_canonical_bytes",
+        "semantic_space_payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( digest(payload).encode(\"utf-8\") )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "b273990ee2eb0549d86f14f3d670bc121fb5fdae4107169166f77386407cdeaa",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 269,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Pipeline/P0ControlProtocol/src/elpis_p0/structural_oracle_adapter.py",
+      "qualname": "OneStepAdapterResult.__post_init__",
+      "structured_markers": [
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(_encode_without_digest(envelope))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "f9ff855afc49a9a5a2f00296f9a5a5f63f53f4f0a42e38be312fc0e8333cc6e8",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 212,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Pipeline/P0ControlProtocol/src/elpis_p0/structural_proposal_envelope.py",
+      "qualname": "_expected_envelope_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(data)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "51d0ceb20d18717f24518a30f97f3d11f876dd90f40aee3a14e30afa2c7e47f1",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 45,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/Pipeline/P0ControlProtocol/src/elpis_p0/structural_rollout.py",
+      "qualname": "_sha256_hex",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(SHA256_DOMAIN_SEPARATOR + data)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "7ed1fad0ee224f4bf5d9b7e3ec484e39034da3f42980b9f88cc30623279eb071",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 53,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/TRMFractalSpine/src/elpis_fractal_spine/canonical.py",
+      "qualname": "sha256_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(case_raw.encode())",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "df261e0b1b7d721236059245f55ef081e74ce430ee3af7e5c40fe42e1669d6b5",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 840,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/TRMFractalSpine/src/elpis_fractal_spine/corpus_generator.py",
+      "qualname": "CorpusGenerator.generate_all",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( f\"root|{sym_digest}|{stratum_name}\".encode() )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "fc6a84f5232f04828d3952b475567989ad17772e4f81b9c8b754c3adec0cebba",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 843,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/TRMFractalSpine/src/elpis_fractal_spine/corpus_generator.py",
+      "qualname": "CorpusGenerator.generate_all",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(raw)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "75f1c7772244af02d47bd047aef9e1e353e2ab2419e98e2dd960767830abd884",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 1142,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/TRMFractalSpine/src/elpis_fractal_spine/corpus_generator.py",
+      "qualname": "CorpusGenerator.generate_corpus_with_splits",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(data.encode())",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "c747fd89463c4dc47014dec7af34c32f3a4c45c8f6917bce7dd26701f06b60f2",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 173,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/TRMFractalSpine/src/elpis_fractal_spine/corpus_generator.py",
+      "qualname": "_sha256_hex",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(data.encode())",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "c747fd89463c4dc47014dec7af34c32f3a4c45c8f6917bce7dd26701f06b60f2",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 226,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/TRMFractalSpine/src/elpis_fractal_spine/corpus_schema.py",
+      "qualname": "CorpusSerializer.compute_checksum",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(content.encode())",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "78a51eb3e63e48d16f44daed217466a8e1eab210e1f90964d3a4a76a3143f931",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 69,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/TRMFractalSpine/src/elpis_fractal_spine/cortex_port.py",
+      "qualname": "CortexCommitReaderSystem.read_manifest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(preimage)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a5c37382eb9032024b9788ea0ed7e5d0ae917aa68f5201ed5c3027a146f622ef",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 188,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/TRMFractalSpine/src/elpis_fractal_spine/structural_identity.py",
+      "qualname": "_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(raw.encode())",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "02609e284a78038fb017a42db02d413ec88242d212a87cc56f58d3224da207be",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 86,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/TRMFractalSpine/src/elpis_fractal_spine/structural_oracle.py",
+      "qualname": "OracleNextState.digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( \",\".join(str(t) for t in seed_grid).encode() )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "6b2a1de9971b37b39a2e41dafcd2c9146e088f6be73b6153347a324bbbb0db58",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 308,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/TRMFractalSpine/src/elpis_fractal_spine/structural_oracle.py",
+      "qualname": "StructuralOracle._build_child_specs",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( \",\".join(str(t) for t in s.tokens).encode() )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "c9f9e2355090714435ef3f5f840f30f306515f5593fe32222c45c6dfa9bf58ac",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 455,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/TRMFractalSpine/src/elpis_fractal_spine/structural_oracle.py",
+      "qualname": "_canonical_symmetry_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(data)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "51d0ceb20d18717f24518a30f97f3d11f876dd90f40aee3a14e30afa2c7e47f1",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 53,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/TRMFractalSpine/src/elpis_fractal_spine/structural_refinement.py",
+      "qualname": "_sha256_hex",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( \",\".join(str(t) for t in self.tokens).encode() )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "0058af2a3ac10a3cfe2ba3a77f5f6957447bc5da4fafbaeb2db6dc7c89c2eede",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 209,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/TRMFractalSpine/src/elpis_fractal_spine/structural_semantics.py",
+      "qualname": "StructuralGrid.digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(_lp(domain) + _lp(payload))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "314fcd6d1ccc03ab7d93eb5491c6901e366fa49bc3a7760a5fdf4a409f1d2f3c",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 110,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/TRMFractalSpine/src/elpis_fractal_spine/structural_state_1024.py",
+      "qualname": "_domain_digest",
+      "structured_markers": [
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(preimage)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a5c37382eb9032024b9788ea0ed7e5d0ae917aa68f5201ed5c3027a146f622ef",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 132,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/TRMFractalSpine/src/elpis_fractal_spine/structural_state_1024.py",
+      "qualname": "_record_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( _encode_values( source_state_identity_value=source_state_identity_value, oracle_transition_identity_value=oracle_transition_identity_value, canonical_target_identity_value=canonical_target_identity_value, canonical_delta81=canonical_delta81, branch_modify_count81=branch_modify_count81, branch_distinct_value_count81=branch_distinct_value_count81, valid_next_state_count=valid_next_state_count, ) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "7358a52b4b9d5bf48814ee6af4355f4b4f35c7f77d2f6d701c35dea0a6b47222",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 336,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/TRMFractalSpine/src/elpis_fractal_spine/structural_transition_fields.py",
+      "qualname": "_build_record",
+      "structured_markers": [
+        "canonical_delta81",
+        "canonical_target_identity_value"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(_encode_without_digest(fields))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "608a9f1486707a57109a8b29e274d5d82de7a6db511246d6f2f86c05afd8f4c2",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 243,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/TRMFractalSpine/src/elpis_fractal_spine/structural_transition_fields.py",
+      "qualname": "_expected_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(_canonical_bytes(value))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "03f827cf82a44d10442aeeefbda1655e27785cdd6d73f34f052ef96b76dbbff9",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 45,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "native/elpis-header/src/elpis_header/observer/grid81_materialized_reducer.py",
+      "qualname": "_digest",
+      "structured_markers": [
+        "_canonical_bytes"
+      ]
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 50,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "native/elpis-header/src/elpis_header/observer/grid81_materialized_reducer.py",
+      "qualname": "_state_projection_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(payload.encode())",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "3ff3420b02d3e218c68b70fd3268236d6169472045497492cc3b3fccf4815d3a",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 48,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "native/elpis-header/src/elpis_header/observer/grid81_reducer.py",
+      "qualname": "Grid81RuntimeState.__post_init__",
+      "structured_markers": [
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(data)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "51d0ceb20d18717f24518a30f97f3d11f876dd90f40aee3a14e30afa2c7e47f1",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 39,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "runtime/R0/src/elpis_runtime_r0/adapters.py",
+      "qualname": "_sha256_hex",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(data)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "51d0ceb20d18717f24518a30f97f3d11f876dd90f40aee3a14e30afa2c7e47f1",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 28,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "runtime/R0/src/elpis_runtime_r0/contracts.py",
+      "qualname": "_sha256_hex",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(receipt.receipt_bytes())",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "608577d9a734153a82c78077f36fe2b50eb72c77faf7ab550659fec5f4cfe8fd",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 52,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "runtime/R0/src/elpis_runtime_r0/receipt.py",
+      "qualname": "receipt_bytes_hash",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(data)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "51d0ceb20d18717f24518a30f97f3d11f876dd90f40aee3a14e30afa2c7e47f1",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 19,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "runtime/R0/src/elpis_runtime_r0/replay.py",
+      "qualname": "_sha256_hex",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(fh.read())",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "d9450d05e9bea5b239872b93e8fc5d5cf0b04d853011371f3ec58726affe8dbb",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 218,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "runtime/R0/src/elpis_runtime_r0/transaction.py",
+      "qualname": "_compute_component_manifest_digests",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(raw)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "75f1c7772244af02d47bd047aef9e1e353e2ab2419e98e2dd960767830abd884",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 131,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "runtime/R0/src/elpis_runtime_r0/transaction.py",
+      "qualname": "_validate_canonical_root",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(data)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "51d0ceb20d18717f24518a30f97f3d11f876dd90f40aee3a14e30afa2c7e47f1",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 28,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "runtime/R1/src/elpis_runtime_r1/contracts.py",
+      "qualname": "_sha256_hex",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(j.encode(\"utf-8\"))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "8910da67505c921f70224e60897bb0dbd57b2891e6c4c7289d79be65084776d5",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 319,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "runtime/R1/src/elpis_runtime_r1/hacf_adapter.py",
+      "qualname": "get_vector_index_manifest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(receipt.receipt_bytes())",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "608577d9a734153a82c78077f36fe2b50eb72c77faf7ab550659fec5f4cfe8fd",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 57,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "runtime/R1/src/elpis_runtime_r1/receipt.py",
+      "qualname": "receipt_bytes_hash",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(fh.read())",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "d9450d05e9bea5b239872b93e8fc5d5cf0b04d853011371f3ec58726affe8dbb",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 294,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "runtime/R1/src/elpis_runtime_r1/transaction.py",
+      "qualname": "_compute_component_manifest_digests",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(r0_receipt.receipt_bytes())",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "64ce2cefa6be4c78c5d410f3f6cc103aed50966434be47eb95500910c5899231",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 456,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "runtime/R1/src/elpis_runtime_r1/transaction.py",
+      "qualname": "_run_r0_downstream",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(r0_receipt.to_canonical_json().encode(\"utf-8\"))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "76186a3bb4489fbf6c0fdc806144b5e8eb478921c18a3fe2ed3d3ba35a8b9b53",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 458,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "runtime/R1/src/elpis_runtime_r1/transaction.py",
+      "qualname": "_run_r0_downstream",
+      "structured_markers": [
+        "to_canonical_json"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(json.dumps(r0_receipt, sort_keys=True).encode(\"utf-8\"))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "b48888ae03364ddc16582a7e7d172b91ef2634596fe3160b0f255ed68a9ecb14",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 460,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "runtime/R1/src/elpis_runtime_r1/transaction.py",
+      "qualname": "_run_r0_downstream",
+      "structured_markers": [
+        "json"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(raw)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "75f1c7772244af02d47bd047aef9e1e353e2ab2419e98e2dd960767830abd884",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 123,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "runtime/R1/src/elpis_runtime_r1/transaction.py",
+      "qualname": "_validate_canonical_root",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(framed)",
+      "category": "R2_ZERO_DEP_CANONICAL_IDENTITY_V1_EQUIVALENT",
+      "fingerprint": "95cef4263143ee2e18fba5a0055b5ba1af3f55162be0e63959177b8754cd2a73",
+      "justification": "R2 zero-dependency wheel; repository contract proves byte-equivalence to elpis.canonical_identity",
+      "lineno": 42,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "runtime/R2/src/elpis_runtime_r2/receipt.py",
+      "qualname": "_canonical_identity_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(_canonical_bytes(payload))",
+      "category": "R2_LEGACY_V1_PROTOCOL_IDENTITY",
+      "fingerprint": "ac51d65ee4bbd1208aab62cadff4a37e1b51778ce1c6baea2bfc30b6b4ccaad3",
+      "justification": "historical Elpis2.2.13 receipt-v1 verification compatibility only",
+      "lineno": 32,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "runtime/R2/src/elpis_runtime_r2/receipt.py",
+      "qualname": "_legacy_v1_digest",
+      "structured_markers": [
+        "_canonical_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(domain_framed_bytes(domain, value))",
+      "category": "CANONICAL_IDENTITY_V1_AUTHORITY",
+      "fingerprint": "d26712c2a07195b2de03a7bc74fa5adac44a839febfe20ee1d81d9e0376e2032",
+      "justification": "sole cross-component Canonical Identity v1 SHA-256 authority",
+      "lineno": 79,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis/canonical_identity.py",
+      "qualname": "content_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 76,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis/contracts/closure/identity.py",
+      "qualname": "content_checksum",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( (header + canon).encode(\"utf-8\") )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "674f12f361ece464baa87b495b533fb2b87a773aaa71a6a6f115e0775ed39d68",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 115,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis/contracts/legacy/canary_telemetry.py",
+      "qualname": "_compute_content_checksum",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(canonical_json_bytes(state))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "0e7dc21826e84d9ed747e9f7450c54265da4287713b7b79814c89427eebb8bf4",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 190,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis/logic/authority.py",
+      "qualname": "CapabilityRegistry.state_digest",
+      "structured_markers": [
+        "canonical_json_bytes"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(self._secret)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "e253b55fac5f71e5a9c9196647488fb962a1e76bea2dc4404140a1646894ba0d",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 172,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis/logic/authority.py",
+      "qualname": "CapabilityRegistry.state_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(self.canonical_state)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "9916e88c6340afb8274fb5deca6474197253173a88752a1e552c5cbd14d61bbc",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 228,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/ecs_r0.py",
+      "qualname": "Candidate.equivalence_digest",
+      "structured_markers": [
+        "canonical_state"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(_framed(\"elpis.ecs.r0.theta.v1\", _prefix(self.width) + (self.data,)))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "e1e67bf3da04e34550c4d9fe4aa91b7377ff831ba65846af7dc65e4b9d7a05a4",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 180,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/ecs_r0.py",
+      "qualname": "FrozenTheta.digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(domain.encode(\"utf-8\") + b\"\\0\" + encoded)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "f64f1997f28434d4ba840e8b7b055e9da84d5643309255e0b2f6cd11f7f81868",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 62,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/ecs_r0.py",
+      "qualname": "_json_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(path.read_bytes())",
+      "category": "RAW_BYTES_DIGEST",
+      "fingerprint": "193ab7bd212e8d3e0b45ad45b8db21b5395c0ee41709b8dd5498303e314c90ab",
+      "justification": "AST proves SHA-256 input is direct raw bytes or Path.read_bytes()",
+      "lineno": 121,
+      "obvious_raw_bytes": true,
+      "occurrence": 0,
+      "path": "src/elpis_reference/ecs_r0.py",
+      "qualname": "verify_authority",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(header.read_bytes())",
+      "category": "RAW_BYTES_DIGEST",
+      "fingerprint": "676c90139abb53b30a3b4559e4d322f24299d3958d2ea89edfcef95e389a7ac5",
+      "justification": "AST proves SHA-256 input is direct raw bytes or Path.read_bytes()",
+      "lineno": 115,
+      "obvious_raw_bytes": true,
+      "occurrence": 0,
+      "path": "src/elpis_reference/ecs_r0.py",
+      "qualname": "verify_authority",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(raw)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "75f1c7772244af02d47bd047aef9e1e353e2ab2419e98e2dd960767830abd884",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 110,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/ecs_r0.py",
+      "qualname": "verify_authority",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 244,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/fms_inference_adapter.py",
+      "qualname": "FMSCheckpointInferenceAdapter.__init__",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(_canonical(value).encode('utf-8'))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "921edcb248ca843f34dbac5db9522c63e5e0c4844ca7ad0be1f6c16ec8d1b678",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 22,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/functional_evaluation.py",
+      "qualname": "_digest",
+      "structured_markers": [
+        "_canonical"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(source.encode('utf-8'))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "3595e276339b1884539e8e8bebbb215466089b142eb9ccc77dd70860991ccc5c",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 54,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/functional_evaluation.py",
+      "qualname": "prepare_merge_intervals_evaluation",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(data)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "51d0ceb20d18717f24518a30f97f3d11f876dd90f40aee3a14e30afa2c7e47f1",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 313,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/model.py",
+      "qualname": "_load_checkpoint_state",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 231,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/model.py",
+      "qualname": "_load_checkpoint_state_reader",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 41,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/model.py",
+      "qualname": "_sha256",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"utf-8\") + b\"\\x00\" + canonical_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "f1131f79c7ab636c94f6ebb96ca1986fd868493d9d898ba11c25e8096c736105",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 35,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/semantic_refinement.py",
+      "qualname": "domain_digest",
+      "structured_markers": [
+        "canonical_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( P0_SEMANTIC_REQUEST_DIGEST_DOMAIN.encode(\"utf-8\") + b\"\\x00\" + _canonical_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "aa7836000f71b51788679864d1c2e7e33a7b0508353b4a326b3d5d43e50c454b",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 59,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/_authority/c2r6p0/canonicalize.py",
+      "qualname": "_authority_digest",
+      "structured_markers": [
+        "_canonical_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(data)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "51d0ceb20d18717f24518a30f97f3d11f876dd90f40aee3a14e30afa2c7e47f1",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 59,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/_authority/c2r6p0/contracts.py",
+      "qualname": "sha256_hex",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(json.dumps( payload, sort_keys=True, separators=(\",\", \":\"), ).encode())",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "f8693961490aeb6a3c4234d2cbe062fbdd773bae64a249d9b0b2d7e0ee1a7af1",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 107,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/_authority/c2r6p0/rules.py",
+      "qualname": "BudgetedRulesetV2.digest",
+      "structured_markers": [
+        "json",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( json.dumps(payload, sort_keys=True, separators=(\",\", \":\")).encode() )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "f8693961490aeb6a3c4234d2cbe062fbdd773bae64a249d9b0b2d7e0ee1a7af1",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 86,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/_authority/c2r6p0/rules.py",
+      "qualname": "Ruleset.digest",
+      "structured_markers": [
+        "json",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(Path(path).read_bytes())",
+      "category": "RAW_BYTES_DIGEST",
+      "fingerprint": "a281fed2a8a8eb2a984f64e613d2bd9bb5fec08538f6059e41e874cd06b447b3",
+      "justification": "AST proves SHA-256 input is direct raw bytes or Path.read_bytes()",
+      "lineno": 24,
+      "obvious_raw_bytes": true,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/_authority/c2r6p0/rules.py",
+      "qualname": "_sha",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(data)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "51d0ceb20d18717f24518a30f97f3d11f876dd90f40aee3a14e30afa2c7e47f1",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 59,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/_authority/c2r6p1_bridge/contracts.py",
+      "qualname": "sha256_hex",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( json.dumps( [[kind, list(lanes)] for kind, lanes in SIGNATURES], separators=(\",\", \":\"), ensure_ascii=True, ).encode(\"ascii\") )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "8bed3dc3a42918ce07ea0708c882705d56b2b299e0d74fbf3dff0cbe9d3d7763",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 78,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/_authority/c2r7c/structural_trm_features.py",
+      "qualname": "<module>",
+      "structured_markers": [
+        "json"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(data)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "51d0ceb20d18717f24518a30f97f3d11f876dd90f40aee3a14e30afa2c7e47f1",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 216,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/_authority/core.py",
+      "qualname": "FrozenTRM0ProposalSource.from_checkpoint",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256()",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 175,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/_authority/core.py",
+      "qualname": "sha256_file",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(data)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "51d0ceb20d18717f24518a30f97f3d11f876dd90f40aee3a14e30afa2c7e47f1",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 53,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/_authority/elpis_fractal_spine/structural_refinement.py",
+      "qualname": "_sha256_hex",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256(data)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "51d0ceb20d18717f24518a30f97f3d11f876dd90f40aee3a14e30afa2c7e47f1",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 34,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/_authority/elpis_p0/contracts.py",
+      "qualname": "_p0_sha256_hex",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"utf-8\") + b\"\\x00\" + _canonical_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "c8a1c257f474218a8835bd969082f365937e4b7a35822e079aa671af323a7861",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 41,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/_authority/elpis_p0/semantic_binding.py",
+      "qualname": "_domain_digest",
+      "structured_markers": [
+        "_canonical_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( P0_SEMANTIC_REQUEST_DIGEST_DOMAIN.encode(\"utf-8\") + b\"\\x00\" + _canonical_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "aa7836000f71b51788679864d1c2e7e33a7b0508353b4a326b3d5d43e50c454b",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 40,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/_authority/elpis_p0/semantic_ir.py",
+      "qualname": "_digest",
+      "structured_markers": [
+        "_canonical_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(_canonical_bytes(semantic_space_payload()))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "8c39a3a7c9fc281e9b93a019c03c8d597a79dce9ecfbab5e6bcc002fdb877727",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 219,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/_authority/elpis_p0/semantic_space.py",
+      "qualname": "p0_semantic_space_digest",
+      "structured_markers": [
+        "_canonical_bytes",
+        "semantic_space_payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"utf-8\") + b\"\\x00\" + _canonical_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "c8a1c257f474218a8835bd969082f365937e4b7a35822e079aa671af323a7861",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 116,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/_authority/elpis_p0/structural_residual.py",
+      "qualname": "_domain_digest",
+      "structured_markers": [
+        "_canonical_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( _canonical_json_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "cf1de5c53508e343fbf067c2a873e2e4c0d54f0fb3d3dd84d0f86aae46fe5d4e",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 72,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/consumer.py",
+      "qualname": "_digest",
+      "structured_markers": [
+        "_canonical_json_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"ascii\") + b\"\\x00\" + _canonical_json_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "c4d7c8b336dff28ae437b3c03bd1f7ab5e91ead44204f35ca7757f50567de16f",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 86,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/decoder_adapter.py",
+      "qualname": "_domain_digest",
+      "structured_markers": [
+        "_canonical_json_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"ascii\") + b\"\\x00\" + _canonical_json_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "c4d7c8b336dff28ae437b3c03bd1f7ab5e91ead44204f35ca7757f50567de16f",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 94,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/decoding_authority.py",
+      "qualname": "_domain_digest",
+      "structured_markers": [
+        "_canonical_json_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(json.dumps( self.payload(), sort_keys=True, separators=(',', ':'), ensure_ascii=False, allow_nan=False, ).encode('utf-8'))",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "f49e46eef6d13d832da893a2075c353bdc2c4cb450aa9a938b1d9bd55a783c57",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 69,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/inactive_receipt.py",
+      "qualname": "InactiveGuidanceReceiptV2._computed_digest",
+      "structured_markers": [
+        "json",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"ascii\") + b\"\\x00\" + _canonical_json_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "c4d7c8b336dff28ae437b3c03bd1f7ab5e91ead44204f35ca7757f50567de16f",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 108,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/materialization_authority.py",
+      "qualname": "_domain_digest",
+      "structured_markers": [
+        "_canonical_json_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( structural_payload_json.encode( \"ascii\" ) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "0770c3517a20f64c4ce3b432bbb7e78b79716ad918dd18226671f473acf9b25b",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 426,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/materializer.py",
+      "qualname": "CanonicalResolvedTopologyMaterializerV1.materialize",
+      "structured_markers": [
+        "structural_payload_json"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"ascii\") + b\"\\x00\" + _canonical_json_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "c4d7c8b336dff28ae437b3c03bd1f7ab5e91ead44204f35ca7757f50567de16f",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 86,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/materializer.py",
+      "qualname": "_domain_digest",
+      "structured_markers": [
+        "_canonical_json_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( _canonical_json_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "cf1de5c53508e343fbf067c2a873e2e4c0d54f0fb3d3dd84d0f86aae46fe5d4e",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 77,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/materializer.py",
+      "qualname": "_sha256",
+      "structured_markers": [
+        "_canonical_json_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"ascii\") + b\"\\x00\" + _canonical_json_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "c4d7c8b336dff28ae437b3c03bd1f7ab5e91ead44204f35ca7757f50567de16f",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 82,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/planner.py",
+      "qualname": "_domain_digest",
+      "structured_markers": [
+        "_canonical_json_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"ascii\") + b\"\\x00\" + _canonical_json_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "c4d7c8b336dff28ae437b3c03bd1f7ab5e91ead44204f35ca7757f50567de16f",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 91,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/planning_authority.py",
+      "qualname": "_domain_digest",
+      "structured_markers": [
+        "_canonical_json_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"ascii\") + b\"\\x00\" + _canonical_json_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "c4d7c8b336dff28ae437b3c03bd1f7ab5e91ead44204f35ca7757f50567de16f",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 80,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/planning_input.py",
+      "qualname": "_domain_digest",
+      "structured_markers": [
+        "_canonical_json_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256(encoded)",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "d52f7f893ca0e6789ccc2a961f41fedcaa7e5cf4cf8f433aa89a89e588057b01",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 26,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/receipt.py",
+      "qualname": "_digest",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( _canonical_json_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "cf1de5c53508e343fbf067c2a873e2e4c0d54f0fb3d3dd84d0f86aae46fe5d4e",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 66,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/resolved.py",
+      "qualname": "_sha256",
+      "structured_markers": [
+        "_canonical_json_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( self.source.encode(\"utf-8\") )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "9422b46ad3dad5ee64b9dcb6cd2acbf33476aabd57cc94fcdde5977cc0eb7d71",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 354,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/runtime.py",
+      "qualname": "StructuralGuidanceRuntimeResultV1.validate",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"ascii\") + b\"\\x00\" + _canonical_json_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "c4d7c8b336dff28ae437b3c03bd1f7ab5e91ead44204f35ca7757f50567de16f",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 143,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/runtime.py",
+      "qualname": "_domain_digest",
+      "structured_markers": [
+        "_canonical_json_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"ascii\") + b\"\\x00\" + _canonical_json_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "c4d7c8b336dff28ae437b3c03bd1f7ab5e91ead44204f35ca7757f50567de16f",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 92,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/source_emission_authority.py",
+      "qualname": "_domain_digest",
+      "structured_markers": [
+        "_canonical_json_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"ascii\") + b\"\\x00\" + _canonical_json_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "c4d7c8b336dff28ae437b3c03bd1f7ab5e91ead44204f35ca7757f50567de16f",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 92,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/source_emitter.py",
+      "qualname": "_domain_digest",
+      "structured_markers": [
+        "_canonical_json_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( source.encode(\"utf-8\") )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "3595e276339b1884539e8e8bebbb215466089b142eb9ccc77dd70860991ccc5c",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 129,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/source_emitter.py",
+      "qualname": "_source_sha256",
+      "structured_markers": []
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"ascii\") + b\"\\x00\" + _canonical_json_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "c4d7c8b336dff28ae437b3c03bd1f7ab5e91ead44204f35ca7757f50567de16f",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 68,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/source_input.py",
+      "qualname": "_domain_digest",
+      "structured_markers": [
+        "_canonical_json_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"ascii\") + b\"\\x00\" + _canonical_json_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "c4d7c8b336dff28ae437b3c03bd1f7ab5e91ead44204f35ca7757f50567de16f",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 82,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/structural_validator.py",
+      "qualname": "_domain_digest",
+      "structured_markers": [
+        "_canonical_json_bytes",
+        "payload"
+      ]
+    },
+    {
+      "call": "hashlib.sha256( domain.encode(\"ascii\") + b\"\\x00\" + _canonical_json_bytes(payload) )",
+      "category": "HISTORICAL_DIRECT_SHA256",
+      "fingerprint": "c4d7c8b336dff28ae437b3c03bd1f7ab5e91ead44204f35ca7757f50567de16f",
+      "justification": "pre-Q0a direct SHA-256 sink frozen into the census; future sinks cannot claim this category unless present at the bound baseline commit",
+      "lineno": 92,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis_reference/structural_guidance/validation_authority.py",
+      "qualname": "_domain_digest",
+      "structured_markers": [
+        "_canonical_json_bytes",
+        "payload"
+      ]
+    }
+  ]
+}
