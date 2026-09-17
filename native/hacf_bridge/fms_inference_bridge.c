@@ -6,6 +6,11 @@
 
 #define ELPIS_FMS_KIND_MODEL_CHECKPOINT 0x4650524du
 
+_Static_assert(FMS_NTIERS == 3,
+    "elpis_fms_inference_stats Python ctypes ABI requires exactly 3 FMS tiers");
+_Static_assert(FMS_NDOMAINS == 3,
+    "elpis_fms_inference_stats Python ctypes ABI requires exactly 3 FMS domains");
+
 struct elpis_fms_inference_ctx {
     fms_ctx *fms;
     fms_id checkpoint_id;
@@ -150,10 +155,10 @@ int elpis_fms_inference_get_stats(
     memset(&stats, 0, sizeof stats);
     fms_get_stats(ctx->fms, &stats);
     memset(out, 0, sizeof *out);
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < FMS_NTIERS; ++i)
         out->tier_bytes[i] = stats.tier_bytes[i];
+    for (int i = 0; i < FMS_NDOMAINS; ++i)
         out->domain_bytes[i] = stats.domain_bytes[i];
-    }
     out->objects = stats.objects;
     out->pinned_bytes = stats.pinned_bytes;
     out->forced_cpu_fallbacks = stats.forced_cpu_fallbacks;

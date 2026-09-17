@@ -1,14 +1,15 @@
 #ifndef ELPIS_FMS_INFERENCE_BRIDGE_H
 #define ELPIS_FMS_INFERENCE_BRIDGE_H
 #include <stdint.h>
+#include "elpis/fms.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef struct elpis_fms_inference_ctx elpis_fms_inference_ctx;
 typedef struct elpis_fms_inference_stats {
-    uint64_t tier_bytes[3];
-    uint64_t domain_bytes[3];
+    uint64_t tier_bytes[FMS_NTIERS];
+    uint64_t domain_bytes[FMS_NDOMAINS];
     uint64_t objects;
     uint64_t pinned_bytes;
     uint64_t forced_cpu_fallbacks;
