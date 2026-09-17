@@ -2,6 +2,14 @@
 
 17 canonical components in the qualified assembly; 16 are shipped in the public component registry.
 
+FuryanLocusOracle R0 is separately qualified as an independent verification
+component, outside those historical assembly counts. Its
+[manifest](../components/FuryanLocusOracle/COMPONENT_MANIFEST.json) binds the
+frozen mathematical falsifier, reference, certificate validator, and qualification
+gates. It has no allocation, execution, model, or runtime admission authority.
+Run `python tools/verify_furyan_locus_oracle.py` for the complete qualification;
+see [the qualification contract](../components/FuryanLocusOracle/QUALIFICATION.md).
+
 | Component | Version | Path | Status | Runtime |
 |-----------|---------|------|--------|---------|
 | HACF R3 | R3 | native/hacf | SEALED | N/A |

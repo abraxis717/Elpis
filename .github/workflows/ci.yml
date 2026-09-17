@@ -496,8 +496,10 @@ jobs:
           python-version: '3.11'
       - run: python -m pip install --upgrade pip
       - run: python -m pip install . pytest==9.0.2
-      - name: Frozen Furyan R0 release integration
-        run: python -m pytest -q -p no:cacheprovider tests/test_furyan_release_integration.py tests/test_joint_allocator.py
+      - name: Qualify independent Furyan R0 verification component
+        run: env -u PYTHONPATH python tools/verify_furyan_locus_oracle.py
+      - name: Current production allocator parity (separate authority)
+        run: env -u PYTHONPATH python -m pytest -q -p no:cacheprovider tests/test_joint_allocator.py
 
   semantic-spine-native:
     name: Root semantic-spine native qualification

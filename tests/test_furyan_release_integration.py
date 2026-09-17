@@ -32,17 +32,18 @@ import reference
 import baseline
 import mutations
 
-EXPECTED_FILES = {'components/FuryanLocusOracle/FURYAN_R0_SPEC.md': 'd66adcc26f3c7e99fe16db31074b61f71a84db9813ad222d0131d8fcb25073fd',
- 'components/FuryanLocusOracle/FuryanLocusOracle.py': '3aea7f9fb7ee6bf3c1c38b95a12023fd5277670919fba70d06d69c139701825c',
- 'components/FuryanLocusOracle/certificate_validator.py': '3cb1c2ad120ef216f888dca0a2d6673b7858d4e72605ed419d14e03d049d7a0c',
- 'components/FuryanLocusOracle/contract.py': 'c50d4cbc81da717e68196619c71c0419909bd28a7a51b34c71ada5ee443e5618',
- 'components/FuryanLocusOracle/tests/baseline.py': 'd1e08558cb910c7ef8b24c2f4bb9970093d984a109b0d60b03333a22c490ec93',
- 'components/FuryanLocusOracle/tests/corpus.py': '8b637d18f16dcadcc0c61e0a1f78029c30d4d93dc63da330746ad449b04f1afe',
- 'components/FuryanLocusOracle/tests/guards.py': '05d45351b3e3bfb2ad642c71c4597c6c1dcd538051355c5a97f3ae4331a5cb8a',
- 'components/FuryanLocusOracle/tests/mutations.py': 'bbf21a9c190e6fedaf1eb985d2ae1ae20120f385def905d2fb7e189fd71aa14a',
- 'components/FuryanLocusOracle/tests/production_differential.py': '47f49dbc1f44ee472e01d58cfc898b54e62368463264d3214e65edbb5f16d7f9',
- 'components/FuryanLocusOracle/tests/reference.py': 'c554e0ddac751a51fdb953757b63c613cb8b294fc44257990dc524135e99ff1b',
- 'components/FuryanLocusOracle/tests/run_science.py': 'b4e8c44348b0594fb8659485975802379a8530d61822a3099cef532728d7eccc'}
+# Component qualification owns the inventory; the verifier independently pins
+# its aggregate to the original eleven R0 hashes.
+import json
+import runpy
+
+QUALIFICATION = runpy.run_path(str(ROOT / "tools/verify_furyan_locus_oracle.py"))
+MANIFEST = json.loads((COMPONENT / "COMPONENT_MANIFEST.json").read_text())
+EXPECTED_FILES = {
+    str(Path("components/FuryanLocusOracle") / name): digest
+    for name, digest in MANIFEST["frozen_r0_files"].items()
+}
+
 
 EXPECTED_COUNTS = {
     "1": {"canonical": 1, "labeled": 1, "SAT": 1, "UNSAT": 0},
@@ -87,20 +88,10 @@ def load_solver():
 
 
 def test_frozen_scientific_inventory_and_hashes():
-    actual = sorted(
-        str(p.relative_to(ROOT))
-        for p in COMPONENT.rglob("*")
-        if p.is_file() and p.suffix in {".py", ".md"}
-    )
-
-    assert actual == sorted(EXPECTED_FILES)
-
+    QUALIFICATION["verify"](ROOT)
     for rel, expected in EXPECTED_FILES.items():
         assert sha(ROOT / rel) == expected, rel
-
-    assert sha(SOLVER_PATH) == (
-        "3aea7f9fb7ee6bf3c1c38b95a12023fd5277670919fba70d06d69c139701825c"
-    )
+    assert contract.MODEL_DIGEST == MANIFEST["model_digest"]
 
 
 def test_focused_certificates_and_mutations():
@@ -211,7 +202,7 @@ def test_exhaustive_44005_case_reference_equivalence_and_minimality():
     assert minimal == EXPECTED_MINIMAL
 
 
-def test_fresh_process_sat_and_unsat_byte_identity():
+def test_fresh_process_sat_and_unsat_byte_identity(tmp_path):
     cases = {
         "SAT": guards.TARGET,
         "UNSAT": corpus.instance(
@@ -228,7 +219,7 @@ def test_fresh_process_sat_and_unsat_byte_identity():
 
         for seed, cwd in (
             ("1", ROOT),
-            ("999", Path("/tmp")),
+            ("999", tmp_path),
             ("42", ROOT),
         ):
             env = dict(
@@ -236,6 +227,9 @@ def test_fresh_process_sat_and_unsat_byte_identity():
                 PYTHONHASHSEED=seed,
                 PYTHONDONTWRITEBYTECODE="1",
             )
+
+            env.pop("PYTHONPATH", None)
+            env["PYTHONNOUSERSITE"] = "1"
 
             outputs.append(
                 subprocess.check_output(
@@ -247,3 +241,4 @@ def test_fresh_process_sat_and_unsat_byte_identity():
             )
 
         assert outputs[0] == outputs[1] == outputs[2]
+        assert json.loads(outputs[0])["status"] == status

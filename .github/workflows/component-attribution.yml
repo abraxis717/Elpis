@@ -18,6 +18,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - owner: components/FuryanLocusOracle
+            command: "env -u PYTHONPATH python tools/verify_furyan_locus_oracle.py"
+            needs_torch: false
+            attribution: configured-complete-suite
           - owner: components/CNumPyCortex
             command: "python -m pytest -q -p no:cacheprovider components/CNumPyCortex/tests"
             needs_torch: false

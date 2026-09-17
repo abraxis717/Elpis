@@ -1,0 +1,139 @@
+{
+  "admission_authority": false,
+  "allocation_authority": false,
+  "claims_not_made": [
+    "runtime allocation or production allocator substitution",
+    "generated-source execution or model authority",
+    "automatic P0 translation or full Elpis semantic coverage",
+    "reproduction of the historical defect by current production",
+    "public canonical assembly or release admission"
+  ],
+  "component_content_digest": "6359f787cff57fc3df6cef9b8159b0311bcbb8608a0c95d91476953a5c6193b3",
+  "component_content_digest_contract": "sha256(canonical-json(source_inventory))",
+  "component_id": "FuryanLocusOracle_R0",
+  "component_path": "components/FuryanLocusOracle",
+  "component_role": "INDEPENDENT_MATHEMATICAL_FALSIFIER",
+  "dependencies": [],
+  "display_name": "Furyan Locus Oracle",
+  "evidence_references": {
+    "tests/test_furyan_release_integration.py": {
+      "path": "tests/test_furyan_release_integration.py",
+      "sha256": "2f96cec802d6b78d9c414ab3af657c7f4b296d0ee2a808d1cb8d8309f0ea0f02",
+      "size": 6682
+    },
+    "tools/verify_furyan_locus_oracle.py": {
+      "path": "tools/verify_furyan_locus_oracle.py",
+      "sha256": "5b2343b4461a4bc38b1953ce173808cf1266824afc7af13d0d06e4cdbed5c283",
+      "size": 9942
+    }
+  },
+  "execution_authority": false,
+  "frozen_r0_files": {
+    "FURYAN_R0_SPEC.md": "d66adcc26f3c7e99fe16db31074b61f71a84db9813ad222d0131d8fcb25073fd",
+    "FuryanLocusOracle.py": "3aea7f9fb7ee6bf3c1c38b95a12023fd5277670919fba70d06d69c139701825c",
+    "certificate_validator.py": "3cb1c2ad120ef216f888dca0a2d6673b7858d4e72605ed419d14e03d049d7a0c",
+    "contract.py": "c50d4cbc81da717e68196619c71c0419909bd28a7a51b34c71ada5ee443e5618",
+    "tests/baseline.py": "d1e08558cb910c7ef8b24c2f4bb9970093d984a109b0d60b03333a22c490ec93",
+    "tests/corpus.py": "8b637d18f16dcadcc0c61e0a1f78029c30d4d93dc63da330746ad449b04f1afe",
+    "tests/guards.py": "05d45351b3e3bfb2ad642c71c4597c6c1dcd538051355c5a97f3ae4331a5cb8a",
+    "tests/mutations.py": "bbf21a9c190e6fedaf1eb985d2ae1ae20120f385def905d2fb7e189fd71aa14a",
+    "tests/production_differential.py": "47f49dbc1f44ee472e01d58cfc898b54e62368463264d3214e65edbb5f16d7f9",
+    "tests/reference.py": "c554e0ddac751a51fdb953757b63c613cb8b294fc44257990dc524135e99ff1b",
+    "tests/run_science.py": "b4e8c44348b0594fb8659485975802379a8530d61822a3099cef532728d7eccc"
+  },
+  "generated_source_execution_authority": false,
+  "local_conformance_gate": "components/FuryanLocusOracle/tests/test_furyan_qualification.py",
+  "manifest_self_hash": "858027ada679720080886100dd041a5017c46d69991b53d87c742217672970ee",
+  "manifest_self_hash_contract": "sha256(canonical-json(manifest without manifest_self_hash))",
+  "model_authority": false,
+  "model_digest": "d66adcc26f3c7e99fe16db31074b61f71a84db9813ad222d0131d8fcb25073fd",
+  "pipeline_role": "Independent verification of the finite Furyan placement model and SAT certificates",
+  "production_allocator_substitution": false,
+  "provenance": {
+    "qualification_base_commit": "3222c77099ae152e02287b63276e95d805794333",
+    "qualification_base_tree": "020b8764364fb89bdd903b4fcffb67cd768a1753",
+    "source_commit": "59241be905c15947deddbdc67ae1bf3de81620cb",
+    "source_parent_commit": "dcbc011d7f55707e4fdf998de744f7794675a656",
+    "source_tree": "72b4be025992e16020e5f7a76f3b60ca089a1e7c"
+  },
+  "public_interface_paths": [
+    "FuryanLocusOracle.py",
+    "certificate_validator.py",
+    "FURYAN_R0_SPEC.md"
+  ],
+  "public_registry_admission": false,
+  "qualification_command": "python tools/verify_furyan_locus_oracle.py",
+  "qualification_disposition": "QUALIFIED_VERIFICATION_COMPONENT",
+  "runtime_admission": false,
+  "schema": "elpis.component_manifest.v1",
+  "scientific_gate": "tests/test_furyan_release_integration.py",
+  "semantic_truth_authority": false,
+  "source_inventory": [
+    {
+      "path": "FURYAN_R0_SPEC.md",
+      "sha256": "d66adcc26f3c7e99fe16db31074b61f71a84db9813ad222d0131d8fcb25073fd",
+      "size": 9121
+    },
+    {
+      "path": "FuryanLocusOracle.py",
+      "sha256": "3aea7f9fb7ee6bf3c1c38b95a12023fd5277670919fba70d06d69c139701825c",
+      "size": 4116
+    },
+    {
+      "path": "QUALIFICATION.md",
+      "sha256": "1a596a3bd6942b7531230f609f1f8dfc24865c487ee98d6e97c08cb1da7879a0",
+      "size": 6270
+    },
+    {
+      "path": "certificate_validator.py",
+      "sha256": "3cb1c2ad120ef216f888dca0a2d6673b7858d4e72605ed419d14e03d049d7a0c",
+      "size": 3346
+    },
+    {
+      "path": "contract.py",
+      "sha256": "c50d4cbc81da717e68196619c71c0419909bd28a7a51b34c71ada5ee443e5618",
+      "size": 3196
+    },
+    {
+      "path": "tests/baseline.py",
+      "sha256": "d1e08558cb910c7ef8b24c2f4bb9970093d984a109b0d60b03333a22c490ec93",
+      "size": 900
+    },
+    {
+      "path": "tests/corpus.py",
+      "sha256": "8b637d18f16dcadcc0c61e0a1f78029c30d4d93dc63da330746ad449b04f1afe",
+      "size": 4694
+    },
+    {
+      "path": "tests/guards.py",
+      "sha256": "05d45351b3e3bfb2ad642c71c4597c6c1dcd538051355c5a97f3ae4331a5cb8a",
+      "size": 10603
+    },
+    {
+      "path": "tests/mutations.py",
+      "sha256": "bbf21a9c190e6fedaf1eb985d2ae1ae20120f385def905d2fb7e189fd71aa14a",
+      "size": 4272
+    },
+    {
+      "path": "tests/production_differential.py",
+      "sha256": "47f49dbc1f44ee472e01d58cfc898b54e62368463264d3214e65edbb5f16d7f9",
+      "size": 3991
+    },
+    {
+      "path": "tests/reference.py",
+      "sha256": "c554e0ddac751a51fdb953757b63c613cb8b294fc44257990dc524135e99ff1b",
+      "size": 3170
+    },
+    {
+      "path": "tests/run_science.py",
+      "sha256": "b4e8c44348b0594fb8659485975802379a8530d61822a3099cef532728d7eccc",
+      "size": 12471
+    },
+    {
+      "path": "tests/test_furyan_qualification.py",
+      "sha256": "39baad6c8beb60cf2f93ce9bd15c7c405207c4425ac80835eb0c0298f9b18def",
+      "size": 7270
+    }
+  ],
+  "version": "R0"
+}
