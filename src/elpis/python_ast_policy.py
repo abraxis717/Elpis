@@ -198,7 +198,18 @@ def evaluate_python_ast_policy(
         # These forms invoke capabilities without passing through Call.func.
         # Class creation invokes type/base/metaclass hooks, context managers
         # invoke enter/exit protocols, and decorators are implicit calls.
-        implicit = isinstance(node, (ast.ClassDef, ast.With, ast.AsyncWith))
+        implicit = isinstance(
+            node,
+            (
+                ast.ClassDef,
+                ast.With,
+                ast.AsyncWith,
+                ast.Await,
+                ast.Yield,
+                ast.YieldFrom,
+                ast.GeneratorExp,
+            ),
+        )
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
             implicit |= bool(node.decorator_list)
         if isinstance(node, ast.Raise) and node.exc is not None:

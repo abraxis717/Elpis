@@ -132,6 +132,55 @@ def test_non_admitted_typed_handler_remains_banned_call():
     assert decision.call_name == "BaseException"
 
 
+@pytest.mark.parametrize(
+    "source,node_name",
+    [
+        ("async def solution(x):\n    return await x\n", "Await"),
+        ("def solution(x):\n    yield x\n", "Yield"),
+        ("def solution(x):\n    yield from x\n", "YieldFrom"),
+        ("def solution(xs):\n    return (x for x in xs)\n", "GeneratorExp"),
+    ],
+)
+def test_suspension_and_lazy_generator_forms_fail_closed_without_new_code(
+    source,
+    node_name,
+):
+    decision = evaluate_python_ast_policy(
+        language="python",
+        source=source,
+        entrypoint="solution",
+    )
+    assert not decision.passed
+    assert decision.code == "BANNED_CALL"
+    assert decision.call_name == node_name
+
+    evidence = PythonASTValidator().validate(
+        RequestContext(
+            request_id=f"static-language-{node_name}",
+            prompt="",
+            entrypoint="solution",
+        ),
+        ArtifactCandidate(
+            language="python",
+            source=source,
+            digest="",
+        ),
+    )
+    assert not evidence.passed
+    assert evidence.code == "BANNED_CALL"
+
+
+def test_async_function_definition_remains_admitted_without_suspension_forms():
+    source = "async def solution(x):\n    return x\n"
+    decision = evaluate_python_ast_policy(
+        language="python",
+        source=source,
+        entrypoint="solution",
+    )
+    assert decision.passed
+    assert decision.code == "AST_VALID"
+
+
 def test_nested_definition_does_not_satisfy_module_entrypoint():
     source = (
         "def outer():\n"
