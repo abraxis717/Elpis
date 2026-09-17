@@ -250,6 +250,11 @@ def test_symlink_identity_and_escape(tmp_path):
 def sealer(root):
     ns = runpy.run_path(str(ROOT / "tools/seal_release.py"))
     checked = verifier(root)
+    # This helper intentionally exercises compact release-manifest mechanics
+    # in tiny synthetic trees that do not contain repository-wide authority
+    # files. Immutability itself is qualified independently and through the
+    # real release-gate integration tests.
+    checked["check_repository_immutability"] = lambda: (True, [])
     g = ns["main"].__globals__
     g["REPO"] = root
     g["runpy"] = SimpleNamespace(run_path=lambda path: (

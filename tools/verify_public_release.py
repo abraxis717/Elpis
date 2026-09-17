@@ -1322,6 +1322,23 @@ def check_repository_identity(
     return not errors, errors
 
 
+
+def check_repository_immutability() -> tuple[bool, list[str]]:
+    gate_path = REPO / "tools" / "verify_immutable_evidence.py"
+    baseline_path = REPO / "tools" / "immutable_evidence_baseline_v1.json"
+    if not gate_path.is_file():
+        return False, [f"MISSING_IMMUTABILITY_GATE:{gate_path.relative_to(REPO)}"]
+    if not baseline_path.is_file():
+        return False, [f"MISSING_IMMUTABILITY_BASELINE:{baseline_path.relative_to(REPO)}"]
+    try:
+        gate = runpy.run_path(str(gate_path))
+        report = gate["verify"](REPO, baseline_path, check_history=(REPO / ".git").exists())
+    except Exception as exc:
+        return False, [f"{type(exc).__name__}: {exc}"]
+    if not isinstance(report, dict) or report.get("status") != "PASS":
+        return False, [f"IMMUTABILITY_REPORT_NONPASS:{report!r}"]
+    return True, []
+
 def main() -> int:
     if "--print-manifest" in sys.argv:
         print(MANIFEST_REL.as_posix())
@@ -1402,4 +1419,10 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    immutable_ok, immutable_errors = check_repository_immutability()
+    if not immutable_ok:
+        print("REPOSITORY_IMMUTABILITY: FAIL", file=sys.stderr)
+        for immutable_error in immutable_errors:
+            print(f"  -> {immutable_error}", file=sys.stderr)
+        raise SystemExit(1)
     raise SystemExit(main())

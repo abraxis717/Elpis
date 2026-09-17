@@ -25,6 +25,8 @@ jobs:
       - run: pip install pytest
       - name: Verify lifecycle-aware public release
         run: python tools/verify_public_release.py
+      - name: Verify immutable repository evidence and identities
+        run: python tools/verify_immutable_evidence.py
       - name: Verify candidate repository identity on main push
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: python tools/verify_public_release.py --verify-candidate-repository-identity

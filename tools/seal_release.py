@@ -187,6 +187,14 @@ def main(argv: list[str]) -> int:
             print(f"  {s}", file=sys.stderr)
         return 3
 
+    if not override:
+        immutable_ok, immutable_errors = verifier["check_repository_immutability"]()
+        if not immutable_ok:
+            print("REFUSED: repository immutability gate failed", file=sys.stderr)
+            for immutable_error in immutable_errors:
+                print(f"  -> {immutable_error}", file=sys.stderr)
+            return 2
+
     if manifest.exists():
         data = json.loads(manifest.read_text())
         if data.get("schema") != f"elpis.release-manifest.{args.schema}":
