@@ -41,10 +41,44 @@
   "legacy_assembly_metadata_unchanged": true,
   "public_registry_admission": false,
   "registry_id": "GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0",
-  "registry_self_hash": "7ea9dbb8d7a154de088a379ba2fc4d331538ee406526a052f1d9ab1d49f0463f",
+  "registry_self_hash": "312d7ffdc0679b69aaa238479080bf9aa51ce2645b46fee52eba53c7397d54ac",
   "registry_self_hash_contract": "sha256(canonical-json(registry without registry_self_hash))",
   "runtime_admission": false,
   "schema": "elpis.grid81.writer-chain.successor-registry.v1",
+  "writer_chain_node_binding_hash_contract": "sha256(canonical-json(bound registry record))",
+  "writer_chain_node_count": 5,
+  "writer_chain_nodes": [
+    {
+      "binding_sha256": "832b6c59c08962e84d33d8046f64b26ccc10a3fc6137c8605277857e5ed7f4c1",
+      "binding_source": "PUBLIC_COMPONENT_REGISTRY",
+      "component_id": "G53e_Canonical_Promotion_Planner",
+      "node_id": "G53e_Canonical_Promotion_Planner"
+    },
+    {
+      "binding_sha256": "6dc705eb9e25cbc7977512605e435b16c95d5be9bae6c3410e084c3bc872bb3f",
+      "binding_source": "SUCCESSOR_COMPONENT_REGISTRY",
+      "component_id": "Grid81_Canonical_Promotion_Authority",
+      "node_id": "Grid81_Canonical_Promotion_Authority"
+    },
+    {
+      "binding_sha256": "f8e28564422a179667654f66c98c26c75bf8994aeb8ee2af39270d616e400050",
+      "binding_source": "SUCCESSOR_COMPONENT_REGISTRY",
+      "component_id": "Grid81_Canonical_Candidate_Constructor",
+      "node_id": "Grid81_Canonical_Candidate_Constructor"
+    },
+    {
+      "binding_sha256": "5ef1c2990e446d73debd2a2a0b40da887a5ff38ca69594dd86fbf585b06c8ee4",
+      "binding_source": "SUCCESSOR_COMPONENT_REGISTRY",
+      "component_id": "Grid81_Atomic_Canonical_Publisher",
+      "node_id": "Grid81_Atomic_Canonical_Publisher"
+    },
+    {
+      "binding_sha256": "c36acdebd15010d9f6fc756200be7671bd369e9544a3a847f9a570089439c579",
+      "binding_source": "PUBLIC_COMPONENT_REGISTRY",
+      "component_id": "Grid81_Canonical_Substrate",
+      "node_id": "Grid81_Canonical_Substrate"
+    }
+  ],
   "writer_chain_order": [
     "G53e_Canonical_Promotion_Planner",
     "Grid81_Canonical_Promotion_Authority",

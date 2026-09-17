@@ -320,6 +320,57 @@ def verify(root: Path) -> list[str]:
     if _has_successor_cycle(EXPECTED_SUCCESSOR_IDS, expected_edges):
         errors.append("SUCCESSOR_DEPENDENCY_CYCLE")
 
+    public_by_id = {
+        item["component_id"]: item
+        for item in legacy_public.get("components", [])
+        if type(item) is dict and item.get("component_id")
+    }
+    writer_nodes = registry.get("writer_chain_nodes")
+    flow_nodes_for_bindings = registry.get("writer_chain_order")
+    if registry.get("writer_chain_node_binding_hash_contract") != (
+        "sha256(canonical-json(bound registry record))"
+    ):
+        errors.append("WRITER_NODE_BINDING_HASH_CONTRACT")
+    if type(writer_nodes) is not list:
+        errors.append("WRITER_NODE_BINDINGS")
+    elif type(flow_nodes_for_bindings) is not list:
+        errors.append("WRITER_NODE_FLOW_ORDER")
+    else:
+        writer_node_ids = [
+            item.get("node_id")
+            for item in writer_nodes
+            if type(item) is dict
+        ]
+        if writer_node_ids != flow_nodes_for_bindings:
+            errors.append("WRITER_NODE_BINDING_ORDER")
+        if len(writer_node_ids) != len(set(writer_node_ids)):
+            errors.append("WRITER_NODE_BINDING_DUPLICATE")
+        if registry.get("writer_chain_node_count") != len(
+            flow_nodes_for_bindings
+        ):
+            errors.append("WRITER_NODE_BINDING_COUNT")
+        for item in writer_nodes:
+            if type(item) is not dict:
+                errors.append("WRITER_NODE_BINDING_RECORD")
+                continue
+            node_id = item.get("node_id")
+            if item.get("component_id") != node_id:
+                errors.append(f"WRITER_NODE_COMPONENT_ID:{node_id}")
+            if node_id in EXPECTED_SUCCESSOR_IDS:
+                expected_source = "SUCCESSOR_COMPONENT_REGISTRY"
+                bound_record = by_id.get(node_id)
+            else:
+                expected_source = "PUBLIC_COMPONENT_REGISTRY"
+                bound_record = public_by_id.get(node_id)
+            if item.get("binding_source") != expected_source:
+                errors.append(f"WRITER_NODE_BINDING_SOURCE:{node_id}")
+            if bound_record is None:
+                errors.append(f"WRITER_NODE_BOUND_RECORD_MISSING:{node_id}")
+                continue
+            expected_binding_sha = _sha_bytes(_canonical_bytes(bound_record))
+            if item.get("binding_sha256") != expected_binding_sha:
+                errors.append(f"WRITER_NODE_BINDING_HASH:{node_id}")
+
     flow_nodes = registry.get("writer_chain_order")
     if graph.get("writer_flow_nodes") != flow_nodes:
         errors.append("FLOW_NODE_BINDING")
