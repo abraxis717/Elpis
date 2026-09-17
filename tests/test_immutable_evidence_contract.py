@@ -44,9 +44,39 @@ def test_trm_and_fprm_identity_are_generation_pinned():
     assert by_key[("src/elpis_reference/vendor/fprm/AUTHORITY.json",None,"/checkpoint/sha256")]=="6daec5f499d115beb14e23f3a9cf56d1166b99c1ccd36b185a19ea5dfec9a137"
     assert by_key[("src/elpis_reference/vendor/fprm/AUTHORITY.json",None,"/checkpoint/size")]==54637557
 
-def test_baseline_is_reproducible_from_exact_tree(tmp_path):
-    p=run("--emit-bootstrap","--baseline",str(tmp_path/"b.json"))
-    assert p.returncode==0,p.stderr
-    a=json.loads(BASE.read_text(encoding="utf-8"))
-    b=json.loads((tmp_path/"b.json").read_text(encoding="utf-8"))
-    assert a==b
+def test_bootstrap_provenance_is_frozen_and_baseline_is_committed():
+    data=json.loads(BASE.read_text(encoding="utf-8"))
+    bootstrap="e5e6e0d6007ecb27d6136d6ce67566d10d075dde"
+    assert data["bootstrap_source_commit"]==bootstrap
+    assert data["identity_generations"][0]["source_commit"]==bootstrap
+
+    committed=subprocess.check_output(
+        ["git","show","HEAD:tools/immutable_evidence_baseline_v1.json"],
+        cwd=ROOT,
+    )
+    assert committed==BASE.read_bytes()
+
+
+def test_dirty_baseline_is_not_ordinary_qualifiable(tmp_path):
+    import importlib.util
+    import subprocess
+
+    spec=importlib.util.spec_from_file_location("immutability_gate",TOOL)
+    assert spec and spec.loader
+    mod=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    repo=tmp_path/"repo"
+    repo.mkdir()
+    subprocess.run(["git","init","-q"],cwd=repo,check=True)
+    subprocess.run(["git","config","user.name","test"],cwd=repo,check=True)
+    subprocess.run(["git","config","user.email","test@example.invalid"],cwd=repo,check=True)
+    (repo/"baseline.json").write_text('{"v":1}\n',encoding="utf-8")
+    subprocess.run(["git","add","baseline.json"],cwd=repo,check=True)
+    subprocess.run(["git","commit","-qm","baseline"],cwd=repo,check=True)
+    (repo/"baseline.json").write_text('{"v":2}\n',encoding="utf-8")
+
+    errors=[]
+    mod.verify_committed_baseline(repo,repo/"baseline.json",errors)
+    assert len(errors)==1
+    assert errors[0].startswith("BASELINE_WORKTREE_NOT_COMMITTED:")

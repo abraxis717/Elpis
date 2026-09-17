@@ -171,13 +171,40 @@ def check_pin(root:Path,pin:dict)->str|None:
 def prefix_equal(old:list,new:list)->bool:
     return len(new)>=len(old) and new[:len(old)]==old
 
+def verify_committed_baseline(root:Path,baseline_path:Path,errors:list[str])->None:
+    """The ordinary verifier only accepts a baseline already committed at HEAD.
+
+    This deliberately makes a dirty baseline extension NONQUAL. Legitimate
+    extension therefore has to be its own explicit commit/authority transition,
+    after which verify_history proves append-only continuity with HEAD^.
+    """
+    try:
+        rel=baseline_path.resolve().relative_to(root.resolve()).as_posix()
+    except ValueError:
+        errors.append("BASELINE_OUTSIDE_REPOSITORY")
+        return
+    committed=git(root,"show",f"HEAD:{rel}",check=False)
+    if not committed:
+        errors.append(f"BASELINE_NOT_COMMITTED_AT_HEAD:{rel}")
+        return
+    current=baseline_path.read_bytes()
+    if current!=committed:
+        errors.append(
+            f"BASELINE_WORKTREE_NOT_COMMITTED:{rel}:"
+            f"{hbytes(current)}:{hbytes(committed)}"
+        )
+
 def verify_history(root:Path,base:dict,errors:list[str])->None:
     prev=parent_baseline(root)
     if prev is None:
-        head=git_head(root)
         parent=git(root,"rev-parse","HEAD^",check=False).decode().strip()
-        if base["bootstrap_source_commit"] not in {head,parent}:
-            errors.append("BOOTSTRAP_SOURCE_COMMIT_NOT_HEAD_OR_PARENT")
+        if not parent:
+            errors.append("BOOTSTRAP_PARENT_COMMIT_UNRESOLVED")
+        elif base["bootstrap_source_commit"]!=parent:
+            errors.append(
+                "BOOTSTRAP_SOURCE_COMMIT_NOT_EXACT_PARENT:"
+                f"{base['bootstrap_source_commit']}:{parent}"
+            )
         return
     if prev.get("schema")!=SCHEMA:
         errors.append("PARENT_BASELINE_SCHEMA_INVALID"); return
@@ -229,8 +256,11 @@ def verify(root:Path,baseline_path:Path,check_history=True)->dict:
         if p.returncode: errors.append("EXISTING_FROZEN_AUTHORITY_GATE_NONPASS:"+p.stdout.decode(errors="replace").strip())
 
     if check_history:
-        try: verify_history(root,base,errors)
-        except Exception as e: errors.append(f"BASELINE_HISTORY_CHECK_ERROR:{type(e).__name__}:{e}")
+        try:
+            verify_committed_baseline(root,baseline_path,errors)
+            verify_history(root,base,errors)
+        except Exception as e:
+            errors.append(f"BASELINE_HISTORY_CHECK_ERROR:{type(e).__name__}:{e}")
 
     report={
       "schema":SCHEMA,
