@@ -1,0 +1,75 @@
+{
+  "entry_point_group": "elpis.inference_drivers.v1",
+  "findings": [
+    {
+      "disposition": "DOCUMENTED_TRUST_BOUNDARY",
+      "finding_id": "N10",
+      "future_control": "bind selected installed artifact/code to qualified digest or signed provenance before execution",
+      "technical_remediation_claimed": false,
+      "title": "pre-load code identity absent"
+    },
+    {
+      "disposition": "DOCUMENTED_TRUST_BOUNDARY",
+      "finding_id": "N11",
+      "future_control": "process isolation plus separately qualified IPC contract for semi-untrusted plugin execution",
+      "technical_remediation_claimed": false,
+      "title": "plugin import side effects are not transactional"
+    },
+    {
+      "disposition": "DOCUMENTED_TRUST_BOUNDARY",
+      "finding_id": "N12",
+      "future_control": "bind activation to exact qualified model-port registry digest or canonical authority object",
+      "technical_remediation_claimed": false,
+      "title": "model_ports path is not independently authority-bound by activation"
+    },
+    {
+      "disposition": "DOCUMENTED_TRUST_BOUNDARY",
+      "finding_id": "N13",
+      "future_control": "canonical deep-copy serialization or recursively immutable typed representation",
+      "technical_remediation_claimed": false,
+      "title": "runtime context immutability is shallow"
+    }
+  ],
+  "nonclaims": {
+    "caller_supplied_model_ports_identity_equivalence": false,
+    "deep_runtime_context_immutability": false,
+    "pre_load_cryptographic_code_identity": false,
+    "transactional_plugin_import_rollback": false
+  },
+  "preserved_controls": [
+    "explicit discovery only",
+    "exact requested driver_id match",
+    "zero/duplicate/pre-registered conflicts fail before plugin load",
+    "unrelated entry points are not loaded",
+    "registry TOML does not supply Python import targets",
+    "no package-installation authority",
+    "no network authority",
+    "no hardware-preference authority"
+  ],
+  "process_isolation_claimed": false,
+  "public_registry_admission_changed": false,
+  "runtime_admission_changed": false,
+  "runtime_semantics_changed": false,
+  "schema": "elpis.inference-plugin-trust-boundary.v1",
+  "semi_untrusted_plugins_admitted": false,
+  "source_bindings": [
+    {
+      "path": "components/TRMFractalSpine/src/elpis_fractal_spine/plugin_discovery.py",
+      "sha256": "9a1c77e43075fc1397d570cc1aac596070066ed450b19438f927476b8cfd4c44"
+    },
+    {
+      "path": "components/TRMFractalSpine/src/elpis_fractal_spine/provider_activation.py",
+      "sha256": "8e1bf7257fa4ec54397dafc41f9dc61939a6b0c01ebc100e889edcefd553f268"
+    },
+    {
+      "path": "components/TRMFractalSpine/registry/model_ports.toml",
+      "sha256": "c31562b8503b5f41e4d17e213792942da53f90b6222e708a85d54a927b4a3a61"
+    },
+    {
+      "path": "docs/PLATFORM_PORTABILITY.md",
+      "sha256": "ef95ee70303cacbf57f55d5946cf97e5ed305e4fc72a6f7d746e74c8fbb20959"
+    }
+  ],
+  "threat_model_id": "INFERENCE_PLUGIN_TRUST_BOUNDARY_R0",
+  "trust_boundary": "TRUSTED_INSTALLED_ENVIRONMENT"
+}
