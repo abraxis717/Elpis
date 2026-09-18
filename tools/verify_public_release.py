@@ -1210,6 +1210,26 @@ def _git_resolve_commit(ref):
     return value
 
 
+def _git_resolve_tag_object(ref):
+    proc = _git_repository_command(
+        ["rev-parse", "--verify", ref]
+    )
+    if proc.returncode != 0:
+        return None
+    value = proc.stdout.strip()
+    if not re.fullmatch(r"(?:[0-9a-f]{40}|[0-9a-f]{64})", value):
+        return None
+    object_type = _git_repository_command(
+        ["cat-file", "-t", value]
+    )
+    if (
+        object_type.returncode != 0
+        or object_type.stdout.strip() != "tag"
+    ):
+        return None
+    return value
+
+
 def _git_is_ancestor(ancestor, descendant):
     proc = _git_repository_command(
         ["merge-base", "--is-ancestor", ancestor, descendant]
@@ -1248,9 +1268,9 @@ def check_repository_identity(
         return False, [f"REPOSITORY_IDENTITY_TABLE:{exc}"]
 
     expected_tag = f"Elpis{RELEASE_VERSION}"
-    tag_commit = _git_resolve_commit(
-        f"refs/tags/{expected_tag}"
-    )
+    expected_tag_ref = f"refs/tags/{expected_tag}"
+    tag_commit = _git_resolve_commit(expected_tag_ref)
+    tag_object = _git_resolve_tag_object(expected_tag_ref)
     head_commit = _git_resolve_commit("HEAD")
 
     if head_commit is None:
@@ -1259,6 +1279,11 @@ def check_repository_identity(
     if tag_commit is None and require_tag:
         errors.append(
             f"RELEASE_TAG_COMMIT_MISSING:{expected_tag}"
+        )
+
+    if tag_commit is not None and tag_object is None:
+        errors.append(
+            f"RELEASE_TAG_NOT_ANNOTATED:{expected_tag}"
         )
 
     for field in (

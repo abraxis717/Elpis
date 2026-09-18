@@ -39,7 +39,15 @@ def _fixture(tmp_path: Path):
     base = _commit(repo, "base")
     primitive = _commit(repo, "primitive")
     release = _commit(repo, "release")
-    _git(repo, "tag", "Elpis9.9.9", release)
+    _git(
+        repo,
+        "tag",
+        "-a",
+        "Elpis9.9.9",
+        "-m",
+        "Elpis9.9.9 fixture",
+        release,
+    )
     successor = _commit(repo, "successor")
 
     ns = runpy.run_path(str(VERIFIER))
@@ -86,6 +94,48 @@ def test_strict_mode_requires_release_tag_at_checked_out_head(
     )
 
     _git(repo, "checkout", "-q", commits["release"])
+    ok, errors = check(
+        require_git=True,
+        require_tag=True,
+        require_tag_at_head=True,
+    )
+    assert ok, errors
+
+
+def test_lightweight_release_tag_is_rejected_as_not_annotated(
+    tmp_path: Path,
+) -> None:
+    repo, check, _, commits = _fixture(tmp_path)
+
+    _git(repo, "tag", "-d", "Elpis9.9.9")
+    _git(repo, "tag", "Elpis9.9.9", commits["release"])
+    _git(repo, "checkout", "-q", commits["release"])
+
+    ok, errors = check(
+        require_git=True,
+        require_tag=True,
+        require_tag_at_head=True,
+    )
+
+    assert not ok
+    assert "RELEASE_TAG_NOT_ANNOTATED:Elpis9.9.9" in errors
+    assert not any(
+        error.startswith("RELEASE_TAG_NOT_HEAD:")
+        for error in errors
+    )
+
+
+def test_annotated_release_tag_object_passes_strict_identity_at_head(
+    tmp_path: Path,
+) -> None:
+    repo, check, _, commits = _fixture(tmp_path)
+    _git(repo, "checkout", "-q", commits["release"])
+
+    assert (
+        _git(repo, "cat-file", "-t", "refs/tags/Elpis9.9.9")
+        .stdout.strip()
+        == "tag"
+    )
     ok, errors = check(
         require_git=True,
         require_tag=True,
