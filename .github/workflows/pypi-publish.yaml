@@ -27,6 +27,15 @@ jobs:
           ref: ${{ env.RELEASE_TAG }}
           fetch-depth: 0
 
+      - name: Restore annotated release tag object
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${RELEASE_TAG}"
+          git fetch --force --no-tags origin "refs/tags/${RELEASE_TAG}:refs/tags/${RELEASE_TAG}"
+          test "$(git cat-file -t "refs/tags/${RELEASE_TAG}")" = "tag"
+          test "$(git rev-parse "${RELEASE_TAG}^{}")" = "$(git rev-parse HEAD)"
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:

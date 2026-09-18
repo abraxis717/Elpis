@@ -39,7 +39,11 @@ jobs:
         run: |
           set -e
           release_tag="Elpis$(tr -d '\r\n' < VERSION)"
+          if git ls-remote --exit-code --refs origin "refs/tags/${release_tag}" >/dev/null 2>&1; then
+            git fetch --force --no-tags origin "refs/tags/${release_tag}:refs/tags/${release_tag}"
+          fi
           if git rev-parse --verify --quiet "${release_tag}^{}" >/dev/null; then
+            test "$(git cat-file -t "refs/tags/${release_tag}")" = "tag"
             release_dir="$(mktemp -d)"
             trap 'git worktree remove --force "$release_dir" >/dev/null 2>&1 || true; rm -rf "$release_dir"' EXIT
             git worktree add --detach "${release_dir}" "${release_tag}^{}"

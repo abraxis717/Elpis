@@ -1,3 +1,12 @@
+## Elpis2.2.16 — Annotated-tag checkout corrective successor
+
+- Preserve Elpis2.2.15 as immutable `SEALED_TAGGED_CI_FAILED_NOT_PUBLISHED` evidence.
+- Restore the exact remote annotated release-tag object after `actions/checkout` before reference-runtime strict identity verification.
+- Apply the same annotated-tag restoration before the PyPI release-event build and strict repository-identity gate.
+- Add lifecycle regressions requiring both tag-sensitive hosted workflows to restore and type-check the tag object before strict verification.
+- Predeclare the Elpis2.2.16 v3 manifest under first-committed-blob immutability and runtime-admission temporality.
+- Preserve all Elpis2.2.15 manifest/tag bytes and the existing primitive/runtime authority boundaries.
+
 ## Elpis2.2.15 — Corrective hosted-CI convergence successor
 
 - Preserve the untagged, unpublished Elpis2.2.14 sealed candidate as failed hosted-main-CI evidence without creating or moving a release tag.

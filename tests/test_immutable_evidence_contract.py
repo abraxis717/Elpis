@@ -199,14 +199,23 @@ def test_gitless_write_once_declaration_defers_history_proof_to_git_checkout(tmp
     assert mod.verify_write_once_path(root,rel,spec,check_history=False)==[]
 
 
-def test_2_2_15_manifest_is_predeclared_write_once_not_hash_cyclic():
+def test_release_manifest_write_once_declarations_are_noncyclic_and_self_named():
     data=json.loads(BASE.read_text(encoding="utf-8"))
-    rel="manifests/Elpis2.2.15.RELEASE_MANIFEST.json"
-    assert rel not in data["permanent_files"]
-    assert data["write_once_paths"][rel] == {
-        "rule":"FIRST_COMMITTED_BLOB_IMMUTABLE",
-        "release":"Elpis2.2.15",
-    }
+    seen=[]
+    for rel,spec in sorted(data["write_once_paths"].items()):
+        if not (
+            rel.startswith("manifests/Elpis")
+            and rel.endswith(".RELEASE_MANIFEST.json")
+        ):
+            continue
+        seen.append(rel)
+        assert rel not in data["permanent_files"]
+        assert spec["rule"]=="FIRST_COMMITTED_BLOB_IMMUTABLE"
+        expected=Path(rel).name.removesuffix(".RELEASE_MANIFEST.json")
+        assert spec["release"]==expected
+    assert "manifests/Elpis2.2.14.RELEASE_MANIFEST.json" in seen
+    assert "manifests/Elpis2.2.15.RELEASE_MANIFEST.json" in seen
+    assert "manifests/Elpis2.2.16.RELEASE_MANIFEST.json" in seen
 
 
 def _published_registry_transition_fixture(tmp_path:Path,exit_code:int):

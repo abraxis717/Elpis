@@ -174,3 +174,37 @@ def test_every_repository_verifier_workflow_job_fetches_full_git_history() -> No
         ("pypi-publish.yaml", "build"),
         ("reference-runtime.yml", "reference-runtime-smoke"),
     ]
+
+
+def test_tag_sensitive_workflows_restore_annotated_tag_objects() -> None:
+    reference = _text(REFERENCE)
+    pypi = _text(PYPI)
+
+    reference_fetch = (
+        'git fetch --force --no-tags origin '
+        '"refs/tags/${release_tag}:refs/tags/${release_tag}"'
+    )
+    reference_type = (
+        'test "$(git cat-file -t "refs/tags/${release_tag}")" = "tag"'
+    )
+    assert reference_fetch in reference
+    assert reference_type in reference
+    assert reference.index(reference_fetch) < reference.index(
+        "python tools/verify_public_release.py"
+    )
+
+    pypi_fetch = (
+        'git fetch --force --no-tags origin '
+        '"refs/tags/${RELEASE_TAG}:refs/tags/${RELEASE_TAG}"'
+    )
+    pypi_type = (
+        'test "$(git cat-file -t "refs/tags/${RELEASE_TAG}")" = "tag"'
+    )
+    strict = (
+        "python tools/verify_public_release.py "
+        "--verify-repository-identity"
+    )
+    assert pypi_fetch in pypi
+    assert pypi_type in pypi
+    assert pypi.index(pypi_fetch) < pypi.index(strict)
+
