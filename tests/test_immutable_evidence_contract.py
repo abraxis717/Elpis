@@ -80,3 +80,120 @@ def test_dirty_baseline_is_not_ordinary_qualifiable(tmp_path):
     mod.verify_committed_baseline(repo,repo/"baseline.json",errors)
     assert len(errors)==1
     assert errors[0].startswith("BASELINE_WORKTREE_NOT_COMMITTED:")
+
+
+def _git(repo:Path,*args:str)->subprocess.CompletedProcess:
+    return subprocess.run(
+        ["git","-C",str(repo),*args],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=True,
+    )
+
+
+def _write_once_module():
+    import importlib.util
+    spec=importlib.util.spec_from_file_location("immutability_gate",TOOL)
+    assert spec and spec.loader
+    mod=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _tiny_git_repo(tmp_path:Path)->Path:
+    repo=tmp_path/"repo"
+    repo.mkdir()
+    _git(repo,"init","-q")
+    _git(repo,"config","user.name","immutability-test")
+    _git(repo,"config","user.email","immutability@example.invalid")
+    (repo/"seed.txt").write_text("seed\n",encoding="utf-8")
+    _git(repo,"add","seed.txt")
+    _git(repo,"commit","-qm","seed")
+    return repo
+
+
+def test_2_2_14_manifest_is_predeclared_write_once_not_hash_cyclic():
+    data=json.loads(BASE.read_text(encoding="utf-8"))
+    rel="manifests/Elpis2.2.14.RELEASE_MANIFEST.json"
+    assert rel not in data["permanent_files"]
+    assert data["write_once_paths"][rel] == {
+        "rule":"FIRST_COMMITTED_BLOB_IMMUTABLE",
+        "release":"Elpis2.2.14",
+    }
+
+
+def test_declared_write_once_path_allows_absent_then_untracked_first_materialization(tmp_path):
+    mod=_write_once_module()
+    repo=_tiny_git_repo(tmp_path)
+    rel="manifests/Elpis9.9.9.RELEASE_MANIFEST.json"
+    spec={"rule":mod.WRITE_ONCE_RULE,"release":"Elpis9.9.9"}
+    assert mod.verify_write_once_path(repo,rel,spec,check_history=True)==[]
+    path=repo/rel
+    path.parent.mkdir()
+    path.write_text('{"sealed":true}\n',encoding="utf-8")
+    assert mod.verify_write_once_path(repo,rel,spec,check_history=True)==[]
+
+
+def test_first_committed_write_once_blob_is_dynamically_pinned(tmp_path):
+    mod=_write_once_module()
+    repo=_tiny_git_repo(tmp_path)
+    rel="manifests/Elpis9.9.9.RELEASE_MANIFEST.json"
+    spec={"rule":mod.WRITE_ONCE_RULE,"release":"Elpis9.9.9"}
+    path=repo/rel
+    path.parent.mkdir()
+    path.write_text('{"sealed":true}\n',encoding="utf-8")
+    _git(repo,"add",rel)
+    _git(repo,"commit","-qm","seal")
+    assert mod.verify_write_once_path(repo,rel,spec,check_history=True)==[]
+
+    path.write_text('{"sealed":false}\n',encoding="utf-8")
+    errors=mod.verify_write_once_path(repo,rel,spec,check_history=True)
+    assert any(e.startswith("WRITE_ONCE_BYTES_MUTATED:") for e in errors)
+    assert any(e.startswith("WRITE_ONCE_WORKTREE_DIRTY:") for e in errors)
+
+
+def test_committed_write_once_mutation_is_rejected_even_after_clean_commit(tmp_path):
+    mod=_write_once_module()
+    repo=_tiny_git_repo(tmp_path)
+    rel="manifests/Elpis9.9.9.RELEASE_MANIFEST.json"
+    spec={"rule":mod.WRITE_ONCE_RULE,"release":"Elpis9.9.9"}
+    path=repo/rel
+    path.parent.mkdir()
+    path.write_text("A\n",encoding="utf-8")
+    _git(repo,"add",rel)
+    _git(repo,"commit","-qm","seal")
+    path.write_text("B\n",encoding="utf-8")
+    _git(repo,"add",rel)
+    _git(repo,"commit","-qm","illegal rewrite")
+    errors=mod.verify_write_once_path(repo,rel,spec,check_history=True)
+    assert any(e.startswith("WRITE_ONCE_HISTORY_MUTATED:") for e in errors)
+
+
+def test_committed_write_once_delete_is_rejected(tmp_path):
+    mod=_write_once_module()
+    repo=_tiny_git_repo(tmp_path)
+    rel="manifests/Elpis9.9.9.RELEASE_MANIFEST.json"
+    spec={"rule":mod.WRITE_ONCE_RULE,"release":"Elpis9.9.9"}
+    path=repo/rel
+    path.parent.mkdir()
+    path.write_text("A\n",encoding="utf-8")
+    _git(repo,"add",rel)
+    _git(repo,"commit","-qm","seal")
+    path.unlink()
+    _git(repo,"add","-A")
+    _git(repo,"commit","-qm","illegal delete")
+    errors=mod.verify_write_once_path(repo,rel,spec,check_history=True)
+    assert any(e.startswith("WRITE_ONCE_HISTORY_DELETED:") for e in errors)
+    assert f"WRITE_ONCE_PATH_MISSING:{rel}" in errors
+
+
+def test_gitless_write_once_declaration_defers_history_proof_to_git_checkout(tmp_path):
+    mod=_write_once_module()
+    root=tmp_path/"export"
+    rel="manifests/Elpis9.9.9.RELEASE_MANIFEST.json"
+    path=root/rel
+    path.parent.mkdir(parents=True)
+    path.write_text("{}\n",encoding="utf-8")
+    spec={"rule":mod.WRITE_ONCE_RULE,"release":"Elpis9.9.9"}
+    assert mod.verify_write_once_path(root,rel,spec,check_history=False)==[]

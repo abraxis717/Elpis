@@ -150,6 +150,7 @@ def capture(root:Path)->dict:
         "FAILED_RELEASES.json":registry_snapshot(root,"FAILED_RELEASES.json","failed_releases"),
         "PUBLISHED_RELEASES.json":registry_snapshot(root,"PUBLISHED_RELEASES.json","published_releases"),
       },
+      "write_once_paths":{},
       "identity_generations":[identity_generation(root,head)],
     }
 
@@ -170,6 +171,94 @@ def check_pin(root:Path,pin:dict)->str|None:
 
 def prefix_equal(old:list,new:list)->bool:
     return len(new)>=len(old) and new[:len(old)]==old
+
+WRITE_ONCE_RULE="FIRST_COMMITTED_BLOB_IMMUTABLE"
+
+def _git_history_for_path(root:Path,rel:str)->list[str]:
+    p=subprocess.run(
+        ["git","-C",str(root),"log","--format=%H","--reverse","--",rel],
+        stdout=subprocess.PIPE,stderr=subprocess.PIPE,
+    )
+    if p.returncode:
+        raise GateError(
+            f"WRITE_ONCE_GIT_HISTORY_ERROR:{rel}:"
+            f"{p.stderr.decode(errors='replace').strip()}"
+        )
+    return [line for line in p.stdout.decode().splitlines() if line]
+
+def _git_blob_at(root:Path,commit:str,rel:str)->bytes|None:
+    p=subprocess.run(
+        ["git","-C",str(root),"show",f"{commit}:{rel}"],
+        stdout=subprocess.PIPE,stderr=subprocess.PIPE,
+    )
+    return p.stdout if p.returncode==0 else None
+
+def verify_write_once_path(
+    root:Path,rel:str,spec:dict,*,check_history:bool
+)->list[str]:
+    errors:list[str]=[]
+    if not isinstance(spec,dict) or spec.get("rule")!=WRITE_ONCE_RULE:
+        return [f"WRITE_ONCE_DECLARATION_INVALID:{rel}"]
+    if set(spec)!={"rule","release"} or not isinstance(spec.get("release"),str):
+        return [f"WRITE_ONCE_DECLARATION_INVALID:{rel}"]
+
+    path=root/rel
+
+    # Git-less copies/exports cannot prove first-commit history. They retain the
+    # path declaration and all normal release-manifest/publication checks, while
+    # Git checkouts enforce first-committed-byte immutability below.
+    if not check_history:
+        if path.exists() and not path.is_file():
+            errors.append(f"WRITE_ONCE_PATH_NOT_FILE:{rel}")
+        return errors
+
+    history=_git_history_for_path(root,rel)
+    if not history:
+        if not path.exists():
+            return errors  # predeclared future path, not materialized yet
+        if not path.is_file():
+            return [f"WRITE_ONCE_PATH_NOT_FILE:{rel}"]
+        status=git(
+            root,"status","--porcelain=v1","--untracked-files=all","--",rel,
+            check=False,
+        ).decode().splitlines()
+        if status!=[f"?? {rel}"]:
+            return [
+                f"WRITE_ONCE_FIRST_MATERIALIZATION_STATE_INVALID:{rel}:"
+                f"{status!r}"
+            ]
+        return errors
+
+    first=history[0]
+    first_bytes=_git_blob_at(root,first,rel)
+    if first_bytes is None:
+        return [f"WRITE_ONCE_FIRST_COMMIT_MISSING_BLOB:{rel}:{first}"]
+    first_hash=hbytes(first_bytes)
+
+    for commit in history:
+        blob=_git_blob_at(root,commit,rel)
+        if blob is None:
+            errors.append(f"WRITE_ONCE_HISTORY_DELETED:{rel}:{commit}")
+        elif hbytes(blob)!=first_hash:
+            errors.append(
+                f"WRITE_ONCE_HISTORY_MUTATED:{rel}:{commit}:"
+                f"{hbytes(blob)}:{first_hash}"
+            )
+
+    if not path.is_file():
+        errors.append(f"WRITE_ONCE_PATH_MISSING:{rel}")
+    elif hfile(path)!=first_hash:
+        errors.append(
+            f"WRITE_ONCE_BYTES_MUTATED:{rel}:{hfile(path)}:{first_hash}"
+        )
+
+    status=git(
+        root,"status","--porcelain=v1","--untracked-files=all","--",rel,
+        check=False,
+    ).decode().splitlines()
+    if status:
+        errors.append(f"WRITE_ONCE_WORKTREE_DIRTY:{rel}:{status!r}")
+    return errors
 
 def verify_committed_baseline(root:Path,baseline_path:Path,errors:list[str])->None:
     """The ordinary verifier only accepts a baseline already committed at HEAD.
@@ -221,16 +310,38 @@ def verify_history(root:Path,base:dict,errors:list[str])->None:
             errors.append(f"BASELINE_REGISTRY_HISTORY_REWRITTEN:{rel}")
     if not prefix_equal(prev.get("identity_generations",[]),base.get("identity_generations",[])):
         errors.append("BASELINE_IDENTITY_GENERATION_HISTORY_REWRITTEN")
+    prev_write_once=prev.get("write_once_paths",{})
+    current_write_once=base.get("write_once_paths",{})
+    if not isinstance(prev_write_once,dict) or not isinstance(current_write_once,dict):
+        errors.append("BASELINE_WRITE_ONCE_DECLARATIONS_INVALID")
+    else:
+        for rel,spec in prev_write_once.items():
+            if current_write_once.get(rel)!=spec:
+                errors.append(f"BASELINE_WRITE_ONCE_DECLARATION_CHANGED_OR_REMOVED:{rel}")
 
 def verify(root:Path,baseline_path:Path,check_history=True)->dict:
     base=json.loads(baseline_path.read_text(encoding="utf-8"))
     if base.get("schema")!=SCHEMA: raise GateError("BASELINE_SCHEMA_INVALID")
     errors=[]
-    selected=permanent_paths(root)
-    registered=sorted(base.get("permanent_files",{}))
-    if selected!=registered:
-        for p in sorted(set(selected)-set(registered)): errors.append(f"UNREGISTERED_IMMUTABLE_EVIDENCE:{p}")
-        for p in sorted(set(registered)-set(selected)): errors.append(f"IMMUTABLE_EVIDENCE_PATH_MISSING:{p}")
+    selected=set(permanent_paths(root))
+    registered=set(base.get("permanent_files",{}))
+    write_once=base.get("write_once_paths",{})
+    if not isinstance(write_once,dict):
+        raise GateError("WRITE_ONCE_DECLARATIONS_INVALID")
+    declared=set(write_once)
+    overlap=registered & declared
+    for p in sorted(overlap):
+        errors.append(f"IMMUTABILITY_REGISTRATION_OVERLAP:{p}")
+    for p in sorted(selected-registered-declared):
+        errors.append(f"UNREGISTERED_IMMUTABLE_EVIDENCE:{p}")
+    for p in sorted(registered-selected):
+        errors.append(f"IMMUTABLE_EVIDENCE_PATH_MISSING:{p}")
+    for rel,spec in sorted(write_once.items()):
+        errors.extend(
+            verify_write_once_path(
+                root,rel,spec,check_history=check_history
+            )
+        )
     for rel,want in sorted(base["permanent_files"].items()):
         p=root/rel
         if not p.is_file(): errors.append(f"MISSING_EVIDENCE:{rel}")
@@ -269,6 +380,7 @@ def verify(root:Path,baseline_path:Path,check_history=True)->dict:
       "published_registry_record_count":len(base["append_only_registries"]["PUBLISHED_RELEASES.json"]["records"]),
       "identity_generation_count":len(gens),
       "identity_pin_count":len(gens[-1]["pins"]) if gens else 0,
+      "write_once_path_count":len(write_once),
       "errors":errors,
       "status":"PASS" if not errors else "NONPASS",
     }

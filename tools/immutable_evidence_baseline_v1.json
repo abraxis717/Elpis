@@ -345,5 +345,11 @@
     "permanent_evidence": "BYTE_IMMUTABLE_AND_PATHSET_CLOSED",
     "release_registries": "EXISTING_RECORDS_IMMUTABLE_APPEND_ONLY"
   },
-  "schema": "elpis.repository-immutability.v1"
+  "schema": "elpis.repository-immutability.v1",
+  "write_once_paths": {
+    "manifests/Elpis2.2.14.RELEASE_MANIFEST.json": {
+      "release": "Elpis2.2.14",
+      "rule": "FIRST_COMMITTED_BLOB_IMMUTABLE"
+    }
+  }
 }
