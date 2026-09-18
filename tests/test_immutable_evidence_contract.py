@@ -213,9 +213,10 @@ def test_release_manifest_write_once_declarations_are_noncyclic_and_self_named()
         assert spec["rule"]=="FIRST_COMMITTED_BLOB_IMMUTABLE"
         expected=Path(rel).name.removesuffix(".RELEASE_MANIFEST.json")
         assert spec["release"]==expected
+
+    current=(ROOT/"VERSION").read_text(encoding="utf-8").strip()
+    assert f"manifests/Elpis{current}.RELEASE_MANIFEST.json" in seen
     assert "manifests/Elpis2.2.14.RELEASE_MANIFEST.json" in seen
-    assert "manifests/Elpis2.2.15.RELEASE_MANIFEST.json" in seen
-    assert "manifests/Elpis2.2.16.RELEASE_MANIFEST.json" in seen
 
 
 def _published_registry_transition_fixture(tmp_path:Path,exit_code:int):

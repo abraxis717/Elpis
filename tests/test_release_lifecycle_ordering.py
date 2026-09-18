@@ -177,8 +177,21 @@ def test_every_repository_verifier_workflow_job_fetches_full_git_history() -> No
 
 
 def test_tag_sensitive_workflows_restore_annotated_tag_objects() -> None:
+    ci = _text(CI)
     reference = _text(REFERENCE)
     pypi = _text(PYPI)
+
+    ci_fetch = (
+        'git fetch --force --no-tags origin '
+        '"refs/tags/${RELEASE_TAG}:refs/tags/${RELEASE_TAG}"'
+    )
+    ci_type = (
+        'test "$(git cat-file -t "refs/tags/${RELEASE_TAG}")" = "tag"'
+    )
+    ci_verify = "python tools/verify_public_release.py"
+    assert ci_fetch in ci
+    assert ci_type in ci
+    assert ci.index(ci_fetch) < ci.index(ci_verify)
 
     reference_fetch = (
         'git fetch --force --no-tags origin '

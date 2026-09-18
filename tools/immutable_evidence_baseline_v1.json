@@ -25,6 +25,10 @@
         {
           "sha256": "4393f009d3e8a7e5a3b5ed27d1f697be7f8d750c148606e71f94ba60440a3997",
           "version": "2.2.15"
+        },
+        {
+          "sha256": "d14b2217aaeffc430a2a120ca2b2c6d962691e969e6da0843cc2dc014916f8be",
+          "version": "2.2.16"
         }
       ]
     },
@@ -361,6 +365,10 @@
     },
     "manifests/Elpis2.2.16.RELEASE_MANIFEST.json": {
       "release": "Elpis2.2.16",
+      "rule": "FIRST_COMMITTED_BLOB_IMMUTABLE"
+    },
+    "manifests/Elpis2.2.17.RELEASE_MANIFEST.json": {
+      "release": "Elpis2.2.17",
       "rule": "FIRST_COMMITTED_BLOB_IMMUTABLE"
     }
   }

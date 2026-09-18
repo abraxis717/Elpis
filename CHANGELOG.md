@@ -1,3 +1,13 @@
+## Elpis2.2.17 — CI annotated-tag checkout corrective successor
+
+- Preserve Elpis2.2.16 as immutable `SEALED_TAGGED_CI_FAILED_NOT_PUBLISHED` evidence.
+- Restore and type-check the exact annotated release-tag object in CI's `Public release verifier` job before its first lifecycle-aware verifier invocation.
+- Retain the already-qualified annotated-tag restoration in `reference-runtime` and the PyPI release-event build path.
+- Extend the lifecycle regression so all three repository-verifier workflows prove tag-object restoration before verification.
+- Make the write-once manifest contract test derive the current successor declaration from `VERSION` instead of hard-coding each future release number.
+- Predeclare the Elpis2.2.17 v3 manifest under first-committed-blob immutability and runtime-admission temporality.
+- Preserve all Elpis2.2.16 manifest/tag bytes and existing primitive/runtime authority boundaries.
+
 ## Elpis2.2.16 — Annotated-tag checkout corrective successor
 
 - Preserve Elpis2.2.15 as immutable `SEALED_TAGGED_CI_FAILED_NOT_PUBLISHED` evidence.
