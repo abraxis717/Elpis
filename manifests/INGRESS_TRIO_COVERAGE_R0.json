@@ -1,0 +1,84 @@
+{
+  "build_system_admission_is_runtime_admission": false,
+  "component_count": 3,
+  "components": [
+    {
+      "bindings": {
+        "component_contract": {
+          "path": "components/StreamingRegexIngress/contracts/INCREMENTAL_V2.json",
+          "sha256": "2d2e4f15352db5532d94282e1855b880b1ca95be4a4d27faf6465b6aea99548a"
+        },
+        "component_manifest": {
+          "path": "components/StreamingRegexIngress/COMPONENT_MANIFEST.json",
+          "sha256": "bbda1a59d91b41ac12a4d8309717e13eef24c7dd5595c4794d7cd9a6ca465af8"
+        },
+        "qualification_binding": {
+          "path": "components/StreamingRegexIngress/QUALIFICATION_BINDING.json",
+          "sha256": "bf734cf75cf117f15a25a31ccfe3e544acf620f9b45d647da9365af8c6fc983c"
+        }
+      },
+      "component_id": "StreamingRegexIngress_R1",
+      "component_root": "components/StreamingRegexIngress",
+      "public_registry_admission": false,
+      "runtime_admission": false,
+      "semantic_truth_authority": false
+    },
+    {
+      "bindings": {
+        "component_contract": {
+          "path": "components/RegexHACFQueryIngress/BUILD_CONTRACT.json",
+          "sha256": "a88e2626f9ad7e66ab231acd84176e903897aaf8bc8ab8ad7ba2c05c236c8c04"
+        },
+        "component_manifest": {
+          "path": "components/RegexHACFQueryIngress/COMPONENT_MANIFEST.json",
+          "sha256": "fdfa28aa4f800649f75a62fa6ba338dc439d9798e99212c943929adcf6052e54"
+        },
+        "qualification_binding": {
+          "path": "components/RegexHACFQueryIngress/QUALIFICATION_BINDING.json",
+          "sha256": "0ad4082328bf738e14d4c947fa25f40184faec528abc03fea808374bf4fe0c4d"
+        }
+      },
+      "component_id": "RegexHACFQueryIngress_R0",
+      "component_root": "components/RegexHACFQueryIngress",
+      "public_registry_admission": false,
+      "runtime_admission": false,
+      "semantic_truth_authority": false
+    },
+    {
+      "bindings": {
+        "component_contract": {
+          "path": "components/QueryLocalProposalIngress/contracts/QUERY_LOCAL_PROPOSAL_REGISTRY_V1.json",
+          "sha256": "b7dd4be14f95a28385998b1687bee3b4575880f9ea9af4b8401934ebabe51e3a"
+        },
+        "component_manifest": {
+          "path": "components/QueryLocalProposalIngress/COMPONENT_MANIFEST.json",
+          "sha256": "4fae9f89bfc8e3f7c0f8504ef1fbc1b20513e1142a8d9bca2bb19ae8ffcc51d8"
+        },
+        "qualification_binding": {
+          "path": "components/QueryLocalProposalIngress/QUALIFICATION_BINDING.json",
+          "sha256": "a9ef2dbfc3622637dfb2d954f627ca1e08a2cb5a296bafcaf6457bbdd579d1e9"
+        }
+      },
+      "component_id": "QueryLocalProposalIngress_R0",
+      "component_root": "components/QueryLocalProposalIngress",
+      "public_registry_admission": false,
+      "runtime_admission": false,
+      "semantic_truth_authority": false
+    }
+  ],
+  "composition_order": [
+    "StreamingRegexIngress_R1",
+    "RegexHACFQueryIngress_R0",
+    "QueryLocalProposalIngress_R0"
+  ],
+  "coverage_id": "INGRESS_TRIO_COVERAGE_R0",
+  "coverage_self_hash": "04dfda142e77ece7378e81e049f95479938c1ef5af1c67c1975e8e7a5220055e",
+  "execution_authority": false,
+  "historical_matrix_nonclaim_preserved": true,
+  "public_registry_admission": false,
+  "public_registry_path": "manifests/PUBLIC_COMPONENT_REGISTRY.json",
+  "public_registry_sha256": "67bef85dac088c98c7d0af45508c5f2491154fd93c476c3830b6db702676ba73",
+  "runtime_admission": false,
+  "schema": "elpis.ingress-trio-coverage.v1",
+  "semantic_truth_authority": false
+}
