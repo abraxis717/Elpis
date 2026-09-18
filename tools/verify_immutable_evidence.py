@@ -320,7 +320,8 @@ def verify_history(root:Path,base:dict,errors:list[str])->None:
                 errors.append(f"BASELINE_WRITE_ONCE_DECLARATION_CHANGED_OR_REMOVED:{rel}")
 
 def registry_transition_errors(
-    root:Path,rel:str,snap:dict,current:dict
+    root:Path,rel:str,snap:dict,current:dict,*,
+    check_tag_projection:bool=True
 )->list[str]:
     errors:list[str]=[]
     if current["metadata"]!=snap["metadata"]:
@@ -331,7 +332,10 @@ def registry_transition_errors(
         if not prefix_equal(snap["records"],current["records"]):
             errors.append(f"REGISTRY_PRIOR_RECORD_CHANGED:{rel}")
             return errors
-        if len(current["records"])>len(snap["records"]):
+        if (
+            len(current["records"])>len(snap["records"])
+            and check_tag_projection
+        ):
             checker=root/"tools/refresh_published_releases.py"
             p=subprocess.run(
                 [__import__("sys").executable,"-B",str(checker),"--check"],
@@ -381,7 +385,12 @@ def verify(root:Path,baseline_path:Path,check_history=True)->dict:
 
     for rel,snap in base["append_only_registries"].items():
         current=registry_snapshot(root,rel,snap["list_key"])
-        errors.extend(registry_transition_errors(root,rel,snap,current))
+        errors.extend(
+            registry_transition_errors(
+                root,rel,snap,current,
+                check_tag_projection=check_history,
+            )
+        )
 
     gens=base.get("identity_generations",[])
     if not gens: errors.append("NO_IDENTITY_GENERATION")

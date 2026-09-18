@@ -2,7 +2,7 @@
 
 **A deterministic structural-reasoning architecture for bounded learned proposals, explicit authority, and falsifiable runtime composition.**
 
-**Release line: Elpis2.2.17**
+**Release line: Elpis2.2.18**
 
 Elpis is a systems-research project about a narrow question: can learned components contribute useful structural proposals while deterministic machinery retains ownership of representation, admissibility, authority, validation, and terminal action?
 
@@ -14,11 +14,11 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 ## Release Notes
 
-**Elpis2.2.17** is the corrective successor to immutable tagged-CI-failed Elpis2.2.16.
+**Elpis2.2.18** is the post-publication closeout-mechanics successor to published Elpis2.2.17.
 
-Elpis2.2.16 proved annotated-tag restoration in `reference-runtime` and retained the same protection in the PyPI release path, but the tag-triggered CI `Public release verifier` still ran immediately after `actions/checkout@v4` without restoring the annotated tag object. Elpis2.2.17 closes that remaining tag-sensitive verifier path before any lifecycle-aware release verification.
+Elpis2.2.17 passed main CI, tag CI, GitHub Release creation, release-event CI, PyPI publication, and artifact verification. Its only NONQUAL occurred after publication because Git-less mutation copies could not recompute tag-derived PUBLISHED authority.
 
-Elpis2.2.16 remains immutable failed tagged evidence; no release or PyPI publication is created for it.
+Elpis2.2.18 makes the split explicit: Git-bearing checkouts prove the exact tag-derived PUBLISHED projection; Git-less copies preserve registry metadata and prior-record prefix immutability while deferring only the unavailable tag proof.
 
 The 2.2.x line includes:
 
@@ -38,7 +38,7 @@ The 2.2.x line includes:
 
 The immutable `Elpis2.2.0`, `Elpis2.2.9`, and `Elpis2.2.12` tags are retained as failed-not-published release evidence under `FAILED_RELEASES.json`.
 
-- Current notes: [`RELEASE_NOTES/Elpis2.2.17.md`](RELEASE_NOTES/Elpis2.2.17.md)
+- Current notes: [`RELEASE_NOTES/Elpis2.2.18.md`](RELEASE_NOTES/Elpis2.2.18.md)
 - Public component registry: [`manifests/PUBLIC_COMPONENT_REGISTRY.json`](manifests/PUBLIC_COMPONENT_REGISTRY.json)
 - Qualified writer-chain registry: [`manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json`](manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json)
 - Qualified ingress-trio coverage: [`manifests/INGRESS_TRIO_COVERAGE_R0.json`](manifests/INGRESS_TRIO_COVERAGE_R0.json)

@@ -282,3 +282,14 @@ def test_published_registry_append_with_bad_tag_projection_is_rejected(tmp_path)
     )
     assert len(errors)==1
     assert errors[0].startswith("PUBLISHED_RELEASE_TAG_PROJECTION_NONPASS:")
+
+
+def test_gitless_published_registry_append_defers_unavailable_tag_projection(tmp_path):
+    mod,root,snap=_published_registry_transition_fixture(tmp_path,1)
+    current={"list_key":snap["list_key"],"metadata":snap["metadata"],"records":[*snap["records"],{"version":"2.2.18","sha256":"d"*64}]}
+    assert mod.registry_transition_errors(root,"PUBLISHED_RELEASES.json",snap,current,check_tag_projection=False)==[]
+
+def test_gitless_published_registry_prior_rewrite_still_fails(tmp_path):
+    mod,root,snap=_published_registry_transition_fixture(tmp_path,0)
+    current={"list_key":snap["list_key"],"metadata":snap["metadata"],"records":[{"version":"2.2.13","sha256":"e"*64}]}
+    assert mod.registry_transition_errors(root,"PUBLISHED_RELEASES.json",snap,current,check_tag_projection=False)==["REGISTRY_PRIOR_RECORD_CHANGED:PUBLISHED_RELEASES.json"]

@@ -1,3 +1,11 @@
+## Elpis2.2.18 — Git-less publication-projection corrective successor
+
+- Preserve published Elpis2.2.17 and its PUBLISHED record as immutable ancestry.
+- Require exact tag-derived PUBLISHED projection in Git-bearing checkouts.
+- In Git-less copies, retain registry metadata and prior-record prefix immutability while deferring unavailable tag projection.
+- Add regressions for both Git-bearing and Git-less PUBLISHED append semantics.
+- Predeclare the Elpis2.2.18 manifest under first-committed-blob immutability and runtime-admission temporality.
+
 ## Elpis2.2.17 — CI annotated-tag checkout corrective successor
 
 - Preserve Elpis2.2.16 as immutable `SEALED_TAGGED_CI_FAILED_NOT_PUBLISHED` evidence.
