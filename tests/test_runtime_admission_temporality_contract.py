@@ -122,11 +122,25 @@ def test_future_2_2_14_manifest_temporality_is_predeclared_write_once():
     }]
 
 
-def test_preseal_future_manifest_may_be_absent_but_registered():
+def test_future_write_once_declaration_tracks_preseal_and_materialized_state():
     proc=_run()
     assert proc.returncode==0,proc.stderr
     report=json.loads(proc.stdout)
+
+    manifest = ROOT / "manifests/Elpis2.2.14.RELEASE_MANIFEST.json"
+    materialized = manifest.is_file()
+
     assert report["future_write_once_declaration_count"]==1
-    assert report["future_write_once_materialized_count"]==0
-    assert report["current_declaration_count"]==48
     assert report["registered_declaration_count"]==49
+    assert report["future_write_once_materialized_count"]==(1 if materialized else 0)
+    assert report["current_declaration_count"]==(49 if materialized else 48)
+
+    expected = [
+        [
+            "manifests/Elpis2.2.14.RELEASE_MANIFEST.json",
+            "json_key",
+            "<json>",
+            "/full_elpis_runtime_admission",
+        ]
+    ] if materialized else []
+    assert report["future_write_once_materialized_declarations"]==expected
