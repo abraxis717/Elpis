@@ -4,6 +4,8 @@
 Whole-runtime admission declarations are not a flat set of values:
 - live source/release-policy declarations are active authority and must agree;
 - immutable release manifests are historical release snapshots;
+- predeclared future release manifests may bind temporality through the
+  qualified FIRST_COMMITTED_BLOB_IMMUTABLE path authority before first seal;
 - RUNTIME_E2E_SEAL_R0.json is historical scoped evidence;
 - PUBLIC_COMPONENT_REGISTRY.runtime_admission is a deliberately different
   component-registry scope.
@@ -41,6 +43,9 @@ ALLOWED_CATEGORIES=ACTIVE_CATEGORIES | HISTORICAL_CATEGORIES
 AUTHORITY_PATH="src/elpis_reference/structural_guidance/authority.py"
 SEAL_PATH="src/elpis_reference/structural_guidance/RUNTIME_E2E_SEAL_R0.json"
 PUBLIC_REGISTRY="manifests/PUBLIC_COMPONENT_REGISTRY.json"
+IMMUTABILITY_BASELINE="tools/immutable_evidence_baseline_v1.json"
+WRITE_ONCE_RULE="FIRST_COMMITTED_BLOB_IMMUTABLE"
+FUTURE_DECLARATIONS_FIELD="future_write_once_declarations"
 RELEASE_RE=re.compile(r"^manifests/Elpis[^/]+\.RELEASE_MANIFEST\.json$")
 DISTRIBUTION_RE=re.compile(r"^manifests/Elpis[^/]+\.DISTRIBUTION_MANIFEST\.json$")
 
@@ -252,6 +257,95 @@ def identity(record:dict[str,Any])->tuple[str,str,str,str]:
     )
 
 
+def _immutability_write_once_paths(root:Path)->dict[str,Any]:
+    path=root/IMMUTABILITY_BASELINE
+    try:
+        data=json.loads(path.read_text(encoding="utf-8"))
+    except (OSError,json.JSONDecodeError) as exc:
+        raise TemporalityError(
+            f"IMMUTABILITY_BASELINE_UNREADABLE:{path}:{exc}"
+        ) from exc
+    records=data.get("write_once_paths",{})
+    if not isinstance(records,dict):
+        raise TemporalityError("IMMUTABILITY_WRITE_ONCE_PATHS_INVALID")
+    return records
+
+
+def _future_write_once_records(root:Path)->list[dict[str,Any]]:
+    records=[]
+    for rel,spec in sorted(_immutability_write_once_paths(root).items()):
+        if not RELEASE_RE.fullmatch(rel):
+            continue
+        if (
+            not isinstance(spec,dict)
+            or spec.get("rule")!=WRITE_ONCE_RULE
+            or not isinstance(spec.get("release"),str)
+        ):
+            raise TemporalityError(
+                f"FUTURE_RELEASE_WRITE_ONCE_DECLARATION_INVALID:{rel}"
+            )
+        records.append({
+            "path":rel,
+            "syntax":"json_key",
+            "locator":"/full_elpis_runtime_admission",
+            "qualname":"<json>",
+            "value":True,
+            "category":"HISTORICAL_RELEASE_SNAPSHOT",
+            "byte_authority":WRITE_ONCE_RULE,
+            "release":spec["release"],
+        })
+    return records
+
+
+def _write_once_history_errors(
+    root:Path,record:dict[str,Any]
+)->list[str]:
+    rel=record["path"]
+    history=[
+        x for x in _git(
+            root,"log","--format=%H","--reverse","--",rel
+        ).decode().splitlines()
+        if x
+    ]
+    if not history:
+        return [f"WRITE_ONCE_TEMPORALITY_FIRST_COMMIT_MISSING:{rel}"]
+
+    first_blob=subprocess.run(
+        ["git","-C",str(root),"show",f"{history[0]}:{rel}"],
+        stdout=subprocess.PIPE,stderr=subprocess.PIPE,
+    )
+    if first_blob.returncode:
+        return [
+            f"WRITE_ONCE_TEMPORALITY_FIRST_BLOB_MISSING:{rel}:{history[0]}"
+        ]
+    first_hash=_sha(first_blob.stdout)
+    errors=[]
+    for commit in history:
+        p=subprocess.run(
+            ["git","-C",str(root),"show",f"{commit}:{rel}"],
+            stdout=subprocess.PIPE,stderr=subprocess.PIPE,
+        )
+        if p.returncode:
+            errors.append(
+                f"WRITE_ONCE_TEMPORALITY_HISTORY_DELETED:{rel}:{commit}"
+            )
+        elif _sha(p.stdout)!=first_hash:
+            errors.append(
+                f"WRITE_ONCE_TEMPORALITY_HISTORY_MUTATED:{rel}:{commit}:"
+                f"{_sha(p.stdout)}:{first_hash}"
+            )
+
+    path=root/rel
+    if not path.is_file():
+        errors.append(f"WRITE_ONCE_TEMPORALITY_PATH_MISSING:{rel}")
+    elif _sha(path.read_bytes())!=first_hash:
+        errors.append(
+            f"WRITE_ONCE_TEMPORALITY_BYTES_MUTATED:{rel}:"
+            f"{_sha(path.read_bytes())}:{first_hash}"
+        )
+    return errors
+
+
 def classify(record:dict[str,Any])->str:
     path=record["path"]
     syntax=record["syntax"]
@@ -365,8 +459,10 @@ def build_baseline(root:Path)->dict[str,Any]:
             "historical_override":"PRODUCTION_RUNTIME_MUST_NOT_READ_HISTORICAL_SEAL_OR_JSON_ADMISSION_KEY",
             "component_registry_scope":"DISTINCT_FROM_WHOLE_RUNTIME_ADMISSION",
             "new_declarations":"MUST_BE_EXPLICITLY_CLASSIFIED",
+            "future_release_snapshots":"MAY_BE_PREDECLARED_ONLY_VIA_FIRST_COMMITTED_BLOB_IMMUTABLE",
         },
         "declarations":records,
+        FUTURE_DECLARATIONS_FIELD:_future_write_once_records(root),
     }
 
 
@@ -379,6 +475,9 @@ def load_baseline(path:Path)->dict[str,Any]:
     records=data.get("declarations")
     if not isinstance(records,list):
         raise TemporalityError("TEMPORALITY_DECLARATIONS_INVALID")
+    future=data.get(FUTURE_DECLARATIONS_FIELD,[])
+    if not isinstance(future,list):
+        raise TemporalityError("TEMPORALITY_FUTURE_DECLARATIONS_INVALID")
     seen=set()
     for record in records:
         key=identity(record)
@@ -395,6 +494,39 @@ def load_baseline(path:Path)->dict[str,Any]:
             digest=record.get("file_sha256")
             if not isinstance(digest,str) or len(digest)!=64:
                 raise TemporalityError(f"HISTORICAL_HASH_MISSING:{key}")
+
+    root=path.resolve().parents[1]
+    write_once=_immutability_write_once_paths(root)
+    for record in future:
+        key=identity(record)
+        if key in seen:
+            raise TemporalityError(f"TEMPORALITY_DUPLICATE:{key}")
+        seen.add(key)
+        expected=classify(record)
+        if expected!="HISTORICAL_RELEASE_SNAPSHOT":
+            raise TemporalityError(
+                f"FUTURE_TEMPORALITY_CATEGORY_INVALID:{key}:{expected}"
+            )
+        if record.get("category")!=expected:
+            raise TemporalityError(
+                f"TEMPORALITY_CATEGORY_MISMATCH:{key}:"
+                f"{record.get('category')}!={expected}"
+            )
+        if record.get("value") is not True:
+            raise TemporalityError(f"FUTURE_TEMPORALITY_VALUE_INVALID:{key}")
+        if record.get("byte_authority")!=WRITE_ONCE_RULE:
+            raise TemporalityError(
+                f"FUTURE_TEMPORALITY_BYTE_AUTHORITY_INVALID:{key}"
+            )
+        spec=write_once.get(record["path"])
+        if (
+            not isinstance(spec,dict)
+            or spec.get("rule")!=WRITE_ONCE_RULE
+            or spec.get("release")!=record.get("release")
+        ):
+            raise TemporalityError(
+                f"FUTURE_TEMPORALITY_WRITE_ONCE_BINDING_INVALID:{key}"
+            )
     return data
 
 
@@ -424,19 +556,31 @@ def _registry_scope(root:Path)->dict[str,Any]:
 
 def verify(root:Path,baseline_path:Path)->dict[str,Any]:
     baseline=load_baseline(baseline_path)
-    registered={identity(x):x for x in baseline["declarations"]}
+    fixed={identity(x):x for x in baseline["declarations"]}
+    future={
+        identity(x):x
+        for x in baseline.get(FUTURE_DECLARATIONS_FIELD,[])
+    }
+    registered={**fixed,**future}
     current={identity(x):x for x in scan(root,None)}
     errors:list[str]=[]
 
-    if set(current)!=set(registered):
-        for key in sorted(set(current)-set(registered)):
-            errors.append(f"UNREGISTERED_DECLARATION:{key}")
-        for key in sorted(set(registered)-set(current)):
-            errors.append(f"REGISTERED_DECLARATION_MISSING:{key}")
+    for key in sorted(set(current)-set(registered)):
+        errors.append(f"UNREGISTERED_DECLARATION:{key}")
+    for key in sorted(set(fixed)-set(current)):
+        errors.append(f"REGISTERED_DECLARATION_MISSING:{key}")
+    for key,entry in sorted(future.items()):
+        if key in current:
+            continue
+        if (root/entry["path"]).exists():
+            errors.append(
+                f"FUTURE_DECLARATION_PRESENT_BUT_UNTRACKED:{key}"
+            )
 
     active_values=[]
     historical_false=[]
     historical_true=[]
+    future_materialized=[]
 
     for key,entry in registered.items():
         now=current.get(key)
@@ -456,6 +600,15 @@ def verify(root:Path,baseline_path:Path)->dict[str,Any]:
 
         if expected_category in ACTIVE_CATEGORIES:
             active_values.append(now["value"])
+        elif key in future:
+            if now["value"]!=entry["value"]:
+                errors.append(
+                    f"FUTURE_HISTORICAL_VALUE_CHANGED:{key}:"
+                    f"{now['value']}!={entry['value']}"
+                )
+            errors.extend(_write_once_history_errors(root,entry))
+            future_materialized.append(key)
+            (historical_true if now["value"] else historical_false).append(key)
         else:
             actual_hash=_sha(_bytes(root,now["path"],None))
             if actual_hash!=entry["file_sha256"]:
@@ -493,6 +646,12 @@ def verify(root:Path,baseline_path:Path)->dict[str,Any]:
         "schema":SCHEMA,
         "baseline_commit":BASELINE_COMMIT,
         "registered_declaration_count":len(registered),
+        "fixed_declaration_count":len(fixed),
+        "future_write_once_declaration_count":len(future),
+        "future_write_once_materialized_count":len(future_materialized),
+        "future_write_once_materialized_declarations":[
+            list(x) for x in future_materialized
+        ],
         "current_declaration_count":len(current),
         "categories":dict(sorted(categories.items())),
         "active_values":active_values,
@@ -541,6 +700,9 @@ def main(argv:list[str]|None=None)->int:
             "path":str(baseline),
             "baseline_commit":BASELINE_COMMIT,
             "declaration_count":len(data["declarations"]),
+            "future_write_once_declaration_count":len(
+                data.get(FUTURE_DECLARATIONS_FIELD,[])
+            ),
         },sort_keys=True))
         return 0
 

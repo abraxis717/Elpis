@@ -105,3 +105,28 @@ def test_historical_seal_cannot_be_reclassified_as_active_authority():
         assert "TEMPORALITY_CATEGORY_MISMATCH" in proc.stderr
     finally:
         tmp.unlink(missing_ok=True)
+
+
+def test_future_2_2_14_manifest_temporality_is_predeclared_write_once():
+    data=json.loads(BASELINE.read_text(encoding="utf-8"))
+    future=data["future_write_once_declarations"]
+    assert future == [{
+        "path":"manifests/Elpis2.2.14.RELEASE_MANIFEST.json",
+        "syntax":"json_key",
+        "locator":"/full_elpis_runtime_admission",
+        "qualname":"<json>",
+        "value":True,
+        "category":"HISTORICAL_RELEASE_SNAPSHOT",
+        "byte_authority":"FIRST_COMMITTED_BLOB_IMMUTABLE",
+        "release":"Elpis2.2.14",
+    }]
+
+
+def test_preseal_future_manifest_may_be_absent_but_registered():
+    proc=_run()
+    assert proc.returncode==0,proc.stderr
+    report=json.loads(proc.stdout)
+    assert report["future_write_once_declaration_count"]==1
+    assert report["future_write_once_materialized_count"]==0
+    assert report["current_declaration_count"]==48
+    assert report["registered_declaration_count"]==49

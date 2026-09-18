@@ -431,9 +431,22 @@
       "value": true
     }
   ],
+  "future_write_once_declarations": [
+    {
+      "byte_authority": "FIRST_COMMITTED_BLOB_IMMUTABLE",
+      "category": "HISTORICAL_RELEASE_SNAPSHOT",
+      "locator": "/full_elpis_runtime_admission",
+      "path": "manifests/Elpis2.2.14.RELEASE_MANIFEST.json",
+      "qualname": "<json>",
+      "release": "Elpis2.2.14",
+      "syntax": "json_key",
+      "value": true
+    }
+  ],
   "policy": {
     "active_authorities": "MUST_AGREE_TRUE",
     "component_registry_scope": "DISTINCT_FROM_WHOLE_RUNTIME_ADMISSION",
+    "future_release_snapshots": "MAY_BE_PREDECLARED_ONLY_VIA_FIRST_COMMITTED_BLOB_IMMUTABLE",
     "historical_evidence": "EXACT_BYTES_AND_VALUE_IMMUTABLE",
     "historical_override": "PRODUCTION_RUNTIME_MUST_NOT_READ_HISTORICAL_SEAL_OR_JSON_ADMISSION_KEY",
     "new_declarations": "MUST_BE_EXPLICITLY_CLASSIFIED"
