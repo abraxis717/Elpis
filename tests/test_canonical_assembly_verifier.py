@@ -45,13 +45,28 @@ def _fixture(tmp_path: Path, *, compact: bool = False) -> Path:
     dist = Path(f"manifests/Elpis{version}.DISTRIBUTION_MANIFEST.json")
     relman = Path(f"manifests/Elpis{version}.RELEASE_MANIFEST.json")
     authority = dist if (ROOT / dist).is_file() else relman
-    if not compact and (ROOT / authority).is_file():
+    current_authority = ROOT / authority
+    current_schema = None
+    if current_authority.is_file():
+        current_schema = json.loads(
+            current_authority.read_text(encoding="utf-8")
+        ).get("schema")
+
+    # This is deliberately a partial assembly unit fixture. A v3 release
+    # manifest authenticates the whole publication tree, so copying it into
+    # this reduced fixture is invalid by construction. Keep the legacy
+    # per-component-pin checks on a synthetic v2 authority; compact=True below
+    # independently exercises v3 aggregate authority.
+    reuse_current_authority = (
+        not compact
+        and current_authority.is_file()
+        and current_schema != "elpis.release-manifest.v3"
+    )
+    if reuse_current_authority:
         target = dst / authority
         target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(ROOT / authority, target)
+        shutil.copy2(current_authority, target)
     else:
-        # Current pre-seal qualification must not create a current manifest.
-        # This tiny synthetic successor only supplies assembly byte pins.
         (dst / "VERSION").write_text("9.9.9\n", encoding="utf-8")
         authority = Path("manifests/Elpis9.9.9.RELEASE_MANIFEST.json")
 
@@ -94,6 +109,21 @@ def _seal_compact_fixture(repo: Path) -> Path:
     data.update(compact["build_record"](repo, rel))
     _write_json(repo / rel, data)
     return repo / rel
+
+
+def test_partial_fixture_does_not_reuse_whole_tree_v3_authority(
+    tmp_path: Path,
+) -> None:
+    repo = _fixture(tmp_path)
+    authority = repo / (
+        f"manifests/Elpis{(repo / 'VERSION').read_text().strip()}"
+        ".RELEASE_MANIFEST.json"
+    )
+    data = json.loads(authority.read_text(encoding="utf-8"))
+    # Partial unit fixtures must use per-file authority. Whole-tree v3
+    # authentication is covered by the compact=True fixtures below.
+    assert data["schema"] != "elpis.release-manifest.v3"
+    assert "files" in data
 
 
 def test_current_assembly_recomputes_cleanly(tmp_path: Path) -> None:
