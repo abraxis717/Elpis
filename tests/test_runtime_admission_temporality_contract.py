@@ -107,40 +107,63 @@ def test_historical_seal_cannot_be_reclassified_as_active_authority():
         tmp.unlink(missing_ok=True)
 
 
-def test_future_2_2_14_manifest_temporality_is_predeclared_write_once():
+def _expected_future_write_once_temporality_records():
+    imm=json.loads(
+        (ROOT/"tools/immutable_evidence_baseline_v1.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    records=[]
+    for rel,spec in sorted(imm["write_once_paths"].items()):
+        if not rel.startswith("manifests/Elpis") or not rel.endswith(
+            ".RELEASE_MANIFEST.json"
+        ):
+            continue
+        records.append({
+            "path":rel,
+            "syntax":"json_key",
+            "locator":"/full_elpis_runtime_admission",
+            "qualname":"<json>",
+            "value":True,
+            "category":"HISTORICAL_RELEASE_SNAPSHOT",
+            "byte_authority":"FIRST_COMMITTED_BLOB_IMMUTABLE",
+            "release":spec["release"],
+        })
+    return records
+
+
+def test_future_release_manifest_temporality_matches_write_once_authority():
     data=json.loads(BASELINE.read_text(encoding="utf-8"))
-    future=data["future_write_once_declarations"]
-    assert future == [{
-        "path":"manifests/Elpis2.2.14.RELEASE_MANIFEST.json",
-        "syntax":"json_key",
-        "locator":"/full_elpis_runtime_admission",
-        "qualname":"<json>",
-        "value":True,
-        "category":"HISTORICAL_RELEASE_SNAPSHOT",
-        "byte_authority":"FIRST_COMMITTED_BLOB_IMMUTABLE",
-        "release":"Elpis2.2.14",
-    }]
+    assert data["future_write_once_declarations"] == (
+        _expected_future_write_once_temporality_records()
+    )
 
 
-def test_future_write_once_declaration_tracks_preseal_and_materialized_state():
+def test_future_write_once_declaration_tracks_materialized_lifecycle_state():
     proc=_run()
     assert proc.returncode==0,proc.stderr
     report=json.loads(proc.stdout)
 
-    manifest = ROOT / "manifests/Elpis2.2.14.RELEASE_MANIFEST.json"
-    materialized = manifest.is_file()
+    future=_expected_future_write_once_temporality_records()
+    materialized=[
+        record for record in future
+        if (ROOT/record["path"]).is_file()
+    ]
 
-    assert report["future_write_once_declaration_count"]==1
-    assert report["registered_declaration_count"]==49
-    assert report["future_write_once_materialized_count"]==(1 if materialized else 0)
-    assert report["current_declaration_count"]==(49 if materialized else 48)
-
-    expected = [
+    assert report["future_write_once_declaration_count"]==len(future)
+    assert report["registered_declaration_count"]==(
+        report["fixed_declaration_count"]+len(future)
+    )
+    assert report["future_write_once_materialized_count"]==len(materialized)
+    assert report["current_declaration_count"]==(
+        report["fixed_declaration_count"]+len(materialized)
+    )
+    assert report["future_write_once_materialized_declarations"]==[
         [
-            "manifests/Elpis2.2.14.RELEASE_MANIFEST.json",
-            "json_key",
-            "<json>",
-            "/full_elpis_runtime_admission",
+            record["path"],
+            record["syntax"],
+            record["qualname"],
+            record["locator"],
         ]
-    ] if materialized else []
-    assert report["future_write_once_materialized_declarations"]==expected
+        for record in materialized
+    ]

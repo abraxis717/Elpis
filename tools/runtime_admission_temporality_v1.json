@@ -441,6 +441,16 @@
       "release": "Elpis2.2.14",
       "syntax": "json_key",
       "value": true
+    },
+    {
+      "byte_authority": "FIRST_COMMITTED_BLOB_IMMUTABLE",
+      "category": "HISTORICAL_RELEASE_SNAPSHOT",
+      "locator": "/full_elpis_runtime_admission",
+      "path": "manifests/Elpis2.2.15.RELEASE_MANIFEST.json",
+      "qualname": "<json>",
+      "release": "Elpis2.2.15",
+      "syntax": "json_key",
+      "value": true
     }
   ],
   "policy": {

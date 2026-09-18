@@ -1,3 +1,13 @@
+## Elpis2.2.15 — Corrective hosted-CI convergence successor
+
+- Preserve the untagged, unpublished Elpis2.2.14 sealed candidate as failed hosted-main-CI evidence without creating or moving a release tag.
+- Make the negative-branch mutation suite schema-aware for compact v3 provisional seals and aggregate-tree resealing.
+- Prevent pytest bytecode/cache materialization in the fast hosted release-verifier job and pin its pytest version to the qualified CI baseline.
+- Predeclare the Elpis2.2.15 release manifest under first-committed-blob immutability and runtime-admission temporality.
+- Generalize future write-once temporality tests across multiple release successors.
+- Permit post-publication `PUBLISHED_RELEASES.json` append-only extension only when prior records remain an exact prefix and the tag-derived projection verifies.
+- Preserve the 2.2.14 primitive/runtime authority boundaries and all historical manifest/tag bytes.
+
 ## Elpis2.2.14 — Integrity and authority-boundary successor
 
 - Ratify the R2 Canonical Identity v1 receipt path and bind all 195 direct SHA-256 sinks without rewriting the legacy v1 receipt identity.

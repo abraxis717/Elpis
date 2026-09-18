@@ -197,3 +197,78 @@ def test_gitless_write_once_declaration_defers_history_proof_to_git_checkout(tmp
     path.write_text("{}\n",encoding="utf-8")
     spec={"rule":mod.WRITE_ONCE_RULE,"release":"Elpis9.9.9"}
     assert mod.verify_write_once_path(root,rel,spec,check_history=False)==[]
+
+
+def test_2_2_15_manifest_is_predeclared_write_once_not_hash_cyclic():
+    data=json.loads(BASE.read_text(encoding="utf-8"))
+    rel="manifests/Elpis2.2.15.RELEASE_MANIFEST.json"
+    assert rel not in data["permanent_files"]
+    assert data["write_once_paths"][rel] == {
+        "rule":"FIRST_COMMITTED_BLOB_IMMUTABLE",
+        "release":"Elpis2.2.15",
+    }
+
+
+def _published_registry_transition_fixture(tmp_path:Path,exit_code:int):
+    mod=_write_once_module()
+    root=tmp_path/"root"
+    tools=root/"tools"
+    tools.mkdir(parents=True)
+    checker=tools/"refresh_published_releases.py"
+    checker.write_text(
+        "raise SystemExit("+str(exit_code)+")\n",
+        encoding="utf-8",
+    )
+    snap={
+        "list_key":"published_releases",
+        "metadata":{
+            "schema":"elpis.published-releases.v1",
+            "source_of_truth":"refs/tags/Elpis<semver>",
+        },
+        "records":[{"version":"2.2.13","sha256":"a"*64}],
+    }
+    return mod,root,snap
+
+
+def test_published_registry_append_requires_exact_tag_projection(tmp_path):
+    mod,root,snap=_published_registry_transition_fixture(tmp_path,0)
+    current={
+        "list_key":snap["list_key"],
+        "metadata":snap["metadata"],
+        "records":[
+            *snap["records"],
+            {"version":"2.2.15","sha256":"b"*64},
+        ],
+    }
+    assert mod.registry_transition_errors(
+        root,"PUBLISHED_RELEASES.json",snap,current
+    )==[]
+
+
+def test_published_registry_prior_record_rewrite_is_rejected_before_projection(tmp_path):
+    mod,root,snap=_published_registry_transition_fixture(tmp_path,0)
+    current={
+        "list_key":snap["list_key"],
+        "metadata":snap["metadata"],
+        "records":[{"version":"2.2.13","sha256":"c"*64}],
+    }
+    assert mod.registry_transition_errors(
+        root,"PUBLISHED_RELEASES.json",snap,current
+    )==["REGISTRY_PRIOR_RECORD_CHANGED:PUBLISHED_RELEASES.json"]
+
+
+def test_published_registry_append_with_bad_tag_projection_is_rejected(tmp_path):
+    mod,root,snap=_published_registry_transition_fixture(tmp_path,1)
+    current={
+        "list_key":snap["list_key"],
+        "metadata":snap["metadata"],
+        "records":[
+            *snap["records"],
+            {"version":"2.2.15","sha256":"b"*64},
+        ],
+    }
+    errors=mod.registry_transition_errors(
+        root,"PUBLISHED_RELEASES.json",snap,current
+    )
+    assert len(errors)==1
+    assert errors[0].startswith("PUBLISHED_RELEASE_TAG_PROJECTION_NONPASS:")

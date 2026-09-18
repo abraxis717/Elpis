@@ -319,6 +319,38 @@ def verify_history(root:Path,base:dict,errors:list[str])->None:
             if current_write_once.get(rel)!=spec:
                 errors.append(f"BASELINE_WRITE_ONCE_DECLARATION_CHANGED_OR_REMOVED:{rel}")
 
+def registry_transition_errors(
+    root:Path,rel:str,snap:dict,current:dict
+)->list[str]:
+    errors:list[str]=[]
+    if current["metadata"]!=snap["metadata"]:
+        errors.append(f"REGISTRY_METADATA_CHANGED:{rel}")
+        return errors
+
+    if rel=="PUBLISHED_RELEASES.json":
+        if not prefix_equal(snap["records"],current["records"]):
+            errors.append(f"REGISTRY_PRIOR_RECORD_CHANGED:{rel}")
+            return errors
+        if len(current["records"])>len(snap["records"]):
+            checker=root/"tools/refresh_published_releases.py"
+            p=subprocess.run(
+                [__import__("sys").executable,"-B",str(checker),"--check"],
+                cwd=root,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,
+            )
+            if p.returncode:
+                errors.append(
+                    "PUBLISHED_RELEASE_TAG_PROJECTION_NONPASS:"
+                    +p.stdout.decode(errors="replace").strip()
+                )
+        return errors
+
+    if current["records"]!=snap["records"]:
+        errors.append(
+            f"REGISTRY_BASELINE_UPDATE_REQUIRED_OR_PRIOR_RECORD_CHANGED:{rel}"
+        )
+    return errors
+
+
 def verify(root:Path,baseline_path:Path,check_history=True)->dict:
     base=json.loads(baseline_path.read_text(encoding="utf-8"))
     if base.get("schema")!=SCHEMA: raise GateError("BASELINE_SCHEMA_INVALID")
@@ -349,9 +381,7 @@ def verify(root:Path,baseline_path:Path,check_history=True)->dict:
 
     for rel,snap in base["append_only_registries"].items():
         current=registry_snapshot(root,rel,snap["list_key"])
-        if current["metadata"]!=snap["metadata"]: errors.append(f"REGISTRY_METADATA_CHANGED:{rel}")
-        if current["records"]!=snap["records"]:
-            errors.append(f"REGISTRY_BASELINE_UPDATE_REQUIRED_OR_PRIOR_RECORD_CHANGED:{rel}")
+        errors.extend(registry_transition_errors(root,rel,snap,current))
 
     gens=base.get("identity_generations",[])
     if not gens: errors.append("NO_IDENTITY_GENERATION")
@@ -378,6 +408,12 @@ def verify(root:Path,baseline_path:Path,check_history=True)->dict:
       "permanent_file_count":len(base["permanent_files"]),
       "failed_registry_record_count":len(base["append_only_registries"]["FAILED_RELEASES.json"]["records"]),
       "published_registry_record_count":len(base["append_only_registries"]["PUBLISHED_RELEASES.json"]["records"]),
+      "published_registry_current_record_count":len(
+          registry_snapshot(
+              root,"PUBLISHED_RELEASES.json",
+              base["append_only_registries"]["PUBLISHED_RELEASES.json"]["list_key"],
+          )["records"]
+      ),
       "identity_generation_count":len(gens),
       "identity_pin_count":len(gens[-1]["pins"]) if gens else 0,
       "write_once_path_count":len(write_once),

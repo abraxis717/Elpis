@@ -75,12 +75,28 @@ def _manifest_rel(root: Path) -> str:
     return proc.stdout.strip()
 
 
+def _successor_uses_v3(root: Path) -> bool:
+    version = (root / "VERSION").read_text(encoding="utf-8").strip()
+    try:
+        return tuple(map(int, version.split("."))) > (2, 2, 6)
+    except ValueError as exc:
+        raise AssertionError(
+            f"invalid VERSION for provisional seal: {version!r}"
+        ) from exc
+
+
 def _seal_provisional(root: Path) -> None:
-    """Seal the copy's manifest. --i-am-rewriting-history is correct here and
-    only here: the target is a temporary directory, never the repository."""
+    """Seal only the throwaway copy using the current release schema."""
+    command = [
+        sys.executable,
+        str(root / SEALER_REL),
+        "--provisional",
+        "--i-am-rewriting-history",
+    ]
+    if _successor_uses_v3(root):
+        command.extend(["--schema", "v3"])
     proc = subprocess.run(
-        [sys.executable, str(root / SEALER_REL), "--provisional",
-         "--i-am-rewriting-history"],
+        command,
         capture_output=True, text=True, cwd=root,
     )
     if proc.returncode != 0:
@@ -88,15 +104,28 @@ def _seal_provisional(root: Path) -> None:
 
 
 def _reseal(root: Path, rel: str) -> None:
-    """Regenerate one manifest digest, as an ordinary commit would.
+    """Rebind release-byte authority inside the throwaway mutation copy.
 
-    Without this, every content mutation is caught by the digest check and
-    the mutation never reaches the guard under test.
+    V1/v2 inventory manifests update the mutated file digest directly. V3
+    authenticates the aggregate publication tree, so recompute only its compact
+    tree record. Do not run semantic release guards while preparing a mutation
+    whose purpose is to test one of those guards.
     """
     import hashlib
+    import runpy
 
     manifest = root / _manifest_rel(root)
     data = json.loads(manifest.read_text())
+    if data.get("schema") == "elpis.release-manifest.v3":
+        compact = runpy.run_path(str(root / "tools/release_tree_digest.py"))
+        record = compact["build_record"](
+            root,
+            manifest.relative_to(root).as_posix(),
+        )
+        data.update(record)
+        manifest.write_text(json.dumps(data, indent=2) + "\n")
+        return
+
     target = root / rel
     digest = hashlib.sha256(target.read_bytes()).hexdigest()
     for entry in data["files"]:
@@ -435,7 +464,7 @@ CASES: tuple[tuple[str, object, int, str], ...] = (
     ("M11b invalid byte + ascii secret",
      m11b_raw_invalid_byte_in_declared_text, 1, "TEXT_SCAN_DECODE_FAILED"),
     ("M9  manifest file_count drift",
-     m9_manifest_count_drift, 1, "file_count mismatch"),
+     m9_manifest_count_drift, 1, "V3_FILE_COUNT_MISMATCH"),
 )
 
 

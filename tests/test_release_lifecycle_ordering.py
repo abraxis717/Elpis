@@ -106,6 +106,14 @@ def test_ci_runs_fast_lifecycle_contracts_in_verify_job() -> None:
     assert "tests/test_release_tag_qualification.py" in text
 
 
+def test_ci_verify_job_is_bytecode_free() -> None:
+    blocks = dict(_workflow_job_blocks(_text(CI)))
+    verify = blocks["verify"]
+    assert "PYTHONDONTWRITEBYTECODE: '1'" in verify
+    assert "PYTHONNOUSERSITE: '1'" in verify
+    assert "pip install pytest==9.0.2" in verify
+
+
 def test_policy_orders_push_before_tag_and_strict_tag_before_release() -> None:
     text = _text(POLICY)
     push = text.index("2. Push the exact qualified candidate commit")
