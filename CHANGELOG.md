@@ -1,3 +1,16 @@
+## Elpis2.2.14 — Integrity and authority-boundary successor
+
+- Ratify the R2 Canonical Identity v1 receipt path and bind all 195 direct SHA-256 sinks without rewriting the legacy v1 receipt identity.
+- Classify live versus historical runtime-admission declarations so historical release/scoped evidence cannot override active source/release authority.
+- Enforce permanent evidence, append-only release records, and current model/checkpoint identity pins through the release qualification path.
+- Close Python `Await`, `Yield`, `YieldFrom`, and `GeneratorExp` grammar while preserving the admitted async-function structure.
+- Replace duplicated FMS native cardinality literals with symbolic tier/domain constants while retaining exact three-tier/three-domain ctypes ABI assertions.
+- Bind all five Grid81 canonical writer-flow nodes without adding the three successor writers to the sixteen-component public registry.
+- Formalize the installed inference-driver boundary as trusted host code and explicitly decline semi-untrusted-plugin isolation claims.
+- Bind the qualified StreamingRegex/RegexHACF/QueryLocal ingress trio as non-public and non-runtime-admitted authority surfaces.
+- Require the VERSION-selected release ref itself to be an annotated Git tag object in strict repository identity; a lightweight ref to the same peeled commit is rejected.
+- Preserve historical release evidence, the ratified primitive-closure identity, the original distribution baseline, and verification-only Furyan status.
+
 ## Elpis2.2.13 — Corrective CI-convergence successor
 
 - Record immutable tagged-but-unpublished Elpis2.2.12 as failed-release evidence without moving or rewriting its tag or sealed manifest.
