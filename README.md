@@ -2,7 +2,7 @@
 
 **A deterministic structural-reasoning architecture for bounded learned proposals, explicit authority, and falsifiable runtime composition.**
 
-**Release line: Elpis2.2.18**
+**Release line: Elpis2.2.19**
 
 Elpis is a systems-research project about a narrow question: can learned components contribute useful structural proposals while deterministic machinery retains ownership of representation, admissibility, authority, validation, and terminal action?
 
@@ -14,11 +14,11 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 ## Release Notes
 
-**Elpis2.2.18** is the post-publication closeout-mechanics successor to published Elpis2.2.17.
+**Elpis2.2.19** is the publication-authority corrective successor to immutable tagged-CI-failed Elpis2.2.18.
 
-Elpis2.2.17 passed main CI, tag CI, GitHub Release creation, release-event CI, PyPI publication, and artifact verification. Its only NONQUAL occurred after publication because Git-less mutation copies could not recompute tag-derived PUBLISHED authority.
+Elpis2.2.18 passed all public-main workflows and carried a valid annotated tag, but tag-triggered CI exposed a lifecycle defect: the repository inferred publication from semantic tag existence minus FAILED authority. That made the legitimate tagged-but-unpublished state impossible and caused CI/reference-runtime to reject the release before any GitHub Release or PyPI publication occurred.
 
-Elpis2.2.18 makes the split explicit: Git-bearing checkouts prove the exact tag-derived PUBLISHED projection; Git-less copies preserve registry metadata and prior-record prefix immutability while deferring only the unavailable tag proof.
+Elpis2.2.19 makes publication explicit. Git tags remain release-identity authority; `PUBLISHED_RELEASES.json` records only releases whose external publication boundary has been proved and explicitly appended. Existing PUBLISHED assertions remain tag/manifest/commit validated and append-only.
 
 The 2.2.x line includes:
 
@@ -36,9 +36,9 @@ The 2.2.x line includes:
 - current secret/private-path, static-language, runtime-boundary, and plugin-trust hardening;
 - Branch36-40 science artifacts retained as evidence, not promoted to runtime API.
 
-The immutable `Elpis2.2.0`, `Elpis2.2.9`, and `Elpis2.2.12` tags are retained as failed-not-published release evidence under `FAILED_RELEASES.json`.
+The immutable `Elpis2.2.0`, `Elpis2.2.9`, `Elpis2.2.12`, `Elpis2.2.15`, `Elpis2.2.16`, and `Elpis2.2.18` tags are retained as failed-not-published release evidence under `FAILED_RELEASES.json`.
 
-- Current notes: [`RELEASE_NOTES/Elpis2.2.18.md`](RELEASE_NOTES/Elpis2.2.18.md)
+- Current notes: [`RELEASE_NOTES/Elpis2.2.19.md`](RELEASE_NOTES/Elpis2.2.19.md)
 - Public component registry: [`manifests/PUBLIC_COMPONENT_REGISTRY.json`](manifests/PUBLIC_COMPONENT_REGISTRY.json)
 - Qualified writer-chain registry: [`manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json`](manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json)
 - Qualified ingress-trio coverage: [`manifests/INGRESS_TRIO_COVERAGE_R0.json`](manifests/INGRESS_TRIO_COVERAGE_R0.json)

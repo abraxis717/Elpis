@@ -29,6 +29,10 @@
         {
           "sha256": "d14b2217aaeffc430a2a120ca2b2c6d962691e969e6da0843cc2dc014916f8be",
           "version": "2.2.16"
+        },
+        {
+          "sha256": "d63a9fd3339057f7ab48d1eb5b80896d96f1bdbb3fc77b2a973eeece8663eea4",
+          "version": "2.2.18"
         }
       ]
     },
@@ -146,6 +150,10 @@
         {
           "sha256": "8703c2f06a1dc21af532cdcc14f04cdcaa450ade692011d09f4c015dbbb17330",
           "version": "2.2.13"
+        },
+        {
+          "sha256": "025c4a4794a8eda59e98a3012ea83884652c6f5e226ec46afc27ac570f98eb5a",
+          "version": "2.2.17"
         }
       ]
     }
@@ -373,6 +381,10 @@
     },
     "manifests/Elpis2.2.18.RELEASE_MANIFEST.json": {
       "release": "Elpis2.2.18",
+      "rule": "FIRST_COMMITTED_BLOB_IMMUTABLE"
+    },
+    "manifests/Elpis2.2.19.RELEASE_MANIFEST.json": {
+      "release": "Elpis2.2.19",
       "rule": "FIRST_COMMITTED_BLOB_IMMUTABLE"
     }
   }

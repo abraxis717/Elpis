@@ -240,7 +240,7 @@ def _published_registry_transition_fixture(tmp_path:Path,exit_code:int):
     return mod,root,snap
 
 
-def test_published_registry_append_requires_exact_tag_projection(tmp_path):
+def test_published_registry_append_requires_registry_validation(tmp_path):
     mod,root,snap=_published_registry_transition_fixture(tmp_path,0)
     current={
         "list_key":snap["list_key"],
@@ -267,7 +267,7 @@ def test_published_registry_prior_record_rewrite_is_rejected_before_projection(t
     )==["REGISTRY_PRIOR_RECORD_CHANGED:PUBLISHED_RELEASES.json"]
 
 
-def test_published_registry_append_with_bad_tag_projection_is_rejected(tmp_path):
+def test_published_registry_append_with_bad_registry_validation_is_rejected(tmp_path):
     mod,root,snap=_published_registry_transition_fixture(tmp_path,1)
     current={
         "list_key":snap["list_key"],
@@ -281,7 +281,7 @@ def test_published_registry_append_with_bad_tag_projection_is_rejected(tmp_path)
         root,"PUBLISHED_RELEASES.json",snap,current
     )
     assert len(errors)==1
-    assert errors[0].startswith("PUBLISHED_RELEASE_TAG_PROJECTION_NONPASS:")
+    assert errors[0].startswith("PUBLISHED_RELEASE_REGISTRY_NONPASS:")
 
 
 def test_gitless_published_registry_append_defers_unavailable_tag_projection(tmp_path):

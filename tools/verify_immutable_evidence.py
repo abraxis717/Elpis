@@ -343,7 +343,7 @@ def registry_transition_errors(
             )
             if p.returncode:
                 errors.append(
-                    "PUBLISHED_RELEASE_TAG_PROJECTION_NONPASS:"
+                    "PUBLISHED_RELEASE_REGISTRY_NONPASS:"
                     +p.stdout.decode(errors="replace").strip()
                 )
         return errors

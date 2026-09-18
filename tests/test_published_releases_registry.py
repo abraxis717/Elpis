@@ -2,93 +2,33 @@ from __future__ import annotations
 
 import hashlib
 import json
-import re
 import subprocess
-
-import pytest
+import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
+TOOL = ROOT / "tools/refresh_published_releases.py"
 REGISTRY = ROOT / "PUBLISHED_RELEASES.json"
 FAILED_RELEASES = ROOT / "FAILED_RELEASES.json"
-TAG_RE = re.compile(r"^Elpis(\d+)\.(\d+)\.(\d+)$")
 
 
-def _git(*args: str) -> str:
-    return subprocess.check_output(
-        ["git", *args],
-        cwd=ROOT,
+def _git(root: Path, *args: str) -> str:
+    return subprocess.check_output(["git", *args], cwd=root, text=True).strip()
+
+
+def _run_tool(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, "-B", str(TOOL), "--root", str(root), *args],
         text=True,
-    ).strip()
-
-
-def _semantic_tags() -> list[str]:
-    return sorted(
-        (
-            tag
-            for tag in _git("tag", "--list", "Elpis*").splitlines()
-            if TAG_RE.fullmatch(tag)
-        ),
-        key=lambda tag: tuple(
-            int(x) for x in TAG_RE.fullmatch(tag).groups()
-        ),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
-
-
-def _failed_payload() -> dict:
-    return json.loads(FAILED_RELEASES.read_text(encoding="utf-8"))
-
-
-def _failed_tags() -> set[str]:
-    payload = _failed_payload()
-    assert payload["schema"] == "elpis.failed-releases.v1"
-    tags = [item["release_tag"] for item in payload["failed_releases"]]
-    assert len(tags) == len(set(tags))
-    assert all(TAG_RE.fullmatch(tag) for tag in tags)
-    return set(tags)
-
-
-def _publishable_tags() -> list[str]:
-    failed = _failed_tags()
-    return [tag for tag in _semantic_tags() if tag not in failed]
-
-
-def _derive_pending_current_tag(
-    *,
-    version: str,
-    semantic_tags: list[str],
-    failed_tags: set[str],
-    published_tags: set[str],
-) -> str | None:
-    tag = f"Elpis{version}"
-    if tag not in semantic_tags:
-        return None
-    if tag in failed_tags or tag in published_tags:
-        return None
-    return tag
-
-
-def _pending_repository_tag(published_tags: set[str]) -> str | None:
-    version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
-    pending = _derive_pending_current_tag(
-        version=version,
-        semantic_tags=_semantic_tags(),
-        failed_tags=_failed_tags(),
-        published_tags=published_tags,
-    )
-    if pending is None:
-        return None
-
-    manifest = ROOT / "manifests" / f"{pending}.RELEASE_MANIFEST.json"
-    assert manifest.is_file()
-    payload = json.loads(manifest.read_text(encoding="utf-8"))
-    assert payload["release_tag"] == pending
-    assert payload["version"] == version
-    return pending
 
 
 def _repository_is_shallow() -> bool:
-    return _git("rev-parse", "--is-shallow-repository") == "true"
+    return _git(ROOT, "rev-parse", "--is-shallow-repository") == "true"
 
 
 def _require_complete_history(*, shallow: bool | None = None) -> None:
@@ -101,133 +41,265 @@ def _require_complete_history(*, shallow: bool | None = None) -> None:
         )
 
 
-def test_published_release_registry_matches_tag_authority():
-    _require_complete_history()
-    data = json.loads(REGISTRY.read_text(encoding="utf-8"))
-    assert data["schema"] == "elpis.published-releases.v1"
-    assert data["source_of_truth"] == "refs/tags/Elpis<semver>"
+def _fixture_repo(tmp_path: Path) -> Path:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _git(repo, "init", "-q")
+    _git(repo, "config", "user.name", "published-registry-test")
+    _git(repo, "config", "user.email", "test@example.invalid")
+    (repo / "manifests").mkdir()
+    (repo / "FAILED_RELEASES.json").write_text(
+        json.dumps({"failed_releases": [], "schema": "elpis.failed-releases.v1"}, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (repo / "PUBLISHED_RELEASES.json").write_text(
+        json.dumps({
+            "published_releases": [],
+            "schema": "elpis.published-releases.v1",
+            "source_of_truth": "refs/tags/Elpis<semver>",
+        }, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (repo / "seed.txt").write_text("seed\n", encoding="utf-8")
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-qm", "seed")
+    return repo
 
+
+def _add_release_tag(repo: Path, version: str) -> tuple[str, str]:
+    tag = f"Elpis{version}"
+    manifest_rel = Path("manifests") / f"{tag}.RELEASE_MANIFEST.json"
+    manifest = repo / manifest_rel
+    manifest.write_text(
+        json.dumps({"release_tag": tag, "version": version}, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    _git(repo, "add", manifest_rel.as_posix())
+    _git(repo, "commit", "-qm", f"seal {tag}")
+    commit = _git(repo, "rev-parse", "HEAD")
+    _git(repo, "tag", "-a", tag, "-m", tag)
+    return commit, hashlib.sha256(manifest.read_bytes()).hexdigest()
+
+
+def _entry(repo: Path, version: str, commit: str, manifest_sha: str) -> dict:
+    tag = f"Elpis{version}"
+    return {
+        "manifest_path": f"manifests/{tag}.RELEASE_MANIFEST.json",
+        "manifest_sha256": manifest_sha,
+        "peeled_commit": commit,
+        "release_tag": tag,
+        "version": version,
+    }
+
+
+def _write_registry(repo: Path, records: list[dict]) -> None:
+    (repo / "PUBLISHED_RELEASES.json").write_text(
+        json.dumps({
+            "published_releases": records,
+            "schema": "elpis.published-releases.v1",
+            "source_of_truth": "refs/tags/Elpis<semver>",
+        }, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+
+def test_repository_published_registry_validates_explicit_assertions():
+    _require_complete_history()
+    proc = _run_tool(ROOT, "--check")
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+
+    data = json.loads(REGISTRY.read_text(encoding="utf-8"))
     entries = data["published_releases"]
-    assert isinstance(entries, list)
     versions = [entry["version"] for entry in entries]
     tags = [entry["release_tag"] for entry in entries]
     assert len(versions) == len(set(versions))
     assert len(tags) == len(set(tags))
 
-    publishable = _publishable_tags()
-    pending = _pending_repository_tag(set(tags))
-    if pending is None:
-        assert tags == publishable
-    else:
-        assert pending in _semantic_tags()
-        assert pending not in _failed_tags()
-        assert pending not in tags
-        assert tags == [tag for tag in publishable if tag != pending]
-
+    failed = {
+        item["release_tag"]
+        for item in json.loads(FAILED_RELEASES.read_text(encoding="utf-8"))["failed_releases"]
+    }
     for entry in entries:
         tag = entry["release_tag"]
-        match = TAG_RE.fullmatch(tag)
-        assert match is not None
-        version = ".".join(match.groups())
-        assert entry["version"] == version
-        assert entry["peeled_commit"] == _git(
-            "rev-parse", f"{tag}^{{}}"
-        )
-        expected_manifest = (
-            Path("manifests") / f"{tag}.RELEASE_MANIFEST.json"
-        )
-        assert entry["manifest_path"] == expected_manifest.as_posix()
-        manifest = ROOT / expected_manifest
+        assert tag not in failed
+        assert entry["version"] == tag.removeprefix("Elpis")
+        assert entry["peeled_commit"] == _git(ROOT, "rev-parse", f"refs/tags/{tag}^{{}}")
+        manifest = ROOT / entry["manifest_path"]
         assert manifest.is_file()
-        assert entry["manifest_sha256"] == hashlib.sha256(
-            manifest.read_bytes()
-        ).hexdigest()
+        assert hashlib.sha256(manifest.read_bytes()).hexdigest() == entry["manifest_sha256"]
 
 
-def test_failed_sealed_candidates_are_not_published():
+def test_current_tagged_but_unpublished_state_is_valid_when_present():
     _require_complete_history()
-    data = json.loads(REGISTRY.read_text(encoding="utf-8"))
-    tags = {
-        entry["release_tag"]
-        for entry in data["published_releases"]
+    version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+    tag = f"Elpis{version}"
+    published = {
+        item["release_tag"]
+        for item in json.loads(REGISTRY.read_text(encoding="utf-8"))["published_releases"]
     }
-    for tag in ("Elpis2.1.13", "Elpis2.1.14", "Elpis2.1.24", "Elpis2.2.0"):
-        assert (
-            ROOT / "manifests" / f"{tag}.RELEASE_MANIFEST.json"
-        ).is_file()
-        assert tag not in tags
-
-
-def test_failed_release_2_1_24_is_bound_to_immutable_authority():
-    _require_complete_history()
-    payload = _failed_payload()
-    entries = {
-        item["release_tag"]: item
-        for item in payload["failed_releases"]
+    failed = {
+        item["release_tag"]
+        for item in json.loads(FAILED_RELEASES.read_text(encoding="utf-8"))["failed_releases"]
     }
-    item = entries["Elpis2.1.24"]
-    assert item["version"] == "2.1.24"
-    assert item["disposition"] == "SEALED_TAGGED_CI_FAILED_NOT_PUBLISHED"
-    assert item["tag_object"] == (
-        "3c422b52f28048f19ce998b2deab25720dcf6f8a"
-    )
-    assert item["peeled_commit"] == (
-        "111ea53d0dded111b53aa5b62c55ea6c9d57ab34"
-    )
-    assert _git("rev-parse", "Elpis2.1.24^{tag}") == item["tag_object"]
-    assert _git("rev-parse", "Elpis2.1.24^{}") == item["peeled_commit"]
-    manifest = ROOT / item["manifest_path"]
-    assert manifest.is_file()
-    assert hashlib.sha256(manifest.read_bytes()).hexdigest() == (
-        item["manifest_sha256"]
-    )
+    exists = subprocess.run(
+        ["git", "show-ref", "--verify", "--quiet", f"refs/tags/{tag}"],
+        cwd=ROOT,
+    ).returncode == 0
+    if exists and tag not in published and tag not in failed:
+        proc = _run_tool(ROOT, "--check")
+        assert proc.returncode == 0, proc.stdout + proc.stderr
+        assert tag not in published
 
 
-def test_current_release_is_published():
-    _require_complete_history()
-    data = json.loads(REGISTRY.read_text(encoding="utf-8"))
-    tags = {
-        entry["release_tag"]
-        for entry in data["published_releases"]
+def test_semantic_tag_without_publication_assertion_is_valid(tmp_path: Path):
+    repo = _fixture_repo(tmp_path)
+    _add_release_tag(repo, "9.9.9")
+    proc = _run_tool(repo, "--check")
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+
+
+def test_explicit_append_adds_exactly_one_deterministic_record(tmp_path: Path):
+    repo = _fixture_repo(tmp_path)
+    commit, digest = _add_release_tag(repo, "9.9.9")
+    first = _run_tool(repo, "--append-tag", "Elpis9.9.9")
+    assert first.returncode == 0, first.stdout + first.stderr
+    payload = json.loads((repo / "PUBLISHED_RELEASES.json").read_text(encoding="utf-8"))
+    assert payload["published_releases"] == [_entry(repo, "9.9.9", commit, digest)]
+    check = _run_tool(repo, "--check")
+    assert check.returncode == 0, check.stdout + check.stderr
+    second = _run_tool(repo, "--append-tag", "Elpis9.9.9")
+    assert second.returncode != 0
+    assert "PUBLISHED_APPEND_DUPLICATE_TAG" in second.stdout
+
+
+def test_append_failed_tag_is_rejected(tmp_path: Path):
+    repo = _fixture_repo(tmp_path)
+    commit, digest = _add_release_tag(repo, "9.9.9")
+    failed = {
+        "failed_releases": [{
+            "disposition": "SEALED_TAGGED_CI_FAILED_NOT_PUBLISHED",
+            "failure_classes": ["TEST_FAILURE"],
+            "manifest_path": "manifests/Elpis9.9.9.RELEASE_MANIFEST.json",
+            "manifest_sha256": digest,
+            "peeled_commit": commit,
+            "release_tag": "Elpis9.9.9",
+            "tag_object": _git(repo, "rev-parse", "Elpis9.9.9^{tag}"),
+            "version": "9.9.9",
+        }],
+        "schema": "elpis.failed-releases.v1",
     }
-    assert "Elpis2.1.16" in tags
+    (repo / "FAILED_RELEASES.json").write_text(json.dumps(failed, indent=2) + "\n", encoding="utf-8")
+    proc = _run_tool(repo, "--append-tag", "Elpis9.9.9")
+    assert proc.returncode != 0
+    assert "PUBLISHED_APPEND_FAILED_RELEASE" in proc.stdout
 
 
-def test_failed_release_2_2_0_is_bound_to_immutable_authority():
-    _require_complete_history()
-    payload = _failed_payload()
-    entries = {item["release_tag"]: item for item in payload["failed_releases"]}
-    item = entries["Elpis2.2.0"]
-    assert item["version"] == "2.2.0"
-    assert item["disposition"] == (
-        "SEALED_TAGGED_CI_PASSED_RELEASE_INFORMATION_COHERENCE_"
-        "FAILED_NOT_PUBLISHED"
-    )
-    assert item["tag_object"] == "ba77eaf59d633c33aa1c0006d47a0020a40296dd"
-    assert item["peeled_commit"] == "51ab542b01fdbb30dd4342effab2cdeaa9040f51"
-    assert _git("rev-parse", "Elpis2.2.0^{tag}") == item["tag_object"]
-    assert _git("rev-parse", "Elpis2.2.0^{}") == item["peeled_commit"]
-    manifest = ROOT / item["manifest_path"]
-    assert manifest.is_file()
-    assert hashlib.sha256(manifest.read_bytes()).hexdigest() == item["manifest_sha256"]
+def test_duplicate_published_tag_or_version_is_rejected(tmp_path: Path):
+    repo = _fixture_repo(tmp_path)
+    commit, digest = _add_release_tag(repo, "9.9.9")
+    item = _entry(repo, "9.9.9", commit, digest)
+    _write_registry(repo, [item, dict(item)])
+    proc = _run_tool(repo, "--check")
+    assert proc.returncode != 0
+    assert "PUBLISHED_RELEASE_DUPLICATE" in proc.stdout
+
+
+def test_manifest_hash_tamper_is_rejected(tmp_path: Path):
+    repo = _fixture_repo(tmp_path)
+    commit, digest = _add_release_tag(repo, "9.9.9")
+    item = _entry(repo, "9.9.9", commit, digest)
+    item["manifest_sha256"] = "0" * 64
+    _write_registry(repo, [item])
+    proc = _run_tool(repo, "--check")
+    assert proc.returncode != 0
+    assert "PUBLISHED_MANIFEST_SHA256_MISMATCH" in proc.stdout
+
+
+def test_peeled_commit_tamper_is_rejected(tmp_path: Path):
+    repo = _fixture_repo(tmp_path)
+    commit, digest = _add_release_tag(repo, "9.9.9")
+    item = _entry(repo, "9.9.9", commit, digest)
+    item["peeled_commit"] = "0" * len(commit)
+    _write_registry(repo, [item])
+    proc = _run_tool(repo, "--check")
+    assert proc.returncode != 0
+    assert "PUBLISHED_PEELED_COMMIT_MISMATCH" in proc.stdout
+
+
+def test_manifest_path_version_tag_incoherence_is_rejected(tmp_path: Path):
+    repo = _fixture_repo(tmp_path)
+    commit, digest = _add_release_tag(repo, "9.9.9")
+    item = _entry(repo, "9.9.9", commit, digest)
+    item["manifest_path"] = "manifests/Elpis9.9.8.RELEASE_MANIFEST.json"
+    _write_registry(repo, [item])
+    proc = _run_tool(repo, "--check")
+    assert proc.returncode != 0
+    assert "PUBLISHED_MANIFEST_PATH_MISMATCH" in proc.stdout
+
+
+def test_published_record_for_failed_tag_is_rejected(tmp_path: Path):
+    repo = _fixture_repo(tmp_path)
+    commit, digest = _add_release_tag(repo, "9.9.9")
+    item = _entry(repo, "9.9.9", commit, digest)
+    _write_registry(repo, [item])
+    failed = {
+        "failed_releases": [{
+            "disposition": "SEALED_TAGGED_CI_FAILED_NOT_PUBLISHED",
+            "failure_classes": ["TEST_FAILURE"],
+            "manifest_path": item["manifest_path"],
+            "manifest_sha256": digest,
+            "peeled_commit": commit,
+            "release_tag": "Elpis9.9.9",
+            "tag_object": _git(repo, "rev-parse", "Elpis9.9.9^{tag}"),
+            "version": "9.9.9",
+        }],
+        "schema": "elpis.failed-releases.v1",
+    }
+    (repo / "FAILED_RELEASES.json").write_text(json.dumps(failed, indent=2) + "\n", encoding="utf-8")
+    proc = _run_tool(repo, "--check")
+    assert proc.returncode != 0
+    assert "PUBLISHED_RELEASE_IS_FAILED" in proc.stdout
+
+
+def test_missing_published_tag_is_rejected(tmp_path: Path):
+    repo = _fixture_repo(tmp_path)
+    commit, digest = _add_release_tag(repo, "9.9.9")
+    item = _entry(repo, "9.9.9", commit, digest)
+    _write_registry(repo, [item])
+    _git(repo, "tag", "-d", "Elpis9.9.9")
+    proc = _run_tool(repo, "--check")
+    assert proc.returncode != 0
+    assert "PUBLISHED_RELEASE_TAG_MISSING" in proc.stdout
+
+
+def test_non_monotonic_registry_order_is_rejected(tmp_path: Path):
+    repo = _fixture_repo(tmp_path)
+    c1, d1 = _add_release_tag(repo, "9.9.8")
+    c2, d2 = _add_release_tag(repo, "9.9.9")
+    _write_registry(repo, [_entry(repo, "9.9.9", c2, d2), _entry(repo, "9.9.8", c1, d1)])
+    proc = _run_tool(repo, "--check")
+    assert proc.returncode != 0
+    assert "PUBLISHED_RELEASE_ORDER_INVALID" in proc.stdout
+
 
 def test_shallow_history_failure_is_explicit() -> None:
     with pytest.raises(AssertionError, match="REPOSITORY_HISTORY_INCOMPLETE"):
         _require_complete_history(shallow=True)
 
-def test_pending_release_derivation_is_repository_state_not_github_environment(monkeypatch):
-    monkeypatch.setenv("GITHUB_REF_TYPE", "branch")
-    monkeypatch.setenv("GITHUB_REF_NAME", "main")
-    assert _derive_pending_current_tag(
-        version="9.9.9",
-        semantic_tags=["Elpis9.9.8", "Elpis9.9.9"],
-        failed_tags=set(),
-        published_tags={"Elpis9.9.8"},
-    ) == "Elpis9.9.9"
-    assert _derive_pending_current_tag(
-        version="9.9.9",
-        semantic_tags=["Elpis9.9.9"],
-        failed_tags={"Elpis9.9.9"},
-        published_tags=set(),
-    ) is None
 
+def test_failed_release_2_2_18_is_bound_to_distinct_publication_authority_failure():
+    _require_complete_history()
+    payload = json.loads(FAILED_RELEASES.read_text(encoding="utf-8"))
+    entries = {item["release_tag"]: item for item in payload["failed_releases"]}
+    item = entries["Elpis2.2.18"]
+    assert item["version"] == "2.2.18"
+    assert item["disposition"] == "SEALED_TAGGED_CI_FAILED_NOT_PUBLISHED"
+    assert item["tag_object"] == "beb4cd6131c6a1c072fc427de3f26c8e0e10b980"
+    assert item["peeled_commit"] == "0a32fc5ee7d2e34487150fd39f432b1993d47c22"
+    assert item["manifest_sha256"] == "b7ad8112d01ea102f44cf06ec1064d296e1657b07d5c5113c06c9d5dbbdfd95b"
+    assert item["failure_classes"] == [
+        "PREPUBLICATION_TAG_CONFLATED_WITH_PUBLISHED_RELEASE_AUTHORITY",
+        "PUBLISHED_RELEASE_TAG_PROJECTION_REJECTED_TAGGED_UNPUBLISHED_STATE",
+    ]
+    assert _git(ROOT, "rev-parse", "Elpis2.2.18^{tag}") == item["tag_object"]
+    assert _git(ROOT, "rev-parse", "Elpis2.2.18^{}") == item["peeled_commit"]

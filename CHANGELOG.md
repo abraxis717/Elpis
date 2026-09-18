@@ -1,3 +1,13 @@
+## Elpis2.2.19 — Explicit publication-authority corrective successor
+
+- Preserve Elpis2.2.18 as immutable `SEALED_TAGGED_CI_FAILED_NOT_PUBLISHED` evidence and record its exact tag, commit, manifest, and publication-authority failure classes.
+- Decouple semantic Git-tag existence from publication fact: PUBLISHED now validates explicit records rather than demanding every nonfailed semantic tag.
+- Add an explicit deterministic one-record PUBLISHED append operation for post-publication closeout.
+- Keep prior PUBLISHED records append-only and preserve Git-backed validation of every record that claims publication.
+- Retain Git-less mutation-suite prefix immutability without attempting unavailable Git-ref reconstruction.
+- Journal irreversible main/tag/release/closeout mutations immediately after remote success and reconcile remote reality before resume.
+- Predeclare the Elpis2.2.19 v3 manifest under first-committed-blob immutability and runtime-admission temporality.
+
 ## Elpis2.2.18 — Git-less publication-projection corrective successor
 
 - Preserve published Elpis2.2.17 and its PUBLISHED record as immutable ancestry.
