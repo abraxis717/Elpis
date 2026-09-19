@@ -1,5 +1,5 @@
 from __future__ import annotations
-import json
+import hashlib, json
 from pathlib import Path
 import subprocess, sys
 
@@ -27,13 +27,30 @@ def test_permanent_evidence_contains_critical_records():
     assert any(p.endswith(".RELEASE_MANIFEST.json") for p in files)
     assert "components/Grid81/state/Canonical/Grid81/HEAD.json" in files
 
-def test_release_registries_are_record_pinned_not_whole_file_frozen():
+def test_publication_registry_generation_policy_is_explicit():
     x=json.loads(BASE.read_text(encoding="utf-8"))
     regs=x["append_only_registries"]
+
     assert regs["FAILED_RELEASES.json"]["records"]
     assert regs["PUBLISHED_RELEASES.json"]["records"]
-    assert "FAILED_RELEASES.json" not in x["permanent_files"]
+    assert regs["PUBLICATION_ASSERTIONS.json"]["records"]
+
+    assert [
+        row["version"]
+        for row in regs["PUBLICATION_ASSERTIONS.json"]["records"]
+    ] == ["2.2.19"]
+
     assert "PUBLISHED_RELEASES.json" not in x["permanent_files"]
+
+    frozen=x["frozen_registry_files"]
+    assert frozen["PUBLISHED_RELEASES.json"] == hashlib.sha256(
+        (ROOT/"PUBLISHED_RELEASES.json").read_bytes()
+    ).hexdigest()
+
+    assert (
+        x["policy"]["release_registries"]
+        == "LEGACY_V1_BYTE_FROZEN_V2_APPEND_ONLY"
+    )
 
 def test_trm_and_fprm_identity_are_generation_pinned():
     x=json.loads(BASE.read_text(encoding="utf-8"))
@@ -219,77 +236,165 @@ def test_release_manifest_write_once_declarations_are_noncyclic_and_self_named()
     assert "manifests/Elpis2.2.14.RELEASE_MANIFEST.json" in seen
 
 
-def _published_registry_transition_fixture(tmp_path:Path,exit_code:int):
+def test_legacy_published_registry_is_byte_frozen_by_transition_gate(tmp_path):
     mod=_write_once_module()
-    root=tmp_path/"root"
-    tools=root/"tools"
-    tools.mkdir(parents=True)
-    checker=tools/"refresh_published_releases.py"
-    checker.write_text(
-        "raise SystemExit("+str(exit_code)+")\n",
-        encoding="utf-8",
-    )
     snap={
         "list_key":"published_releases",
         "metadata":{
             "schema":"elpis.published-releases.v1",
             "source_of_truth":"refs/tags/Elpis<semver>",
         },
-        "records":[{"version":"2.2.13","sha256":"a"*64}],
+        "records":[
+            {"version":"2.2.17","sha256":"a"*64},
+        ],
     }
-    return mod,root,snap
-
-
-def test_published_registry_append_requires_registry_validation(tmp_path):
-    mod,root,snap=_published_registry_transition_fixture(tmp_path,0)
     current={
         "list_key":snap["list_key"],
         "metadata":snap["metadata"],
         "records":[
             *snap["records"],
-            {"version":"2.2.15","sha256":"b"*64},
+            {"version":"2.2.19","sha256":"b"*64},
         ],
     }
     assert mod.registry_transition_errors(
-        root,"PUBLISHED_RELEASES.json",snap,current
-    )==[]
+        tmp_path,
+        "PUBLISHED_RELEASES.json",
+        snap,
+        current,
+    ) == [
+        "LEGACY_PUBLISHED_REGISTRY_FROZEN:"
+        "PUBLISHED_RELEASES.json"
+    ]
 
 
-def test_published_registry_prior_record_rewrite_is_rejected_before_projection(tmp_path):
-    mod,root,snap=_published_registry_transition_fixture(tmp_path,0)
+def test_legacy_published_registry_prior_rewrite_is_rejected(tmp_path):
+    mod=_write_once_module()
+    snap={
+        "list_key":"published_releases",
+        "metadata":{
+            "schema":"elpis.published-releases.v1",
+            "source_of_truth":"refs/tags/Elpis<semver>",
+        },
+        "records":[
+            {"version":"2.2.17","sha256":"a"*64},
+        ],
+    }
     current={
         "list_key":snap["list_key"],
         "metadata":snap["metadata"],
-        "records":[{"version":"2.2.13","sha256":"c"*64}],
+        "records":[
+            {"version":"2.2.17","sha256":"c"*64},
+        ],
     }
     assert mod.registry_transition_errors(
-        root,"PUBLISHED_RELEASES.json",snap,current
-    )==["REGISTRY_PRIOR_RECORD_CHANGED:PUBLISHED_RELEASES.json"]
+        tmp_path,
+        "PUBLISHED_RELEASES.json",
+        snap,
+        current,
+    ) == [
+        "LEGACY_PUBLISHED_REGISTRY_FROZEN:"
+        "PUBLISHED_RELEASES.json"
+    ]
 
 
-def test_published_registry_append_with_bad_registry_validation_is_rejected(tmp_path):
-    mod,root,snap=_published_registry_transition_fixture(tmp_path,1)
+def _v2_transition_snapshot():
+    return {
+        "list_key":"publication_assertions",
+        "metadata":{
+            "legacy_publication_history":{
+                "path":"PUBLISHED_RELEASES.json",
+                "schema":"elpis.published-releases.v1",
+                "sha256":"f"*64,
+            },
+            "publication_fact_authority":
+                "explicit-observation-receipts",
+            "release_identity_authority":
+                "annotated-ref:refs/tags/Elpis<semver>",
+            "schema":"elpis.publication-assertions.v2",
+        },
+        "records":[
+            {"version":"2.2.19","sha256":"a"*64},
+        ],
+    }
+
+
+def test_publication_assertions_v2_append_is_structurally_prefix_only(tmp_path):
+    mod=_write_once_module()
+    snap=_v2_transition_snapshot()
     current={
         "list_key":snap["list_key"],
         "metadata":snap["metadata"],
         "records":[
             *snap["records"],
-            {"version":"2.2.15","sha256":"b"*64},
+            {"version":"2.2.20","sha256":"b"*64},
         ],
     }
-    errors=mod.registry_transition_errors(
-        root,"PUBLISHED_RELEASES.json",snap,current
-    )
-    assert len(errors)==1
-    assert errors[0].startswith("PUBLISHED_RELEASE_REGISTRY_NONPASS:")
+    assert mod.registry_transition_errors(
+        tmp_path,
+        "PUBLICATION_ASSERTIONS.json",
+        snap,
+        current,
+    ) == []
 
 
-def test_gitless_published_registry_append_defers_unavailable_tag_projection(tmp_path):
-    mod,root,snap=_published_registry_transition_fixture(tmp_path,1)
-    current={"list_key":snap["list_key"],"metadata":snap["metadata"],"records":[*snap["records"],{"version":"2.2.18","sha256":"d"*64}]}
-    assert mod.registry_transition_errors(root,"PUBLISHED_RELEASES.json",snap,current,check_tag_projection=False)==[]
+def test_publication_assertions_v2_prior_rewrite_is_rejected(tmp_path):
+    mod=_write_once_module()
+    snap=_v2_transition_snapshot()
+    current={
+        "list_key":snap["list_key"],
+        "metadata":snap["metadata"],
+        "records":[
+            {"version":"2.2.19","sha256":"c"*64},
+        ],
+    }
+    assert mod.registry_transition_errors(
+        tmp_path,
+        "PUBLICATION_ASSERTIONS.json",
+        snap,
+        current,
+    ) == [
+        "PUBLICATION_ASSERTIONS_PRIOR_RECORD_CHANGED:"
+        "PUBLICATION_ASSERTIONS.json"
+    ]
 
-def test_gitless_published_registry_prior_rewrite_still_fails(tmp_path):
-    mod,root,snap=_published_registry_transition_fixture(tmp_path,0)
-    current={"list_key":snap["list_key"],"metadata":snap["metadata"],"records":[{"version":"2.2.13","sha256":"e"*64}]}
-    assert mod.registry_transition_errors(root,"PUBLISHED_RELEASES.json",snap,current,check_tag_projection=False)==["REGISTRY_PRIOR_RECORD_CHANGED:PUBLISHED_RELEASES.json"]
+
+def test_publication_assertions_v2_metadata_rewrite_is_rejected(tmp_path):
+    mod=_write_once_module()
+    snap=_v2_transition_snapshot()
+    current={
+        "list_key":snap["list_key"],
+        "metadata":{
+            **snap["metadata"],
+            "publication_fact_authority":"tampered",
+        },
+        "records":snap["records"],
+    }
+    assert mod.registry_transition_errors(
+        tmp_path,
+        "PUBLICATION_ASSERTIONS.json",
+        snap,
+        current,
+    ) == [
+        "REGISTRY_METADATA_CHANGED:"
+        "PUBLICATION_ASSERTIONS.json"
+    ]
+
+
+def test_gitless_v2_prefix_transition_defers_git_semantic_proof(tmp_path):
+    mod=_write_once_module()
+    snap=_v2_transition_snapshot()
+    current={
+        "list_key":snap["list_key"],
+        "metadata":snap["metadata"],
+        "records":[
+            *snap["records"],
+            {"version":"2.2.20","sha256":"d"*64},
+        ],
+    }
+    assert mod.registry_transition_errors(
+        tmp_path,
+        "PUBLICATION_ASSERTIONS.json",
+        snap,
+        current,
+        check_tag_projection=False,
+    ) == []

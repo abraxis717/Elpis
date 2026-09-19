@@ -1,0 +1,92 @@
+{
+  "legacy_publication_history": {
+    "path": "PUBLISHED_RELEASES.json",
+    "schema": "elpis.published-releases.v1",
+    "sha256": "58819ffa472f7e7ac0216eb1cea0fc0394c61e5f0cf3173646920b619c5b8d7c"
+  },
+  "publication_assertions": [
+    {
+      "github_actions": {
+        "pypi_publish": {
+          "conclusion": "success",
+          "event": "release",
+          "head_sha": "5c88cebda17afc719ddb037265b36dc0b73a3e30",
+          "run_id": 35365417799,
+          "workflow": "pypi-publish"
+        },
+        "release_event_ci": {
+          "conclusion": "success",
+          "event": "release",
+          "head_sha": "5c88cebda17afc719ddb037265b36dc0b73a3e30",
+          "run_id": 35365417800,
+          "workflow": "CI"
+        },
+        "tag_ci": {
+          "conclusion": "success",
+          "event": "push",
+          "head_sha": "5c88cebda17afc719ddb037265b36dc0b73a3e30",
+          "run_id": 35364734383,
+          "workflow": "CI"
+        },
+        "tag_component_attribution": {
+          "conclusion": "success",
+          "event": "push",
+          "head_sha": "5c88cebda17afc719ddb037265b36dc0b73a3e30",
+          "run_id": 35364734257,
+          "workflow": "Component attribution"
+        },
+        "tag_platform_matrix": {
+          "conclusion": "success",
+          "event": "push",
+          "head_sha": "5c88cebda17afc719ddb037265b36dc0b73a3e30",
+          "run_id": 35364734440,
+          "workflow": "platform-matrix"
+        },
+        "tag_reference_runtime": {
+          "conclusion": "success",
+          "event": "push",
+          "head_sha": "5c88cebda17afc719ddb037265b36dc0b73a3e30",
+          "run_id": 35364734589,
+          "workflow": "reference-runtime"
+        }
+      },
+      "github_release": {
+        "published_at": "2026-09-18T15:56:03Z",
+        "release_id": 391601499,
+        "repository": "abraxis717/Elpis",
+        "tag_name": "Elpis2.2.19"
+      },
+      "manifest_path": "manifests/Elpis2.2.19.RELEASE_MANIFEST.json",
+      "manifest_sha256": "c2096f3055528cd6a0b28358f83f0103ee4419c95d22c3ad802fe6b59f3f6105",
+      "peeled_commit": "5c88cebda17afc719ddb037265b36dc0b73a3e30",
+      "peeled_object_type": "commit",
+      "pypi": {
+        "files": [
+          {
+            "filename": "elpisai-2.2.19-py3-none-any.whl",
+            "packagetype": "bdist_wheel",
+            "sha256": "d6bd59b22d546501bc7327a6d635c5aa172613d7cb3aee70dba4beda961fd16f",
+            "upload_time_iso_8601": "2026-09-18T18:07:49.498074Z",
+            "yanked": false
+          },
+          {
+            "filename": "elpisai-2.2.19.tar.gz",
+            "packagetype": "sdist",
+            "sha256": "6673c8529d1cbe759fcf56018ffc24922ab1030779b4df0cbfc051aff221532b",
+            "upload_time_iso_8601": "2026-09-18T18:07:51.182419Z",
+            "yanked": false
+          }
+        ],
+        "project": "elpisai",
+        "version": "2.2.19"
+      },
+      "release_tag": "Elpis2.2.19",
+      "tag_object": "980b43f379eb3e9da46b6954436ef6ab8b8fca06",
+      "tag_object_type": "tag",
+      "version": "2.2.19"
+    }
+  ],
+  "publication_fact_authority": "explicit-observation-receipts",
+  "release_identity_authority": "annotated-ref:refs/tags/Elpis<semver>",
+  "schema": "elpis.publication-assertions.v2"
+}

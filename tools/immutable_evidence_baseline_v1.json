@@ -36,6 +36,25 @@
         }
       ]
     },
+    "PUBLICATION_ASSERTIONS.json": {
+      "list_key": "publication_assertions",
+      "metadata": {
+        "legacy_publication_history": {
+          "path": "PUBLISHED_RELEASES.json",
+          "schema": "elpis.published-releases.v1",
+          "sha256": "58819ffa472f7e7ac0216eb1cea0fc0394c61e5f0cf3173646920b619c5b8d7c"
+        },
+        "publication_fact_authority": "explicit-observation-receipts",
+        "release_identity_authority": "annotated-ref:refs/tags/Elpis<semver>",
+        "schema": "elpis.publication-assertions.v2"
+      },
+      "records": [
+        {
+          "sha256": "bf04466e8c671be44c7e9632a0c24acb307bc6f1c1a718440a639690954286e4",
+          "version": "2.2.19"
+        }
+      ]
+    },
     "PUBLISHED_RELEASES.json": {
       "list_key": "published_releases",
       "metadata": {
@@ -159,6 +178,9 @@
     }
   },
   "bootstrap_source_commit": "e5e6e0d6007ecb27d6136d6ce67566d10d075dde",
+  "frozen_registry_files": {
+    "PUBLISHED_RELEASES.json": "58819ffa472f7e7ac0216eb1cea0fc0394c61e5f0cf3173646920b619c5b8d7c"
+  },
   "identity_generations": [
     {
       "generation_id": "ELPIS_2_2_14_BOOTSTRAP_R0",
@@ -359,7 +381,7 @@
     "identity_generations": "LATEST_MUST_MATCH_TREE_PRIOR_GENERATIONS_IMMUTABLE",
     "not_frozen": "contracts_tests_tools_docs_versioned_policies",
     "permanent_evidence": "BYTE_IMMUTABLE_AND_PATHSET_CLOSED",
-    "release_registries": "EXISTING_RECORDS_IMMUTABLE_APPEND_ONLY"
+    "release_registries": "LEGACY_V1_BYTE_FROZEN_V2_APPEND_ONLY"
   },
   "schema": "elpis.repository-immutability.v1",
   "write_once_paths": {

@@ -141,14 +141,18 @@ def capture(root:Path)->dict:
       "bootstrap_source_commit":head,
       "policy":{
         "permanent_evidence":"BYTE_IMMUTABLE_AND_PATHSET_CLOSED",
-        "release_registries":"EXISTING_RECORDS_IMMUTABLE_APPEND_ONLY",
+        "release_registries":"LEGACY_V1_BYTE_FROZEN_V2_APPEND_ONLY",
         "identity_generations":"LATEST_MUST_MATCH_TREE_PRIOR_GENERATIONS_IMMUTABLE",
         "not_frozen":"contracts_tests_tools_docs_versioned_policies",
       },
       "permanent_files":files,
+      "frozen_registry_files":{
+        "PUBLISHED_RELEASES.json":hfile(root/"PUBLISHED_RELEASES.json"),
+      },
       "append_only_registries":{
         "FAILED_RELEASES.json":registry_snapshot(root,"FAILED_RELEASES.json","failed_releases"),
         "PUBLISHED_RELEASES.json":registry_snapshot(root,"PUBLISHED_RELEASES.json","published_releases"),
+        "PUBLICATION_ASSERTIONS.json":registry_snapshot(root,"PUBLICATION_ASSERTIONS.json","publication_assertions"),
       },
       "write_once_paths":{},
       "identity_generations":[identity_generation(root,head)],
@@ -308,6 +312,17 @@ def verify_history(root:Path,base:dict,errors:list[str])->None:
             errors.append(f"BASELINE_REGISTRY_METADATA_CHANGED:{rel}")
         if not prefix_equal(preg.get("records",[]),creg.get("records",[])):
             errors.append(f"BASELINE_REGISTRY_HISTORY_REWRITTEN:{rel}")
+    prev_frozen=prev.get("frozen_registry_files",{})
+    current_frozen=base.get("frozen_registry_files",{})
+    if not isinstance(prev_frozen,dict) or not isinstance(current_frozen,dict):
+        errors.append("BASELINE_FROZEN_REGISTRY_DECLARATIONS_INVALID")
+    else:
+        for rel,want in prev_frozen.items():
+            if current_frozen.get(rel)!=want:
+                errors.append(
+                    f"BASELINE_FROZEN_REGISTRY_CHANGED_OR_REMOVED:{rel}"
+                )
+
     if not prefix_equal(prev.get("identity_generations",[]),base.get("identity_generations",[])):
         errors.append("BASELINE_IDENTITY_GENERATION_HISTORY_REWRITTEN")
     prev_write_once=prev.get("write_once_paths",{})
@@ -329,23 +344,19 @@ def registry_transition_errors(
         return errors
 
     if rel=="PUBLISHED_RELEASES.json":
-        if not prefix_equal(snap["records"],current["records"]):
-            errors.append(f"REGISTRY_PRIOR_RECORD_CHANGED:{rel}")
-            return errors
-        if (
-            len(current["records"])>len(snap["records"])
-            and check_tag_projection
-        ):
-            checker=root/"tools/refresh_published_releases.py"
-            p=subprocess.run(
-                [__import__("sys").executable,"-B",str(checker),"--check"],
-                cwd=root,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,
+        if current["records"]!=snap["records"]:
+            errors.append(
+                "LEGACY_PUBLISHED_REGISTRY_FROZEN:"
+                "PUBLISHED_RELEASES.json"
             )
-            if p.returncode:
-                errors.append(
-                    "PUBLISHED_RELEASE_REGISTRY_NONPASS:"
-                    +p.stdout.decode(errors="replace").strip()
-                )
+        return errors
+
+    if rel=="PUBLICATION_ASSERTIONS.json":
+        if not prefix_equal(snap["records"],current["records"]):
+            errors.append(
+                "PUBLICATION_ASSERTIONS_PRIOR_RECORD_CHANGED:"
+                "PUBLICATION_ASSERTIONS.json"
+            )
         return errors
 
     if current["records"]!=snap["records"]:
@@ -364,6 +375,9 @@ def verify(root:Path,baseline_path:Path,check_history=True)->dict:
     write_once=base.get("write_once_paths",{})
     if not isinstance(write_once,dict):
         raise GateError("WRITE_ONCE_DECLARATIONS_INVALID")
+    frozen_registries=base.get("frozen_registry_files",{})
+    if not isinstance(frozen_registries,dict):
+        raise GateError("FROZEN_REGISTRY_DECLARATIONS_INVALID")
     declared=set(write_once)
     overlap=registered & declared
     for p in sorted(overlap):
@@ -383,6 +397,16 @@ def verify(root:Path,baseline_path:Path,check_history=True)->dict:
         if not p.is_file(): errors.append(f"MISSING_EVIDENCE:{rel}")
         elif hfile(p)!=want: errors.append(f"EVIDENCE_MUTATED:{rel}:{hfile(p)}:{want}")
 
+    for rel,want in sorted(frozen_registries.items()):
+        p=root/rel
+        if not p.is_file():
+            errors.append(f"FROZEN_REGISTRY_MISSING:{rel}")
+        elif hfile(p)!=want:
+            errors.append(
+                f"FROZEN_REGISTRY_BYTES_MUTATED:"
+                f"{rel}:{hfile(p)}:{want}"
+            )
+
     for rel,snap in base["append_only_registries"].items():
         current=registry_snapshot(root,rel,snap["list_key"])
         errors.extend(
@@ -391,6 +415,32 @@ def verify(root:Path,baseline_path:Path,check_history=True)->dict:
                 check_tag_projection=check_history,
             )
         )
+
+    if check_history:
+        checker=root/"tools/publication_assertions_v2.py"
+        if not checker.is_file():
+            errors.append(
+                "PUBLICATION_ASSERTIONS_V2_CHECKER_MISSING"
+            )
+        else:
+            p=subprocess.run(
+                [
+                    __import__("sys").executable,
+                    "-B",
+                    str(checker),
+                    "--root",
+                    str(root),
+                    "--check",
+                ],
+                cwd=root,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+            )
+            if p.returncode:
+                errors.append(
+                    "PUBLICATION_ASSERTIONS_V2_NONPASS:"
+                    +p.stdout.decode(errors="replace").strip()
+                )
 
     gens=base.get("identity_generations",[])
     if not gens: errors.append("NO_IDENTITY_GENERATION")
@@ -423,6 +473,30 @@ def verify(root:Path,baseline_path:Path,check_history=True)->dict:
               base["append_only_registries"]["PUBLISHED_RELEASES.json"]["list_key"],
           )["records"]
       ),
+      "publication_assertion_record_count":len(
+          base["append_only_registries"]["PUBLICATION_ASSERTIONS.json"]["records"]
+      ),
+      "publication_assertion_current_record_count":len(
+          registry_snapshot(
+              root,"PUBLICATION_ASSERTIONS.json",
+              base["append_only_registries"]["PUBLICATION_ASSERTIONS.json"]["list_key"],
+          )["records"]
+      ),
+      "combined_published_record_count":(
+          len(
+              registry_snapshot(
+                  root,"PUBLISHED_RELEASES.json",
+                  base["append_only_registries"]["PUBLISHED_RELEASES.json"]["list_key"],
+              )["records"]
+          )
+          +len(
+              registry_snapshot(
+                  root,"PUBLICATION_ASSERTIONS.json",
+                  base["append_only_registries"]["PUBLICATION_ASSERTIONS.json"]["list_key"],
+              )["records"]
+          )
+      ),
+      "frozen_registry_file_count":len(frozen_registries),
       "identity_generation_count":len(gens),
       "identity_pin_count":len(gens[-1]["pins"]) if gens else 0,
       "write_once_path_count":len(write_once),
