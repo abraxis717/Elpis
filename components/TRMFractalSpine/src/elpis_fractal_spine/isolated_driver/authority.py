@@ -1,9 +1,8 @@
 """Caller-supplied artifact identity, independent of installed distributions."""
 from dataclasses import asdict, dataclass
-import hashlib
 import re
 
-from .context import canonical_bytes
+from elpis.canonical_identity import content_digest
 from .errors import AuthorityError
 
 
@@ -49,4 +48,7 @@ class WheelAuthority:
 
     @property
     def digest(self) -> str:
-        return hashlib.sha256(canonical_bytes(asdict(self))).hexdigest()
+        return content_digest(
+            "elpis.inference.isolated.wheel-authority.v1",
+            asdict(self),
+        )

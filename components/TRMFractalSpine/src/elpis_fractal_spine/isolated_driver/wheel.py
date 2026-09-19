@@ -11,7 +11,6 @@ import csv
 from dataclasses import dataclass
 from email.parser import BytesParser
 from email.policy import default
-import hashlib
 import io
 import os
 from pathlib import Path
@@ -23,9 +22,11 @@ import tempfile
 import zipfile
 import zlib
 
+from ..structural_refinement import _sha256_hex
 from .authority import WheelAuthority
-from .context import canonical_bytes
+from elpis.canonical_identity import content_digest
 from .errors import WheelError
+import mmap
 
 MAX_WHEEL_BYTES = 512 * 1024 * 1024
 MAX_MEMBERS = 4096
@@ -35,6 +36,8 @@ MAX_COMPRESSION_RATIO = 200
 MAX_METADATA_BYTES = 2 * 1024 * 1024
 MAX_DIRECTORY_BYTES = 4 * 1024 * 1024
 CHUNK = 64 * 1024
+
+
 
 
 @dataclass(frozen=True)
@@ -244,7 +247,6 @@ def materialize_wheel(wheel_path: Path, authority: WheelAuthority, *, scratch_ro
         work = Path(tempfile.mkdtemp(prefix="elpis-driver-", dir=scratch_root)).resolve()
         package = work / "snapshot"
         with (work / "artifact.whl").open("w+b") as copied:
-            digest = hashlib.sha256()
             total = 0
             # Nonblocking open plus fstat avoids hanging on a FIFO/device path.
             descriptor = os.open(wheel_path, os.O_RDONLY | os.O_NONBLOCK | os.O_CLOEXEC)
@@ -255,11 +257,19 @@ def materialize_wheel(wheel_path: Path, authority: WheelAuthority, *, scratch_ro
                     total += len(chunk)
                     if total > MAX_WHEEL_BYTES:
                         raise WheelError("wheel compressed size limit")
-                    digest.update(chunk)
                     copied.write(chunk)
-            if digest.hexdigest() != authority.wheel_sha256:
-                raise WheelError("outer wheel SHA-256 mismatch")
             copied.flush()
+            if total:
+                with mmap.mmap(
+                    copied.fileno(),
+                    0,
+                    access=mmap.ACCESS_READ,
+                ) as view:
+                    actual_wheel_sha256 = _sha256_hex(view)
+            else:
+                actual_wheel_sha256 = _sha256_hex(b"")
+            if actual_wheel_sha256 != authority.wheel_sha256:
+                raise WheelError("outer wheel SHA-256 mismatch")
             _preflight_directory(copied, total)
             with zipfile.ZipFile(copied) as archive:
                 paths = _inventory(archive)
@@ -268,15 +278,15 @@ def materialize_wheel(wheel_path: Path, authority: WheelAuthority, *, scratch_ro
                 # Verify every byte before materializing any package content.
                 manifest = []
                 for name, (expected, size) in sorted(records.items()):
-                    hasher = hashlib.sha256()
+                    payload = bytearray()
                     actual_size = 0
                     with archive.open(paths[name]) as stream:
                         while chunk := stream.read(CHUNK):
                             actual_size += len(chunk)
                             if actual_size > size:
                                 raise WheelError("expanded ZIP member exceeds declared size")
-                            hasher.update(chunk)
-                    actual = hasher.hexdigest()
+                            payload.extend(chunk)
+                    actual = _sha256_hex(payload)
                     if actual_size != size or expected and actual != expected:
                         raise WheelError("RECORD content digest mismatch")
                     manifest.append((name, actual, size))
@@ -284,12 +294,21 @@ def materialize_wheel(wheel_path: Path, authority: WheelAuthority, *, scratch_ro
                 for name, expected, size in manifest:
                     destination = package / name
                     destination.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-                    hasher = hashlib.sha256()
                     with archive.open(paths[name]) as source, destination.open("xb") as target:
                         while chunk := source.read(CHUNK):
-                            hasher.update(chunk)
                             target.write(chunk)
-                    if hasher.hexdigest() != expected or destination.stat().st_size != size:
+                    actual_size = destination.stat().st_size
+                    with destination.open("rb") as verified:
+                        if actual_size:
+                            with mmap.mmap(
+                                verified.fileno(),
+                                0,
+                                access=mmap.ACCESS_READ,
+                            ) as view:
+                                actual = _sha256_hex(view)
+                        else:
+                            actual = _sha256_hex(b"")
+                    if actual != expected or actual_size != size:
                         raise WheelError("artifact changed during extraction")
                     destination.chmod(0o400)
         (work / "artifact.whl").unlink()
@@ -297,7 +316,7 @@ def materialize_wheel(wheel_path: Path, authority: WheelAuthority, *, scratch_ro
             Path(directory).chmod(0o500)
         (work / "cwd").mkdir(mode=0o700)
         members = tuple(manifest)
-        return Snapshot(work, package, members, hashlib.sha256(canonical_bytes(members)).hexdigest(), authority.digest)
+        return Snapshot(work, package, members, content_digest("elpis.inference.isolated.snapshot-members.v1", members), authority.digest)
     except (OSError, ValueError, EOFError, zlib.error, zipfile.BadZipFile, RuntimeError) as exc:
         if work is not None:
             remove_snapshot(work)
@@ -308,7 +327,7 @@ def materialize_wheel(wheel_path: Path, authority: WheelAuthority, *, scratch_ro
 
 def recheck_snapshot(root: Path, members: list, expected_digest: str) -> None:
     """Child-side byte verification immediately before making snapshot importable."""
-    if hashlib.sha256(canonical_bytes(members)).hexdigest() != expected_digest:
+    if content_digest("elpis.inference.isolated.snapshot-members.v1", members) != expected_digest:
         raise WheelError("snapshot manifest identity mismatch")
     expected_names = set()
     for name, expected, size in members:
@@ -320,15 +339,20 @@ def recheck_snapshot(root: Path, members: list, expected_digest: str) -> None:
             raise WheelError("snapshot path escaped/disappeared")
         if path.stat().st_mode & 0o222:
             raise WheelError("writable snapshot content")
-        digest = hashlib.sha256()
-        total = 0
         with path.open("rb") as stream:
-            while chunk := stream.read(CHUNK):
-                total += len(chunk)
-                if total > size:
-                    raise WheelError("snapshot grew")
-                digest.update(chunk)
-        if total != size or digest.hexdigest() != expected:
+            total = os.fstat(stream.fileno()).st_size
+            if total > size:
+                raise WheelError("snapshot grew")
+            if total:
+                with mmap.mmap(
+                    stream.fileno(),
+                    0,
+                    access=mmap.ACCESS_READ,
+                ) as view:
+                    actual = _sha256_hex(view)
+            else:
+                actual = _sha256_hex(b"")
+        if total != size or actual != expected:
             raise WheelError("snapshot bytes changed")
     actual_names = set()
     for directory, dirs, files in os.walk(root, followlinks=False):

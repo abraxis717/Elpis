@@ -63,7 +63,7 @@
     },
     {
       "path": "components/TRMFractalSpine/registry/model_ports.toml",
-      "sha256": "c31562b8503b5f41e4d17e213792942da53f90b6222e708a85d54a927b4a3a61"
+      "sha256": "0b7937cafa8e08762b3392a16684ad1c3d472e4a38740578c408a832f5e3a534"
     },
     {
       "path": "docs/PLATFORM_PORTABILITY.md",

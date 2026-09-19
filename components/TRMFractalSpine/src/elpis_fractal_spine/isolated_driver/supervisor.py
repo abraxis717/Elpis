@@ -228,9 +228,23 @@ class IsolatedProvider:
                 # -I ignores PYTHON* variables and cwd. Only the trusted core
                 # source root is deliberately added; plugin path is NOT here.
                 core_root = str(Path(__file__).resolve().parents[2])
-                bootstrap = ("import sys,runpy;sys.dont_write_bytecode=True;"
-                             f"sys.path.insert(0,{core_root!r});"
-                             "runpy.run_module('elpis_fractal_spine.isolated_driver._worker',run_name='__main__')")
+                import elpis.canonical_identity as canonical_identity
+                canonical_identity_file = str(
+                    Path(canonical_identity.__file__).resolve()
+                )
+                bootstrap = (
+                    "import sys,runpy,types,importlib.util;"
+                    "sys.dont_write_bytecode=True;"
+                    "pkg=types.ModuleType('elpis');"
+                    "pkg.__path__=[];"
+                    "sys.modules['elpis']=pkg;"
+                    f"spec=importlib.util.spec_from_file_location('elpis.canonical_identity',{canonical_identity_file!r});"
+                    "mod=importlib.util.module_from_spec(spec);"
+                    "sys.modules['elpis.canonical_identity']=mod;"
+                    "spec.loader.exec_module(mod);"
+                    f"sys.path.insert(0,{core_root!r});"
+                    "runpy.run_module('elpis_fractal_spine.isolated_driver._worker',run_name='__main__')"
+                )
                 env = {"PYTHONNOUSERSITE": "1", "PYTHONDONTWRITEBYTECODE": "1",
                        "PATH": os.defpath, "LANG": "C.UTF-8", "LC_ALL": "C.UTF-8",
                        "HOME": str(self.snapshot.work_root / "cwd"),

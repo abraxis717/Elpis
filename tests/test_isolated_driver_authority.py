@@ -12,6 +12,8 @@ import zipfile
 
 import pytest
 
+from elpis.canonical_identity import content_digest
+
 from elpis_fractal_spine.isolated_driver import WheelAuthority
 from elpis_fractal_spine.isolated_driver.errors import AuthorityError, WheelError
 from elpis_fractal_spine.isolated_driver.wheel import materialize_wheel, remove_snapshot, recheck_snapshot
@@ -92,6 +94,10 @@ def materialize(tmp_path, **kwargs):
 
 def test_authority_digest_and_frozen_validation(tmp_path):
     _, authority = make_wheel(tmp_path)
+    assert authority.digest == content_digest(
+        "elpis.inference.isolated.wheel-authority.v1",
+        asdict(authority),
+    )
     assert authority.digest == WheelAuthority(**dict(reversed(list(asdict(authority).items())))).digest
     for key, value in (("driver_id", ""), ("distribution_name", "Mixed_Name"),
                        ("distribution_name", "two--names"), ("distribution_version", ""),

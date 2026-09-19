@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from itertools import count
 import os
 import signal
 import sys
@@ -18,12 +19,23 @@ from elpis_fractal_spine.isolated_driver.supervisor import State
 from test_isolated_driver_authority import PACKAGE, PROVIDER, make_wheel
 
 
+_PROVIDER_ARTIFACT_SEQUENCE = count()
+
+
 def request():
     return InferenceExecutionRequest("request", "test-model", "in", "out", (1,), None, 1)
 
 
 def provider(tmp_path, source=PROVIDER, context=None, **policy):
-    path, authority = make_wheel(tmp_path, source)
+    artifact_root = (
+        tmp_path
+        / (
+            "provider-artifact-"
+            + str(next(_PROVIDER_ARTIFACT_SEQUENCE))
+        )
+    )
+    artifact_root.mkdir()
+    path, authority = make_wheel(artifact_root, source)
     return IsolatedProvider(authority=authority, wheel_path=path, runtime_context=context or {},
                             policy=SupervisorPolicy(scratch_root=tmp_path, **policy))
 

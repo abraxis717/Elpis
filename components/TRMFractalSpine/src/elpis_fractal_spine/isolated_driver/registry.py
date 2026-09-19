@@ -1,7 +1,8 @@
 """Byte-bound model-port selection; does not admit or change any model."""
 from dataclasses import dataclass
-import hashlib
 from pathlib import Path
+
+from ..structural_refinement import _sha256_hex
 import tomllib
 
 from .authority import identifier, sha256_identity
@@ -43,7 +44,7 @@ def bind_model_port(*, model_ports_path: Path, expected_sha256: str,
             identifier(value)
         with Path(model_ports_path).open("rb") as source:
             raw = source.read(MAX_REGISTRY_BYTES + 1)
-        if len(raw) > MAX_REGISTRY_BYTES or hashlib.sha256(raw).hexdigest() != expected_sha256:
+        if len(raw) > MAX_REGISTRY_BYTES or _sha256_hex(raw) != expected_sha256:
             raise RegistryError("registry byte identity/size mismatch")
         data = tomllib.loads(raw.decode("utf-8"))
         if data.get("schema_version") != "elpis.model-ports.v1":

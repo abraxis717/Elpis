@@ -2,10 +2,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import hashlib
 import json
 import math
 from types import MappingProxyType
+
+from elpis.canonical_identity import content_digest
 
 from .errors import ContextError
 
@@ -124,7 +125,10 @@ class CanonicalContext:
 
     @property
     def digest(self) -> str:
-        return hashlib.sha256(self.data).hexdigest()
+        return content_digest(
+            "elpis.inference.isolated.runtime-context.v1",
+            self.decode(),
+        )
 
     def decode(self) -> dict:
         return decode_json(self.data, max_bytes=DEFAULT_CONTEXT_BYTES)
