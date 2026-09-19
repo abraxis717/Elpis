@@ -1,0 +1,52 @@
+{
+  "admission": {
+    "admission_status": "BOUNDED_NEEDLE3_TOOL_PROPOSAL_V1",
+    "authority_class": "PROPOSAL_ONLY",
+    "enabled": false,
+    "legacy_port_digest_authoritative": false,
+    "load_policy": "ON_DEMAND",
+    "port_id": "tool-proposal.needle3",
+    "registry_authority": "EXACT_MODEL_PORTS_FILE_SHA256_PLUS_EXPLICIT_POLICY"
+  },
+  "driver": {
+    "distribution_name": "elpis-needle3-driver",
+    "distribution_version": "0.1.1",
+    "driver_id": "cactus.needle3.native.v1",
+    "entry_point_group": "elpis.inference_drivers.v1",
+    "entry_point_value": "elpis_needle3_driver:factory",
+    "wheel_sha256": "59bb3ef1692d6e07845cb034c82e1d40a77814090b21b7d1d70aafa4287c9247"
+  },
+  "model": {
+    "caller_supplied": true,
+    "format": "cactus-cact",
+    "inside_wheel": false,
+    "model_id": "Cactus.Needle3",
+    "sha256": "c9d915eca282ed42d1a09b143b592adb4cc6744ffe2d294adf5cfc5548170c38"
+  },
+  "native_runtime": {
+    "libcxx_sha256": "27b94fb243c675fd3cf5614229dd2c59be321a39e473809220975ceb62c8bfc5",
+    "libcxxabi_sha256": "e55469536799cd64a4d9e0f0201d1d770c435f45d04fef314f16487461d63bf1",
+    "libelpis_needle3_sha256": "28dfd2e8fca6c22925b3a5f17dc99a8b444d5d47049552abfd5ba87e0296ddb7",
+    "network_required": false,
+    "process_creation_required": false,
+    "runpath": "$ORIGIN"
+  },
+  "platform": "linux-x86_64",
+  "r4_predecessor_wheel_sha256": "9398bf3410c6853ccf8eb68c2a04452057fba73e1fb7866696fd0f6630faed5d",
+  "r5_source_parent": "47f8d43fb1d30c19d173370153e914ad3f2e7f52",
+  "schema": "elpis.needle3-qualified-runtime.v1",
+  "semantic_output": {
+    "excluded_native_diagnostics": [
+      "reasoning",
+      "prefill_tps",
+      "decode_tps",
+      "peak_ram_mb"
+    ],
+    "keys": [
+      "type",
+      "success",
+      "function_calls",
+      "confidence"
+    ]
+  }
+}

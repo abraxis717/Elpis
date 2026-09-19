@@ -27,6 +27,8 @@ loaded.
 
 ## Authority
 
-This source tree is a driver/build contract only. It does not grant model-port
-admission. A model-port row and production wheel authority must be qualified
-separately after the real platform wheel exists.
+The Linux x86-64 platform runtime is qualified through the Astra isolated host.
+The model-port row remains globally disabled and can execute only through exact
+registry bytes, exact wheel authority, and caller-supplied model bytes matching
+the frozen SHA-256 in `QUALIFIED_RUNTIME.json`.  Native timing/RAM/reasoning
+diagnostics are deliberately excluded from the portable tool-proposal payload.

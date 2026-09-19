@@ -37,11 +37,11 @@ DRIVER = (
 
 PACKAGE = "elpis_needle3_driver"
 DIST = "elpis-needle3-driver"
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 GROUP = "elpis.inference_drivers.v1"
 DRIVER_ID = "cactus.needle3.native.v1"
 TARGET = "elpis_needle3_driver:factory"
-INFO = "elpis_needle3_driver-0.1.0.dist-info"
+INFO = "elpis_needle3_driver-0.1.1.dist-info"
 
 
 FAKE_C = r"""
@@ -80,7 +80,10 @@ int needle_complete(
 
     const char *value =
         "{\"type\":\"call\",\"success\":true,"
-        "\"function_calls\":[],\"confidence\":1.0}";
+        "\"function_calls\":[],\"confidence\":1.0,"
+        "\"reasoning\":\"volatile diagnostic\","
+        "\"prefill_tps\":123.4,\"decode_tps\":5.6,"
+        "\"peak_ram_mb\":77.0}";
 
     int n = (int)strlen(value);
 
@@ -187,7 +190,7 @@ def _wheel(
 
     wheel = (
         tmp_path
-        / "elpis_needle3_driver-0.1.0-py3-none-linux_x86_64.whl"
+        / "elpis_needle3_driver-0.1.1-py3-none-linux_x86_64.whl"
     )
 
     with zipfile.ZipFile(
@@ -306,7 +309,7 @@ def test_build_contract_refuses_cli_server_and_model_in_wheel():
 
     assert (
         contract["admission"]["execution_authority_granted"]
-        is False
+        is True
     )
 
 
@@ -420,6 +423,13 @@ def test_driver_executes_inside_real_astra_sandbox_without_network_or_exec(
             "function_calls": [],
             "success": True,
             "type": "call",
+        }
+
+        assert set(payload) == {
+            "confidence",
+            "function_calls",
+            "success",
+            "type",
         }
 
         provider.release(

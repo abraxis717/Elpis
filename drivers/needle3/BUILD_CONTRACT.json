@@ -1,8 +1,9 @@
 {
   "admission": {
-    "execution_authority_granted": false,
-    "model_port_added_by_this_phase": false,
-    "production_wheel_authority_frozen": false
+    "execution_authority_granted": true,
+    "model_port_added_by_this_phase": true,
+    "production_wheel_authority_frozen": true,
+    "qualified_runtime_authority": "drivers/needle3/QUALIFIED_RUNTIME.json"
   },
   "astra": {
     "filesystem_write_required": false,
@@ -12,7 +13,7 @@
     "sandbox_must_remain_unchanged": true
   },
   "distribution_name": "elpis-needle3-driver",
-  "distribution_version": "0.1.0",
+  "distribution_version": "0.1.1",
   "donor": {
     "config_sha256": "32f855edcc633c170e260763e00edb50dd9fbba73bcc6d49e7b85861b6eb7d25",
     "libneedle_a_sha256": "68ee99c6554cb2370112b77e8ce7f0da652e504f3b460067946113baef7460f5",
@@ -57,6 +58,22 @@
       "needle_reset"
     ],
     "required_rpath": "$ORIGIN"
+  },
+  "output_contract": {
+    "canonical_json": true,
+    "deterministic_semantic_payload_required": true,
+    "discard_native_diagnostics": [
+      "reasoning",
+      "prefill_tps",
+      "decode_tps",
+      "peak_ram_mb"
+    ],
+    "portable_payload_keys": [
+      "type",
+      "success",
+      "function_calls",
+      "confidence"
+    ]
   },
   "platform": "linux-x86_64",
   "schema": "elpis.needle3-platform-wheel-build.v1"

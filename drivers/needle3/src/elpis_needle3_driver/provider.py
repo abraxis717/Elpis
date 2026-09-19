@@ -8,6 +8,7 @@ from __future__ import annotations
 import ctypes
 import hashlib
 import json
+import math
 import mmap
 from pathlib import Path
 
@@ -451,11 +452,49 @@ class Needle3Provider:
                 "Needle3 native output must be a JSON object"
             )
 
+        if parsed.get("type") != "call":
+            raise ValueError(
+                "Needle3 native output type must be call"
+            )
+
+        if type(parsed.get("success")) is not bool:
+            raise ValueError(
+                "Needle3 native output success must be boolean"
+            )
+
+        calls = parsed.get("function_calls")
+        if type(calls) is not list:
+            raise ValueError(
+                "Needle3 native output function_calls must be a list"
+            )
+
+        confidence = parsed.get("confidence")
+        if (
+            isinstance(confidence, bool)
+            or type(confidence) not in (int, float)
+            or not math.isfinite(float(confidence))
+            or not 0.0 <= float(confidence) <= 1.0
+        ):
+            raise ValueError(
+                "Needle3 native output confidence must be finite in [0,1]"
+            )
+
+        # Runtime timing/RAM/reasoning diagnostics are deliberately excluded
+        # from the portable proposal payload.  They are non-authoritative and
+        # may vary between otherwise identical executions.
+        semantic = {
+            "type": "call",
+            "success": parsed["success"],
+            "function_calls": calls,
+            "confidence": float(confidence),
+        }
+
         canonical = json.dumps(
-            parsed,
+            semantic,
             sort_keys=True,
             separators=(",", ":"),
             ensure_ascii=False,
+            allow_nan=False,
         )
 
         tier = (

@@ -67,16 +67,21 @@ def test_model_ports_contains_one_disabled_on_demand_fprm_port():
     assert row["remote_code_allowed"] is False
 
 
-def test_historical_ports_remain_never_and_fprm_is_only_on_demand():
+def test_historical_ports_remain_never_and_bounded_lanes_are_on_demand():
     data = tomllib.loads(MODEL_PORTS.read_text(encoding="utf-8"))
-    on_demand = []
+    expected = {
+        "FPRM.Samsung_TRM": "runtime.r2.fprm-samsung-trm",
+        "Cactus.Needle3": "tool-proposal.needle3",
+    }
+    observed = {}
     for row in data["port"]:
-        if row["model_id"] == MODEL_ID:
+        if row["model_id"] in expected:
             assert row["load_policy"] == "ON_DEMAND"
-            on_demand.append(row["port_id"])
+            assert row["enabled"] is False
+            observed[row["model_id"]] = row["port_id"]
         else:
             assert row["load_policy"] == "NEVER"
-    assert on_demand == ["runtime.r2.fprm-samsung-trm"]
+    assert observed == expected
 
 
 def test_registry_has_no_builtin_driver_or_arbitrary_toml_import():
