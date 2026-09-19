@@ -302,6 +302,127 @@
       ],
       "source_commit": "e5e6e0d6007ecb27d6136d6ce67566d10d075dde",
       "supersession_rule": "APPEND_NEW_GENERATION_NEVER_EDIT_PRIOR_GENERATION"
+    },
+    {
+      "generation_id": "ELPIS_2_2_21_NEEDLE3_REGISTRY_R0",
+      "pins": [
+        {
+          "kind": "python_constant",
+          "name": "MODEL_SHA256",
+          "path": "src/elpis_reference/model.py",
+          "value": "6daec5f499d115beb14e23f3a9cf56d1166b99c1ccd36b185a19ea5dfec9a137"
+        },
+        {
+          "kind": "python_constant",
+          "name": "FROZEN_TRM0_CHECKPOINT_SHA256",
+          "path": "src/elpis_reference/structural_guidance/authority.py",
+          "value": "e58e44c9227d68971d0ab5f5e4f0eaf2e05d4faa97ec8232108aa73898273129"
+        },
+        {
+          "kind": "json_pointer",
+          "path": "src/elpis_reference/vendor/fprm/AUTHORITY.json",
+          "pointer": "/checkpoint/sha256",
+          "value": "6daec5f499d115beb14e23f3a9cf56d1166b99c1ccd36b185a19ea5dfec9a137"
+        },
+        {
+          "kind": "json_pointer",
+          "path": "src/elpis_reference/vendor/fprm/AUTHORITY.json",
+          "pointer": "/checkpoint/size",
+          "value": 54637557
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/TRMFractalSpine/registry/model_ports.toml",
+          "value": "0b7937cafa8e08762b3392a16684ad1c3d472e4a38740578c408a832f5e3a534"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/TRMFractalSpine/registry/models.toml",
+          "value": "cfa7457091632f34678252544a47f001b74acd7a20f61eb35224425ae14f2692"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/CNumPyCortex/COMPONENT_MANIFEST.json",
+          "value": "0fa0b04d6da10a13bed4bfcd2a661ae73562c95df3ddf50a153a4a6f94b2ebc9"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/DarwinianMatrix/COMPONENT_MANIFEST.json",
+          "value": "af86c3eaf908124edc26a63c79f83dde350947a63d854689f5295e44e99abd0e"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/Grid81/COMPONENT_MANIFEST.json",
+          "value": "b3d79b251f4ef162d8b959de0c4adb06c5a82e83b40bfe5d2609e0ad75560256"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/Grid81DeterministicCanonicalPromotionPlanner/COMPONENT_MANIFEST.json",
+          "value": "03f5365570fd3305b4eec8a6bc981fc52ba21df3e2fc60469ae4472877afacb6"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/Grid81DeterministicCapabilityApplicationExecutor/COMPONENT_MANIFEST.json",
+          "value": "5f73748d359a888e812e1ea3b7f734aeba8e98485b8dfee6f698591012ae8139"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/Grid81DeterministicCapabilityAuthorityEvaluator/COMPONENT_MANIFEST.json",
+          "value": "3da3367cb41c8110631d6f618f0a340670c1d710b5daee2e6b6bd317abf6f7ed"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/Grid81DeterministicCapabilityConsumptionCompiler/COMPONENT_MANIFEST.json",
+          "value": "0473cdb413e43069d5ddf97bc0c5cbb667c46a3214502b60fbdd97522a79af28"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/Grid81DeterministicStructuralAdjudicator/COMPONENT_MANIFEST.json",
+          "value": "1d63549fd096568f16f12601ab286903032d61a36e978a877de32c9e54775987"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/Grid81StructuralGroupProjectionCompiler/COMPONENT_MANIFEST.json",
+          "value": "21a0aaa41f28dfb91a0f36f99d450d755f01ebcfc106ccaaa50dc5b7c7d77018"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/Grid81StructuralSemantics/COMPONENT_MANIFEST.json",
+          "value": "b91500fa7e341c835b218dc671945e693a91cbc926d172cdee88e8395d2ca878"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/Grid81TypedProjectionCompiler/COMPONENT_MANIFEST.json",
+          "value": "904b94c7ec615fcbb7acaa80becead0a704522b1a5b21bb5d29395405d4f3a9a"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/Pipeline/P0ControlProtocol/COMPONENT_MANIFEST.json",
+          "value": "704186993a52f7504a3d4abdf33cf4f24b22cfbbee8a1ba85992614677c2a4fd"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "components/TRMFractalSpine/COMPONENT_MANIFEST.json",
+          "value": "8de90921fc8956dddccaa2dbb9856ca326850d8032eae1de65a551210ebeb94e"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "native/elpis-header/COMPONENT_MANIFEST.json",
+          "value": "8958a3693512bb1ea2aa33e06dece114d5a965bf4240e9b34fd34fc682af0f59"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "native/hacf/COMPONENT_MANIFEST.json",
+          "value": "ee996fccd75c0f23152b09a639721999c0df9857635d55f54bd0dbebb4ef8fbc"
+        },
+        {
+          "kind": "file_sha256",
+          "path": "native/semantic-spine/COMPONENT_MANIFEST.json",
+          "value": "53222d2538847688f1998e7d21c68365a05218f4b10ca3f9f885aa845f5b30e7"
+        }
+      ],
+      "source_commit": "94862ef07bf21977c09f90f92a796e56ba43cad9",
+      "supersession_rule": "APPEND_NEW_GENERATION_NEVER_EDIT_PRIOR_GENERATION"
     }
   ],
   "permanent_files": {
@@ -411,6 +532,10 @@
     },
     "manifests/Elpis2.2.20.RELEASE_MANIFEST.json": {
       "release": "Elpis2.2.20",
+      "rule": "FIRST_COMMITTED_BLOB_IMMUTABLE"
+    },
+    "manifests/Elpis2.2.21.RELEASE_MANIFEST.json": {
+      "release": "Elpis2.2.21",
       "rule": "FIRST_COMMITTED_BLOB_IMMUTABLE"
     }
   }

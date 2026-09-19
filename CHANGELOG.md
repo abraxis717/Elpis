@@ -1,3 +1,12 @@
+## Elpis2.2.21 — Isolated native inference and bounded Needle3 successor
+
+- Add the qualified isolated native inference-driver host with exact wheel authority, canonical context binding, sandbox-first worker startup, bounded IPC, and no trusted-lane fallback.
+- Add the separately packaged `cactus.needle3.native.v1` driver contract and exact qualified-runtime authority without bundling the Needle3 model or native wheel into `elpisai`.
+- Admit `Cactus.Needle3` only through a globally disabled, explicit `ON_DEMAND`, `PROPOSAL_ONLY` port with network and remote-code denial.
+- Strip volatile Needle3 runtime telemetry from portable proposal identity while retaining the semantic tool-call proposal fields.
+- Preserve the legacy pickle Needle entry as quarantined, preserve R2 provider-resolution boundaries, and keep ECS as execution/state/validation authority.
+- Predeclare the Elpis2.2.21 manifest under first-committed-blob immutability and runtime-admission temporality without creating the manifest, tag, publication record, or external publication.
+
 ## Elpis2.2.20 — Publication-authority v2 lifecycle successor
 
 - Preserve externally published Elpis2.2.19 and immutable failed Elpis2.2.18 without moving, rewriting, or reclassifying either release.
