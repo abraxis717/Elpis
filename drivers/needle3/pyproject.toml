@@ -1,0 +1,26 @@
+[project]
+name = "elpis-needle3-driver"
+version = "0.1.0"
+description = "Process-isolated native Needle3 inference driver for Elpis"
+requires-python = ">=3.11,<3.13"
+license = {text = "MIT"}
+dependencies = []
+
+[project.entry-points."elpis.inference_drivers.v1"]
+"cactus.needle3.native.v1" = "elpis_needle3_driver:factory"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["elpis_needle3_driver*"]
+
+[tool.setuptools.package-data]
+elpis_needle3_driver = [
+  "native/libelpis_needle3.so",
+  "native/libc++.so*",
+  "native/libc++abi.so*",
+  "native/libunwind.so*",
+]

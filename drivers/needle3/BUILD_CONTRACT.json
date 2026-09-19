@@ -1,0 +1,63 @@
+{
+  "admission": {
+    "execution_authority_granted": false,
+    "model_port_added_by_this_phase": false,
+    "production_wheel_authority_frozen": false
+  },
+  "astra": {
+    "filesystem_write_required": false,
+    "model_access": "READ_ONLY_MMAP",
+    "network_required": false,
+    "process_creation_required": false,
+    "sandbox_must_remain_unchanged": true
+  },
+  "distribution_name": "elpis-needle3-driver",
+  "distribution_version": "0.1.0",
+  "donor": {
+    "config_sha256": "32f855edcc633c170e260763e00edb50dd9fbba73bcc6d49e7b85861b6eb7d25",
+    "libneedle_a_sha256": "68ee99c6554cb2370112b77e8ce7f0da652e504f3b460067946113baef7460f5",
+    "model_sha256": "c9d915eca282ed42d1a09b143b592adb4cc6744ffe2d294adf5cfc5548170c38",
+    "needle_cli_sha256": "e0510560249e945279801ec4386466a1f813caa9fe9f0137cf5fdd3859e03d57",
+    "needle_h_sha256": "ec74770d59cc99f86e909517c2e63ecc966aa99e3f8dc8e110b0b247ed36f58c"
+  },
+  "driver_id": "cactus.needle3.native.v1",
+  "entry_point_group": "elpis.inference_drivers.v1",
+  "entry_point_value": "elpis_needle3_driver:factory",
+  "model_distribution": {
+    "caller_supplied": true,
+    "expected_sha256": "c9d915eca282ed42d1a09b143b592adb4cc6744ffe2d294adf5cfc5548170c38",
+    "inside_wheel": false
+  },
+  "native_runtime": {
+    "bundle_required": [
+      "libc++.so",
+      "libc++abi.so"
+    ],
+    "cpp_abi": "LLVM_LIBCXX_STD___1",
+    "forbidden_runtime_requirements": [
+      "socket",
+      "connect",
+      "bind",
+      "listen",
+      "fork",
+      "vfork",
+      "execve",
+      "execveat"
+    ],
+    "link_input": "libneedle.a",
+    "optional_runtime": [
+      "libunwind.so"
+    ],
+    "output": "elpis_needle3_driver/native/libelpis_needle3.so",
+    "required_exports": [
+      "needle_init",
+      "needle_load",
+      "needle_complete",
+      "needle_embed",
+      "needle_reset"
+    ],
+    "required_rpath": "$ORIGIN"
+  },
+  "platform": "linux-x86_64",
+  "schema": "elpis.needle3-platform-wheel-build.v1"
+}
