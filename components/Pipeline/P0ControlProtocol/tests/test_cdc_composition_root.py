@@ -756,7 +756,7 @@ def test_registry_is_parsed_with_tomllib():
 
 
 def test_model_ports_are_parsed_with_tomllib():
-    """model_ports.toml permits ON_DEMAND only for the admitted FPRM port."""
+    # Only explicitly admitted bounded model ports may load ON_DEMAND.
     try:
         import tomllib
     except ImportError:
@@ -764,36 +764,41 @@ def test_model_ports_are_parsed_with_tomllib():
 
     ports_file = os.path.join(
         os.path.dirname(os.path.dirname(__file__)),
-        "..",
-        "..",
-        "TRMFractalSpine",
-        "registry",
-        "model_ports.toml",
+        "..", "..", "TRMFractalSpine", "registry", "model_ports.toml",
     )
-
     with open(ports_file, "rb") as f:
         data = tomllib.load(f)
-
     ports = data["port"]
-    fprm = [
-        port for port in ports
-        if port["model_id"] == "FPRM.Samsung_TRM"
-    ]
-    assert len(fprm) == 1
-    assert fprm[0]["enabled"] is False
-    assert fprm[0]["load_policy"] == "ON_DEMAND"
-    assert fprm[0]["driver_id"] == "fms.checkpoint.v1"
-    assert fprm[0]["adapter_id"] == "fprm.sudoku-feedback.v1"
-
+    admitted = {
+        "FPRM.Samsung_TRM": {
+            "driver_id": "fms.checkpoint.v1",
+            "adapter_id": "fprm.sudoku-feedback.v1",
+            "authority_class": "PROPOSAL_ONLY",
+        },
+        "Cactus.Needle3": {
+            "port_id": "tool-proposal.needle3",
+            "driver_id": "cactus.needle3.native.v1",
+            "adapter_id": "needle3-tool-proposal.v1",
+            "authority_class": "PROPOSAL_ONLY",
+            "admission_status": "BOUNDED_NEEDLE3_TOOL_PROPOSAL_V1",
+        },
+    }
+    by_model = {port["model_id"]: port for port in ports}
+    for model_id, expected in admitted.items():
+        assert model_id in by_model
+        port = by_model[model_id]
+        assert port["enabled"] is False
+        assert port["load_policy"] == "ON_DEMAND"
+        assert port["network_allowed"] is False
+        assert port["remote_code_allowed"] is False
+        for field, value in expected.items():
+            assert port[field] == value
+    on_demand = [port for port in ports if port["load_policy"] == "ON_DEMAND"]
+    assert {port["model_id"] for port in on_demand} == set(admitted)
+    assert len(on_demand) == 2
     for port in ports:
-        if port["model_id"] == "FPRM.Samsung_TRM":
-            assert port["load_policy"] == "ON_DEMAND", port["port_id"]
-        else:
+        if port["model_id"] not in admitted:
             assert port["load_policy"] == "NEVER", port["port_id"]
-
-    assert sum(
-        port["load_policy"] == "ON_DEMAND" for port in ports
-    ) == 1
 
 
 def test_codec_registry_is_parsed_with_tomllib():

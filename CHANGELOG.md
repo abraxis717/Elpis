@@ -1,3 +1,11 @@
+## Elpis2.2.22 — Hosted-CI Needle3 regression corrective successor
+
+- Preserve the untagged, unpublished Elpis2.2.21 sealed candidate as immutable failed hosted-main-CI evidence; do not create or move an Elpis2.2.21 tag.
+- Correct the stale P0 `model_ports.toml` regression exposed by hosted Component attribution after bounded Needle3 `ON_DEMAND` admission.
+- Require exactly the two qualified `ON_DEMAND` model ports—`FPRM.Samsung_TRM` and `Cactus.Needle3`—and keep every other port at `NEVER`.
+- Preserve the exact qualified Needle3/Astra runtime, model-port registry bytes, proposal-only authority, sandbox policy, and semantic output identity.
+- Predeclare the Elpis2.2.22 manifest under first-committed-blob immutability and runtime-admission temporality without creating the manifest, tag, publication record, or external publication.
+
 ## Elpis2.2.21 — Isolated native inference and bounded Needle3 successor
 
 - Add the qualified isolated native inference-driver host with exact wheel authority, canonical context binding, sandbox-first worker startup, bounded IPC, and no trusted-lane fallback.

@@ -2,7 +2,7 @@
 
 **A deterministic structural-reasoning architecture for bounded learned proposals, explicit authority, and falsifiable runtime composition.**
 
-**Release line: Elpis2.2.21**
+**Release line: Elpis2.2.22**
 
 Elpis is a systems-research project about a narrow question: can learned components contribute useful structural proposals while deterministic machinery retains ownership of representation, admissibility, authority, validation, and terminal action?
 
@@ -14,11 +14,11 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 ## Release Notes
 
-**Elpis2.2.21** adds the isolated native inference-driver host and a bounded Needle3 proposal-only provider while preserving deterministic Elpis/ECS execution and state authority.
+**Elpis2.2.22** is the hosted-CI corrective successor to the untagged, unpublished Elpis2.2.21 sealed candidate. It preserves the isolated native inference-driver host and bounded Needle3 proposal-only provider while correcting the stale P0 model-port load-policy regression exposed by hosted Component attribution.
 
-The isolated lane binds exact wheel bytes and canonical runtime context before loading provider code inside the qualified sandbox. It does not use the trusted installed-driver registry, does not automatically fall back between lanes, and does not grant R2 provider-resolution authority.
+The isolated lane still binds exact wheel bytes and canonical runtime context before loading provider code inside the qualified sandbox. It does not use the trusted installed-driver registry, does not automatically fall back between lanes, and does not grant R2 provider-resolution authority.
 
-Needle3 is admitted only through the globally disabled `tool-proposal.needle3` port with `ON_DEMAND`, `PROPOSAL_ONLY`, network-denied and remote-code-denied semantics. The `elpisai` distribution does not bundle the Needle3 model artifact or separately qualified native wheel; ECS remains the execution, state, validation, and terminal-action authority.
+Needle3 remains admitted only through the globally disabled `tool-proposal.needle3` port with `ON_DEMAND`, `PROPOSAL_ONLY`, network-denied and remote-code-denied semantics. The corrected P0 regression now recognizes both explicitly admitted `ON_DEMAND` ports—FPRM and Needle3—while requiring every other port to remain `NEVER`. Elpis2.2.21 remains immutable failed hosted-main-CI evidence and was never tagged or published.
 
 The 2.2.x line includes:
 
@@ -38,7 +38,7 @@ The 2.2.x line includes:
 
 The immutable `Elpis2.2.0`, `Elpis2.2.9`, `Elpis2.2.12`, `Elpis2.2.15`, `Elpis2.2.16`, and `Elpis2.2.18` tags are retained as failed-not-published release evidence under `FAILED_RELEASES.json`.
 
-- Current notes: [`RELEASE_NOTES/Elpis2.2.21.md`](RELEASE_NOTES/Elpis2.2.21.md)
+- Current notes: [`RELEASE_NOTES/Elpis2.2.22.md`](RELEASE_NOTES/Elpis2.2.22.md)
 - Public component registry: [`manifests/PUBLIC_COMPONENT_REGISTRY.json`](manifests/PUBLIC_COMPONENT_REGISTRY.json)
 - Qualified writer-chain registry: [`manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json`](manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json)
 - Qualified ingress-trio coverage: [`manifests/INGRESS_TRIO_COVERAGE_R0.json`](manifests/INGRESS_TRIO_COVERAGE_R0.json)
