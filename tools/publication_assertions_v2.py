@@ -514,6 +514,243 @@ def validation_errors(root: Path, payload: Any | None = None) -> list[str]:
     return errors
 
 
+
+def gitless_validation_errors(
+    root: Path,
+    payload: Any | None = None,
+) -> list[str]:
+    """Validate durable publication facts without requiring Git objects.
+
+    This mode is for exported release trees. It proves registry structure,
+    frozen-v1 binding, manifest-byte identity present in the export, receipt
+    coherence, ordering, failed-release exclusion, and witness uniqueness.
+
+    It deliberately does not claim annotated-tag/tree re-proof; Git checkouts
+    use validation_errors() for that stronger proof.
+    """
+    try:
+        data = load_registry(root) if payload is None else payload
+    except PublicationAuthorityError as exc:
+        return [str(exc)]
+
+    errors = _registry_structure_errors(root, data)
+    records = (
+        data.get("publication_assertions")
+        if isinstance(data, dict)
+        else None
+    )
+    if not isinstance(records, list):
+        return errors
+
+    try:
+        failed = _failed_tags(root)
+    except PublicationAuthorityError as exc:
+        return errors + [str(exc)]
+
+    try:
+        legacy_rows = _legacy_records(root)
+    except PublicationAuthorityError as exc:
+        return errors + [str(exc)]
+
+    legacy_tags = {
+        row["release_tag"]
+        for row in legacy_rows
+    }
+    legacy_versions = {
+        row["version"]
+        for row in legacy_rows
+    }
+
+    seen_tags: set[str] = set()
+    seen_versions: set[str] = set()
+    seen_release_ids: set[int] = set()
+    seen_run_ids: set[int] = set()
+
+    previous: tuple[int, int, int] | None = (
+        _semver_key(legacy_rows[-1]["release_tag"])
+        if legacy_rows
+        else None
+    )
+
+    for index, item in enumerate(records):
+        if not isinstance(item, dict):
+            errors.append(
+                f"PUBLICATION_ASSERTION_RECORD_INVALID:{index}"
+            )
+            continue
+
+        if set(item) != ENTRY_KEYS:
+            errors.append(
+                f"PUBLICATION_ASSERTION_FIELDS_INVALID:{index}"
+            )
+            continue
+
+        tag = item.get("release_tag")
+        version = item.get("version")
+
+        if (
+            not isinstance(tag, str)
+            or TAG_RE.fullmatch(tag) is None
+        ):
+            errors.append(
+                f"PUBLICATION_ASSERTION_TAG_INVALID:{index}"
+            )
+            continue
+
+        if version != tag.removeprefix("Elpis"):
+            errors.append(
+                f"PUBLICATION_ASSERTION_VERSION_MISMATCH:{tag}"
+            )
+
+        if tag in legacy_tags or version in legacy_versions:
+            errors.append(
+                f"PUBLICATION_ASSERTION_DUPLICATES_LEGACY:{tag}"
+            )
+
+        if tag in seen_tags or version in seen_versions:
+            errors.append(
+                f"PUBLICATION_ASSERTION_DUPLICATE:{tag}"
+            )
+
+        seen_tags.add(tag)
+        if isinstance(version, str):
+            seen_versions.add(version)
+
+        key = _semver_key(tag)
+        if previous is not None and key <= previous:
+            errors.append(
+                f"PUBLICATION_ASSERTION_ORDER_INVALID:{tag}"
+            )
+        previous = key
+
+        if tag in failed:
+            errors.append(
+                f"PUBLICATION_ASSERTION_IS_FAILED:{tag}"
+            )
+
+        tag_object = item.get("tag_object")
+        if item.get("tag_object_type") != "tag":
+            errors.append(
+                f"PUBLICATION_TAG_OBJECT_TYPE_FIELD_INVALID:{tag}"
+            )
+        if (
+            not isinstance(tag_object, str)
+            or HEX_RE.fullmatch(tag_object) is None
+        ):
+            errors.append(
+                f"PUBLICATION_TAG_OBJECT_ID_FIELD_INVALID:{tag}"
+            )
+
+        peeled = item.get("peeled_commit")
+        if item.get("peeled_object_type") != "commit":
+            errors.append(
+                f"PUBLICATION_PEELED_TYPE_FIELD_INVALID:{tag}"
+            )
+        if (
+            not isinstance(peeled, str)
+            or HEX_RE.fullmatch(peeled) is None
+        ):
+            errors.append(
+                f"PUBLICATION_PEELED_COMMIT_FIELD_INVALID:{tag}"
+            )
+
+        expected_path = (
+            f"manifests/{tag}.RELEASE_MANIFEST.json"
+        )
+
+        if item.get("manifest_path") != expected_path:
+            errors.append(
+                f"PUBLICATION_MANIFEST_PATH_MISMATCH:{tag}"
+            )
+        else:
+            manifest = root / expected_path
+
+            if not manifest.is_file():
+                errors.append(
+                    f"PUBLICATION_MANIFEST_MISSING:{tag}"
+                )
+            else:
+                try:
+                    raw = _read_bytes(manifest)
+                    manifest_payload = _load_json_bytes(
+                        raw,
+                        label=expected_path,
+                    )
+                except PublicationAuthorityError as exc:
+                    errors.append(str(exc))
+                else:
+                    if (
+                        not isinstance(manifest_payload, dict)
+                        or manifest_payload.get("release_tag") != tag
+                        or manifest_payload.get("version") != version
+                    ):
+                        errors.append(
+                            "PUBLICATION_CHECKOUT_MANIFEST_"
+                            f"IDENTITY_MISMATCH:{tag}"
+                        )
+
+                    digest = item.get("manifest_sha256")
+
+                    if (
+                        not isinstance(digest, str)
+                        or SHA256_RE.fullmatch(digest) is None
+                    ):
+                        errors.append(
+                            "PUBLICATION_MANIFEST_SHA256_"
+                            f"FIELD_INVALID:{tag}"
+                        )
+                    elif digest != _sha256(raw):
+                        errors.append(
+                            "PUBLICATION_CHECKOUT_MANIFEST_"
+                            f"SHA256_MISMATCH:{tag}"
+                        )
+
+        if (
+            not isinstance(peeled, str)
+            or HEX_RE.fullmatch(peeled) is None
+        ):
+            continue
+
+        receipt = {
+            "github_actions": item.get("github_actions"),
+            "github_release": item.get("github_release"),
+            "pypi": item.get("pypi"),
+            "release_tag": tag,
+        }
+
+        try:
+            external = _validate_external_receipt(
+                receipt,
+                tag=tag,
+                peeled=peeled,
+            )
+        except PublicationAuthorityError as exc:
+            errors.append(str(exc))
+            continue
+
+        release_id = external[
+            "github_release"
+        ]["release_id"]
+
+        if release_id in seen_release_ids:
+            errors.append(
+                f"GITHUB_RELEASE_ID_REUSED:{release_id}"
+            )
+        seen_release_ids.add(release_id)
+
+        for name, action in external[
+            "github_actions"
+        ].items():
+            run_id = action["run_id"]
+            if run_id in seen_run_ids:
+                errors.append(
+                    "GITHUB_ACTION_RUN_ID_REUSED:"
+                    f"{run_id}:{name}"
+                )
+            seen_run_ids.add(run_id)
+
+    return errors
+
 @contextmanager
 def _exclusive_lock(path: Path) -> Iterator[None]:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -623,20 +860,33 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", type=Path, default=DEFAULT_ROOT)
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--check", action="store_true")
+    group.add_argument("--check-gitless", action="store_true")
     group.add_argument("--append-receipt", type=Path)
     args = parser.parse_args(argv)
     root = args.root.resolve()
 
-    if args.check:
-        errors = validation_errors(root)
+    if args.check or args.check_gitless:
+        errors = (
+            validation_errors(root)
+            if args.check
+            else gitless_validation_errors(root)
+        )
         if errors:
             for error in errors:
                 print(error)
             return 1
-        count = len(load_registry(root)["publication_assertions"])
+        count = len(
+            load_registry(root)["publication_assertions"]
+        )
+        mode = (
+            "git-bound"
+            if args.check
+            else "gitless-structural"
+        )
         print(
             "PASS publication-assertions v2 validates "
-            f"{count} explicit publication assertion(s)"
+            f"{count} explicit publication assertion(s) "
+            f"mode={mode}"
         )
         return 0
 

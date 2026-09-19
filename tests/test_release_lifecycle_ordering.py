@@ -221,3 +221,27 @@ def test_tag_sensitive_workflows_restore_annotated_tag_objects() -> None:
     assert pypi_type in pypi
     assert pypi.index(pypi_fetch) < pypi.index(strict)
 
+
+
+
+def test_publication_closeout_uses_v2_and_freezes_v1() -> None:
+    text = _text(POLICY)
+
+    # Policy prose is Markdown and may be line-wrapped without changing
+    # semantics. Test normalized prose rather than physical line layout.
+    normalized = " ".join(text.split())
+
+    required = (
+        "`PUBLISHED_RELEASES.json` is frozen legacy v1",
+        "`PUBLICATION_ASSERTIONS.json`",
+        "`--append-tag` is no longer",
+        "external-observation receipt",
+        "annotated tag object",
+        "peeled commit",
+        "release manifest bytes",
+        "Git-less release export",
+        "performs no network discovery itself",
+    )
+
+    for phrase in required:
+        assert phrase in normalized, phrase

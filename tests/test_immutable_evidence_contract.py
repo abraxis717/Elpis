@@ -398,3 +398,45 @@ def test_gitless_v2_prefix_transition_defers_git_semantic_proof(tmp_path):
         current,
         check_tag_projection=False,
     ) == []
+
+
+
+def test_v2_checker_mode_tracks_git_history_availability():
+    import ast
+
+    source = (
+        ROOT / "tools/verify_immutable_evidence.py"
+    ).read_text(encoding="utf-8")
+
+    tree = ast.parse(
+        source,
+        filename="tools/verify_immutable_evidence.py",
+    )
+
+    assignments = []
+
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Assign):
+            continue
+
+        if any(
+            isinstance(target, ast.Name)
+            and target.id == "checker_mode"
+            for target in node.targets
+        ):
+            assignments.append(node.value)
+
+    assert len(assignments) == 1
+
+    value = assignments[0]
+
+    assert isinstance(value, ast.IfExp)
+
+    assert isinstance(value.test, ast.Name)
+    assert value.test.id == "check_history"
+
+    assert isinstance(value.body, ast.Constant)
+    assert value.body.value == "--check"
+
+    assert isinstance(value.orelse, ast.Constant)
+    assert value.orelse.value == "--check-gitless"

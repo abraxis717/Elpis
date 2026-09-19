@@ -412,7 +412,86 @@ def m16_release_notes_declared_version_drift(
     _reseal(root, rel)
 
 
+
+def m17_mutate_frozen_legacy_publication_registry(
+    root: Path,
+) -> None:
+    """Legacy publication history is byte-frozen after v2 admission."""
+    rel = "PUBLISHED_RELEASES.json"
+    target = root / rel
+
+    payload = json.loads(
+        target.read_text(encoding="utf-8")
+    )
+    payload["legacy_mutation_probe"] = True
+
+    target.write_text(
+        json.dumps(payload, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    _reseal(root, rel)
+
+
+def m18_forge_gitless_v2_successor_append(
+    root: Path,
+) -> None:
+    """A Git-less release export must still reject a forged v2 append."""
+    rel = "PUBLICATION_ASSERTIONS.json"
+    target = root / rel
+
+    payload = json.loads(
+        target.read_text(encoding="utf-8")
+    )
+
+    rows = payload.get(
+        "publication_assertions"
+    )
+
+    if not isinstance(rows, list) or not rows:
+        raise AssertionError(
+            "v2 publication assertion fixture absent"
+        )
+
+    forged = json.loads(
+        json.dumps(rows[-1])
+    )
+
+    forged["release_tag"] = "Elpis10.0.0"
+    forged["version"] = "10.0.0"
+    forged["manifest_path"] = (
+        "manifests/"
+        "Elpis10.0.0.RELEASE_MANIFEST.json"
+    )
+    forged["github_release"]["tag_name"] = (
+        "Elpis10.0.0"
+    )
+    forged["pypi"]["version"] = "10.0.0"
+
+    rows.append(forged)
+
+    target.write_text(
+        json.dumps(payload, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    _reseal(root, rel)
+
 CASES: tuple[tuple[str, object, int, str], ...] = (
+    (
+        "M17 frozen legacy publication registry mutation",
+        m17_mutate_frozen_legacy_publication_registry,
+        1,
+        "FROZEN_REGISTRY_BYTES_MUTATED:"
+        "PUBLISHED_RELEASES.json",
+    ),
+    (
+        "M18 forged gitless v2 publication append",
+        m18_forge_gitless_v2_successor_append,
+        1,
+        "PUBLICATION_MANIFEST_MISSING:"
+        "Elpis10.0.0",
+    ),
     (
         "M15 README declared release drift",
         m15_readme_declared_release_drift,

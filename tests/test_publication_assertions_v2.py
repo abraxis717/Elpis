@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -357,3 +358,174 @@ def test_v2_cannot_duplicate_legacy_published_version(tmp_path: Path):
     proc = run_tool(repo, "--append-receipt", str(rec))
     assert proc.returncode != 0
     assert "PUBLICATION_ASSERTION_DUPLICATES_LEGACY" in proc.stdout
+
+
+def test_gitless_export_validates_structural_publication_authority(
+    tmp_path: Path,
+):
+    repo = tmp_path / "repo"
+    seed(repo)
+
+    tag, commit = add_release(repo, "9.9.9")
+    rec = write_receipt(
+        repo,
+        receipt(tag, commit),
+    )
+
+    assert (
+        run_tool(
+            repo,
+            "--append-receipt",
+            str(rec),
+        ).returncode
+        == 0
+    )
+
+    export = tmp_path / "export"
+
+    shutil.copytree(
+        repo,
+        export,
+        ignore=shutil.ignore_patterns(".git"),
+    )
+
+    proc = run_tool(
+        export,
+        "--check-gitless",
+    )
+
+    assert proc.returncode == 0, (
+        proc.stdout + proc.stderr
+    )
+    assert "mode=gitless-structural" in proc.stdout
+
+
+def test_gitless_export_rejects_forged_successor_append(
+    tmp_path: Path,
+):
+    repo = tmp_path / "repo"
+    seed(repo)
+
+    tag, commit = add_release(repo, "9.9.9")
+    rec = write_receipt(
+        repo,
+        receipt(tag, commit),
+    )
+
+    assert (
+        run_tool(
+            repo,
+            "--append-receipt",
+            str(rec),
+        ).returncode
+        == 0
+    )
+
+    export = tmp_path / "export"
+
+    shutil.copytree(
+        repo,
+        export,
+        ignore=shutil.ignore_patterns(".git"),
+    )
+
+    registry = export / "PUBLICATION_ASSERTIONS.json"
+
+    payload = json.loads(
+        registry.read_text(encoding="utf-8")
+    )
+
+    forged = json.loads(
+        json.dumps(
+            payload["publication_assertions"][0]
+        )
+    )
+
+    forged["release_tag"] = "Elpis10.0.0"
+    forged["version"] = "10.0.0"
+    forged["manifest_path"] = (
+        "manifests/"
+        "Elpis10.0.0.RELEASE_MANIFEST.json"
+    )
+    forged["github_release"]["tag_name"] = (
+        "Elpis10.0.0"
+    )
+    forged["pypi"]["version"] = "10.0.0"
+
+    payload["publication_assertions"].append(
+        forged
+    )
+
+    registry.write_text(
+        json.dumps(payload, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    proc = run_tool(
+        export,
+        "--check-gitless",
+    )
+
+    assert proc.returncode != 0
+    assert (
+        "PUBLICATION_MANIFEST_MISSING:"
+        "Elpis10.0.0"
+        in proc.stdout
+    )
+
+
+def test_gitless_export_rejects_annotated_tag_type_claim_tamper(
+    tmp_path: Path,
+):
+    repo = tmp_path / "repo"
+    seed(repo)
+
+    tag, commit = add_release(repo, "9.9.9")
+    rec = write_receipt(
+        repo,
+        receipt(tag, commit),
+    )
+
+    assert (
+        run_tool(
+            repo,
+            "--append-receipt",
+            str(rec),
+        ).returncode
+        == 0
+    )
+
+    export = tmp_path / "export"
+
+    shutil.copytree(
+        repo,
+        export,
+        ignore=shutil.ignore_patterns(".git"),
+    )
+
+    registry = export / "PUBLICATION_ASSERTIONS.json"
+
+    payload = json.loads(
+        registry.read_text(encoding="utf-8")
+    )
+
+    payload[
+        "publication_assertions"
+    ][0]["tag_object_type"] = "commit"
+
+    registry.write_text(
+        json.dumps(payload, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    proc = run_tool(
+        export,
+        "--check-gitless",
+    )
+
+    assert proc.returncode != 0
+    assert (
+        "PUBLICATION_TAG_OBJECT_TYPE_FIELD_INVALID:"
+        "Elpis9.9.9"
+        in proc.stdout
+    )

@@ -416,31 +416,35 @@ def verify(root:Path,baseline_path:Path,check_history=True)->dict:
             )
         )
 
-    if check_history:
-        checker=root/"tools/publication_assertions_v2.py"
-        if not checker.is_file():
+    checker=root/"tools/publication_assertions_v2.py"
+    if not checker.is_file():
+        errors.append(
+            "PUBLICATION_ASSERTIONS_V2_CHECKER_MISSING"
+        )
+    else:
+        checker_mode=(
+            "--check"
+            if check_history
+            else "--check-gitless"
+        )
+        p=subprocess.run(
+            [
+                __import__("sys").executable,
+                "-B",
+                str(checker),
+                "--root",
+                str(root),
+                checker_mode,
+            ],
+            cwd=root,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+        )
+        if p.returncode:
             errors.append(
-                "PUBLICATION_ASSERTIONS_V2_CHECKER_MISSING"
+                "PUBLICATION_ASSERTIONS_V2_NONPASS:"
+                +p.stdout.decode(errors="replace").strip()
             )
-        else:
-            p=subprocess.run(
-                [
-                    __import__("sys").executable,
-                    "-B",
-                    str(checker),
-                    "--root",
-                    str(root),
-                    "--check",
-                ],
-                cwd=root,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-            )
-            if p.returncode:
-                errors.append(
-                    "PUBLICATION_ASSERTIONS_V2_NONPASS:"
-                    +p.stdout.decode(errors="replace").strip()
-                )
 
     gens=base.get("identity_generations",[])
     if not gens: errors.append("NO_IDENTITY_GENERATION")

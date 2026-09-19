@@ -158,41 +158,94 @@ def test_semantic_tag_without_publication_assertion_is_valid(tmp_path: Path):
     assert proc.returncode == 0, proc.stdout + proc.stderr
 
 
-def test_explicit_append_adds_exactly_one_deterministic_record(tmp_path: Path):
+def test_legacy_v1_append_surface_is_frozen(
+    tmp_path: Path,
+):
     repo = _fixture_repo(tmp_path)
-    commit, digest = _add_release_tag(repo, "9.9.9")
-    first = _run_tool(repo, "--append-tag", "Elpis9.9.9")
-    assert first.returncode == 0, first.stdout + first.stderr
-    payload = json.loads((repo / "PUBLISHED_RELEASES.json").read_text(encoding="utf-8"))
-    assert payload["published_releases"] == [_entry(repo, "9.9.9", commit, digest)]
-    check = _run_tool(repo, "--check")
-    assert check.returncode == 0, check.stdout + check.stderr
-    second = _run_tool(repo, "--append-tag", "Elpis9.9.9")
-    assert second.returncode != 0
-    assert "PUBLISHED_APPEND_DUPLICATE_TAG" in second.stdout
+
+    _add_release_tag(repo, "9.9.9")
+
+    before = (
+        repo / "PUBLISHED_RELEASES.json"
+    ).read_bytes()
+
+    proc = _run_tool(
+        repo,
+        "--append-tag",
+        "Elpis9.9.9",
+    )
+
+    assert proc.returncode != 0
+    assert (
+        "LEGACY_PUBLISHED_REGISTRY_FROZEN_"
+        "USE_PUBLICATION_ASSERTIONS_V2"
+        in proc.stdout
+    )
+
+    assert (
+        repo / "PUBLISHED_RELEASES.json"
+    ).read_bytes() == before
+
+    assert (
+        _run_tool(repo, "--check").returncode
+        == 0
+    )
 
 
-def test_append_failed_tag_is_rejected(tmp_path: Path):
+def test_legacy_v1_append_is_frozen_even_for_failed_tag(
+    tmp_path: Path,
+):
     repo = _fixture_repo(tmp_path)
-    commit, digest = _add_release_tag(repo, "9.9.9")
+
+    commit, digest = _add_release_tag(
+        repo,
+        "9.9.9",
+    )
+
     failed = {
-        "failed_releases": [{
-            "disposition": "SEALED_TAGGED_CI_FAILED_NOT_PUBLISHED",
-            "failure_classes": ["TEST_FAILURE"],
-            "manifest_path": "manifests/Elpis9.9.9.RELEASE_MANIFEST.json",
-            "manifest_sha256": digest,
-            "peeled_commit": commit,
-            "release_tag": "Elpis9.9.9",
-            "tag_object": _git(repo, "rev-parse", "Elpis9.9.9^{tag}"),
-            "version": "9.9.9",
-        }],
+        "failed_releases": [
+            {
+                "disposition":
+                    "SEALED_TAGGED_CI_FAILED_NOT_PUBLISHED",
+                "failure_classes": [
+                    "TEST_FAILURE"
+                ],
+                "manifest_path":
+                    "manifests/"
+                    "Elpis9.9.9.RELEASE_MANIFEST.json",
+                "manifest_sha256": digest,
+                "peeled_commit": commit,
+                "release_tag": "Elpis9.9.9",
+                "tag_object": _git(
+                    repo,
+                    "rev-parse",
+                    "Elpis9.9.9^{tag}",
+                ),
+                "version": "9.9.9",
+            }
+        ],
         "schema": "elpis.failed-releases.v1",
     }
-    (repo / "FAILED_RELEASES.json").write_text(json.dumps(failed, indent=2) + "\n", encoding="utf-8")
-    proc = _run_tool(repo, "--append-tag", "Elpis9.9.9")
-    assert proc.returncode != 0
-    assert "PUBLISHED_APPEND_FAILED_RELEASE" in proc.stdout
 
+    (
+        repo / "FAILED_RELEASES.json"
+    ).write_text(
+        json.dumps(failed, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    proc = _run_tool(
+        repo,
+        "--append-tag",
+        "Elpis9.9.9",
+    )
+
+    assert proc.returncode != 0
+    assert (
+        "LEGACY_PUBLISHED_REGISTRY_FROZEN_"
+        "USE_PUBLICATION_ASSERTIONS_V2"
+        in proc.stdout
+    )
 
 def test_duplicate_published_tag_or_version_is_rejected(tmp_path: Path):
     repo = _fixture_repo(tmp_path)

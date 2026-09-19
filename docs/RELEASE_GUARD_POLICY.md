@@ -94,12 +94,31 @@ release-lifecycle gate. A successor manifest may be absent only during the
 explicit pre-seal lifecycle. Once present, its version/tag and required release
 files must agree with VERSION.
 
-`PUBLISHED_RELEASES.json` records publication fact, never publication intent.
-Do not pre-register an unpublished successor there. When the current version is
-actually published, its registry entry must use the exact immutable tag,
-manifest path, manifest SHA-256, and peeled commit. Release closeout is not
-complete while GitHub latest, PyPI latest, or the published-release registry
-lags the released VERSION.
+Publication authority has two explicit generations.
+
+`PUBLISHED_RELEASES.json` is frozen legacy v1 publication history. Its bytes are
+immutable after publication-authority v2 admission. `--append-tag` is no longer
+an authorized transition and must fail closed.
+
+`PUBLICATION_ASSERTIONS.json` is the append-only v2 publication-fact authority
+for Elpis2.2.19 and later publication closeouts. A v2 assertion is created only
+from an explicit external-observation receipt after the immutable annotated tag,
+tag-triggered qualification, GitHub Release publication, release-event
+qualification, PyPI publication, and exact wheel/sdist witnesses have been
+observed.
+
+In a Git checkout, v2 verification binds the exact annotated tag object to its
+peeled commit and hashes the release manifest bytes read from that tagged commit
+tree. The checkout copy must equal those tagged bytes. In a Git-less release
+export, the verifier still proves v2 structure, frozen-v1 identity, exported
+manifest bytes, witness coherence, ordering, failed-release exclusion, and
+witness uniqueness, while explicitly deferring Git-object re-proof.
+
+Do not pre-register an unpublished successor in either registry. Release
+closeout is not complete while GitHub Release, PyPI, or the v2 publication
+assertion lags the released VERSION. External observation and repository
+authority mutation remain separate operations: the v2 registry tool consumes a
+receipt and performs no network discovery itself.
 
 Compact successor authority is explicitly opt-in with `seal_release.py
 --schema v3` after 2.2.6. Elpis2.2.6 and every historical release retain their

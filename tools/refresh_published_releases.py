@@ -188,6 +188,13 @@ def encoded(payload: dict) -> str:
 
 
 def append_tag(root: Path, tag: str) -> dict:
+    raise ValueError(
+        "LEGACY_PUBLISHED_REGISTRY_FROZEN_"
+        "USE_PUBLICATION_ASSERTIONS_V2"
+    )
+
+    # Historical implementation intentionally retained below as dead source
+    # for review continuity. The callable authority terminates above.
     semver_key(tag)
     current = load_registry(root)
     current_errors = validation_errors(root, current)
