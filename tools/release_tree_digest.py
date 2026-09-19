@@ -15,7 +15,9 @@ import subprocess
 
 SCHEMA = "elpis.release-manifest.v3"
 ALGORITHM = "elpis.publication-tree.sha256.v1"
-POLICY = "elpis.publication-membership.v1"
+POLICY_V1 = "elpis.publication-membership.v1"
+POLICY_V2 = "elpis.publication-membership.v2"
+POLICY = POLICY_V2
 DOMAIN = b"elpis.publication-tree.v1\0"
 EPHEMERAL_PARTS = {
     "build", "dist", "__pycache__", ".venv", ".pytest_cache",
@@ -34,6 +36,26 @@ TREE_FIELDS = {
     "file_count", "git_tree_oid", "git_object_format",
 }
 
+POST_PUBLICATION_REGISTRIES_V1 = frozenset({
+    "PUBLISHED_RELEASES.json",
+})
+POST_PUBLICATION_REGISTRIES_V2 = frozenset({
+    "PUBLISHED_RELEASES.json",
+    "PUBLICATION_ASSERTIONS.json",
+})
+
+
+def publication_registry_exclusions(
+    policy: str,
+) -> frozenset[str]:
+    if policy == POLICY_V1:
+        return POST_PUBLICATION_REGISTRIES_V1
+    if policy == POLICY_V2:
+        return POST_PUBLICATION_REGISTRIES_V2
+    raise ValueError(
+        "V3_PUBLICATION_POLICY_INVALID"
+    )
+
 
 def require_successor(version: str) -> None:
     if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version) or tuple(
@@ -51,10 +73,18 @@ def normalized_path(value: str) -> str:
     return value
 
 
-def excluded(value: str, manifest_rel: str) -> bool:
-    return ".git" in PurePosixPath(value).parts or value in {
-        manifest_rel, "PUBLISHED_RELEASES.json",
-    }
+def excluded(
+    value: str,
+    manifest_rel: str,
+    *,
+    policy: str = POLICY,
+) -> bool:
+    return (
+        ".git" in PurePosixPath(value).parts
+        or value == manifest_rel
+        or value
+        in publication_registry_exclusions(policy)
+    )
 
 
 def physical_files(root: Path) -> set[str]:
@@ -95,7 +125,13 @@ def _git(root: Path, *args: str) -> bytes:
     return proc.stdout
 
 
-def git_entries(root: Path, manifest_rel: str, *, head: bool) -> dict[str, tuple[str, str]]:
+def git_entries(
+    root: Path,
+    manifest_rel: str,
+    *,
+    head: bool,
+    policy: str = POLICY,
+) -> dict[str, tuple[str, str]]:
     command = ("ls-tree", "-rz", "--full-tree", "HEAD") if head else ("ls-files", "--stage", "-z")
     result = {}
     for entry in _git(root, *command).split(b"\0"):
@@ -103,7 +139,11 @@ def git_entries(root: Path, manifest_rel: str, *, head: bool) -> dict[str, tuple
             continue
         meta, raw = entry.split(b"\t", 1)
         rel = normalized_path(raw.decode("utf-8"))
-        if excluded(rel, manifest_rel):
+        if excluded(
+            rel,
+            manifest_rel,
+            policy=policy,
+        ):
             continue
         mode, second, third = meta.decode("ascii").split()
         oid = third if head else second
@@ -115,11 +155,29 @@ def git_entries(root: Path, manifest_rel: str, *, head: bool) -> dict[str, tuple
     return result
 
 
-def publication_paths(root: Path, manifest_rel: str) -> list[str]:
+def publication_paths(
+    root: Path,
+    manifest_rel: str,
+    *,
+    policy: str = POLICY,
+) -> list[str]:
     normalized_path(manifest_rel)
     physical = physical_files(root)
-    paths = set(git_entries(root, manifest_rel, head=False)) if (root / ".git").exists() else {
-        rel for rel in physical if not excluded(rel, manifest_rel)
+    paths = set(
+        git_entries(
+            root,
+            manifest_rel,
+            head=False,
+            policy=policy,
+        )
+    ) if (root / ".git").exists() else {
+        rel
+        for rel in physical
+        if not excluded(
+            rel,
+            manifest_rel,
+            policy=policy,
+        )
     }
     missing = paths - physical
     if missing:
@@ -187,12 +245,28 @@ def git_tree_digest(entries: dict[str, tuple[str, str]], object_format: str) -> 
     return encode(tree)
 
 
-def checkout_tree(root: Path, manifest_rel: str, paths: list[str]) -> tuple[str, str]:
+def checkout_tree(
+    root: Path,
+    manifest_rel: str,
+    paths: list[str],
+    *,
+    policy: str = POLICY,
+) -> tuple[str, str]:
     object_format = _git(root, "rev-parse", "--show-object-format").decode("ascii").strip()
     if object_format not in {"sha1", "sha256"}:
         raise ValueError("PUBLICATION_GIT_OBJECT_FORMAT_UNSUPPORTED")
-    head = git_entries(root, manifest_rel, head=True)
-    index = git_entries(root, manifest_rel, head=False)
+    head = git_entries(
+        root,
+        manifest_rel,
+        head=True,
+        policy=policy,
+    )
+    index = git_entries(
+        root,
+        manifest_rel,
+        head=False,
+        policy=policy,
+    )
     if head != index:
         raise ValueError("PUBLICATION_GIT_INDEX_HEAD_MISMATCH")
     physical = {}
@@ -207,12 +281,34 @@ def checkout_tree(root: Path, manifest_rel: str, paths: list[str]) -> tuple[str,
     return git_tree_digest(head, object_format), object_format
 
 
-def build_record(root: Path, manifest_rel: str) -> dict:
-    paths = publication_paths(root, manifest_rel)
-    oid, object_format = checkout_tree(root, manifest_rel, paths) if (root / ".git").exists() else (None, None)
+def build_record(
+    root: Path,
+    manifest_rel: str,
+    *,
+    policy: str = POLICY,
+) -> dict:
+    publication_registry_exclusions(policy)
+
+    paths = publication_paths(
+        root,
+        manifest_rel,
+        policy=policy,
+    )
+
+    oid, object_format = (
+        checkout_tree(
+            root,
+            manifest_rel,
+            paths,
+            policy=policy,
+        )
+        if (root / ".git").exists()
+        else (None, None)
+    )
+
     return {
         "tree_digest_algorithm": ALGORITHM,
-        "publication_policy": POLICY,
+        "publication_policy": policy,
         "publication_tree_sha256": tree_digest(root, paths),
         "file_count": len(paths),
         "git_tree_oid": oid,
@@ -224,8 +320,21 @@ def verify_record(root: Path, manifest_rel: str, data: dict) -> list[str]:
     """Fail closed on extension inventories, unknown policies, or mismatches."""
     if set(data) != IDENTITY_FIELDS | TREE_FIELDS:
         return ["V3_AUTHORITY_FIELDS_INVALID"]
-    if data.get("tree_digest_algorithm") != ALGORITHM or data.get("publication_policy") != POLICY:
-        return ["V3_PUBLICATION_POLICY_INVALID"]
+    policy = data.get(
+        "publication_policy"
+    )
+
+    if (
+        data.get("tree_digest_algorithm")
+        != ALGORITHM
+        or policy not in {
+            POLICY_V1,
+            POLICY_V2,
+        }
+    ):
+        return [
+            "V3_PUBLICATION_POLICY_INVALID"
+        ]
     if (type(data.get("file_count")) is not int or data["file_count"] < 0
             or not isinstance(data.get("publication_tree_sha256"), str)
             or not re.fullmatch(r"[0-9a-f]{64}", data["publication_tree_sha256"])):
@@ -237,7 +346,11 @@ def verify_record(root: Path, manifest_rel: str, data: dict) -> list[str]:
     )):
         return ["V3_GIT_RECORD_INVALID"]
     try:
-        actual = build_record(root, manifest_rel)
+        actual = build_record(
+            root,
+            manifest_rel,
+            policy=policy,
+        )
     except (ValueError, OSError, RuntimeError) as exc:
         return [str(exc)]
     errors = []

@@ -120,6 +120,13 @@ assertion lags the released VERSION. External observation and repository
 authority mutation remain separate operations: the v2 registry tool consumes a
 receipt and performs no network discovery itself.
 
+Compact publication membership is versioned rather than silently reinterpreted.
+Historical `elpis.publication-membership.v1` retains its original exclusion of
+only `PUBLISHED_RELEASES.json`; successor membership policy v2 excludes both
+publication registries, adding `PUBLICATION_ASSERTIONS.json`. Publication fact
+is necessarily materialized after the immutable release tag and therefore
+cannot be an input to that same release's sealed publication-tree digest.
+
 Compact successor authority is explicitly opt-in with `seal_release.py
 --schema v3` after 2.2.6. Elpis2.2.6 and every historical release retain their
 existing manifest schema and bytes. See [Compact release authority](COMPACT_RELEASE_AUTHORITY.md)

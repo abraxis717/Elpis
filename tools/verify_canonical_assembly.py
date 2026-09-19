@@ -145,7 +145,15 @@ def _release_file_pins(
             # Membership is independently derived, never supplied by the record.
             # In Git this also prevents untracked component files from acquiring
             # byte authority merely because the rest of the tree verifies.
-            return authority_rel, set(compact["publication_paths"](root, authority_rel.as_posix()))
+            return authority_rel, set(
+                compact["publication_paths"](
+                    root,
+                    authority_rel.as_posix(),
+                    policy=authority[
+                        "publication_policy"
+                    ],
+                )
+            )
         except (ValueError, OSError, RuntimeError) as exc:
             errors.append(f"RELEASE_AUTHORITY:{exc}")
             return authority_rel, set()

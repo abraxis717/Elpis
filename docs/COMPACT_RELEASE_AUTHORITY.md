@@ -14,7 +14,7 @@ The normal release identity and runtime-authority fields are unchanged. The
 | Field | Meaning |
 | --- | --- |
 | `tree_digest_algorithm` | `elpis.publication-tree.sha256.v1` |
-| `publication_policy` | `elpis.publication-membership.v1` |
+| `publication_policy` | Historical `elpis.publication-membership.v1` or successor `elpis.publication-membership.v2` |
 | `publication_tree_sha256` | Lowercase 64-digit aggregate digest |
 | `file_count` | Number of included regular files and symlinks |
 | `git_tree_oid` | Native Git tree object identity of the publication projection |
@@ -64,10 +64,13 @@ The implementation and independent framing-vector test live in
 
 ## Publication membership and safety
 
-The two exclusions are the selected release record itself and the root
-`PUBLISHED_RELEASES.json`. Any path with a `.git` component is ignored.
-Historical manifests and every other tracked publication file are included.
-This preserves the existing self-seal and post-publication registry boundaries.
+Publication membership is explicitly versioned. Historical
+`elpis.publication-membership.v1` excludes the selected release record and root
+`PUBLISHED_RELEASES.json`. Successor `elpis.publication-membership.v2` preserves
+those exclusions and additionally excludes root `PUBLICATION_ASSERTIONS.json`.
+Any path with a `.git` component is ignored. Historical manifests and every
+other tracked publication file are included. V1 verification retains its exact
+historical membership semantics; new v3 seals use v2 membership.
 
 In Git, included membership comes from stage-zero tracked index entries;
 untracked/ignored clone-local files are not publication authority. In an
@@ -138,9 +141,11 @@ package-only archive that omits source-only components is not that tree.
 Wheel/package discovery remains unchanged. Verification belongs before
 package construction, as in the existing export workflow.
 
-The legacy `tools/mutation_suite.py` is still a v2 provisional resealing
-harness. V3 has independent tiny-tree mutation and export tests, with no
-persistent qualification directory or whole-repository reseal requirement.
+`tools/mutation_suite.py` uses provisional v3 sealing for successors after
+2.2.6. It runs only while `VERSION` names an unpublished successor; attempting
+release-wide mutation qualification while `VERSION` still names a published
+release fails closed before any throwaway reseal. Compact membership retains
+independent tiny-tree mutation and export tests.
 
 ## Integration boundary
 
@@ -156,13 +161,12 @@ remains responsible for the independently ratified release identity fields.
 The assembly tests use tiny synthetic successor fixtures for both schemas,
 without creating an Elpis2.2.6 record.
 
-The legacy mutation harness also indexes `data["files"]` and requests default
-v2 provisional sealing. Future v3 release-wide qualification must explicitly
-adapt that harness or retain its v2 fixtures separately from the compact
-mutation suite. It cannot simply reseal a v3 record using the default v2
-command. `tools/mutation_suite.py` is also outside the owned-file list.
-This remaining harness integration is an adoption blocker, not a reason to
-synthesize a hidden full inventory or weaken assembly byte authentication.
+The release-wide mutation harness now selects v3 provisional sealing for
+successors and recomputes compact records without synthesizing a hidden file
+inventory. Mutations of excluded publication registries deliberately do not
+reseal: their target registry guards must fire during verifier execution rather
+than during mutation setup. Full release-wide mutation qualification resumes
+after the atomic metadata advance makes `VERSION` an unpublished successor.
 
 For scale, the existing Elpis2.2.5 v2 record is 261,663 bytes for 1,523 paths.
 The equivalent compact JSON shape, keeping its identity fields and count and

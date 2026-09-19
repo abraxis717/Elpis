@@ -120,7 +120,13 @@ def _reseal(root: Path, rel: str) -> None:
         compact = runpy.run_path(str(root / "tools/release_tree_digest.py"))
         record = compact["build_record"](
             root,
-            manifest.relative_to(root).as_posix(),
+            manifest.relative_to(
+                root
+            ).as_posix(),
+            policy=data.get(
+                "publication_policy",
+                compact["POLICY"],
+            ),
         )
         data.update(record)
         manifest.write_text(json.dumps(data, indent=2) + "\n")
@@ -430,7 +436,6 @@ def m17_mutate_frozen_legacy_publication_registry(
         encoding="utf-8",
     )
 
-    _reseal(root, rel)
 
 
 def m18_forge_gitless_v2_successor_append(
@@ -475,7 +480,6 @@ def m18_forge_gitless_v2_successor_append(
         encoding="utf-8",
     )
 
-    _reseal(root, rel)
 
 CASES: tuple[tuple[str, object, int, str], ...] = (
     (
@@ -547,6 +551,77 @@ CASES: tuple[tuple[str, object, int, str], ...] = (
 )
 
 
+def _published_versions(
+    root: Path,
+) -> set[str]:
+    versions: set[str] = set()
+
+    for filename, key in (
+        (
+            "PUBLISHED_RELEASES.json",
+            "published_releases",
+        ),
+        (
+            "PUBLICATION_ASSERTIONS.json",
+            "publication_assertions",
+        ),
+    ):
+        path = root / filename
+
+        if not path.is_file():
+            continue
+
+        payload = json.loads(
+            path.read_text(
+                encoding="utf-8"
+            )
+        )
+
+        rows = payload.get(key)
+
+        if not isinstance(rows, list):
+            raise AssertionError(
+                "PUBLICATION_REGISTRY_"
+                "LIST_INVALID:"
+                f"{filename}:{key}"
+            )
+
+        versions.update(
+            row["version"]
+            for row in rows
+            if (
+                isinstance(row, dict)
+                and isinstance(
+                    row.get("version"),
+                    str,
+                )
+            )
+        )
+
+    return versions
+
+
+def _mutation_suite_version_gate(
+    root: Path,
+) -> str | None:
+    version = (
+        root / "VERSION"
+    ).read_text(
+        encoding="utf-8"
+    ).strip()
+
+    if version in _published_versions(
+        root
+    ):
+        return (
+            "MUTATION_SUITE_REQUIRES_"
+            "UNPUBLISHED_SUCCESSOR_VERSION:"
+            + version
+        )
+
+    return None
+
+
 # ---------------------------------------------------------------------------
 # harness
 # ---------------------------------------------------------------------------
@@ -593,8 +668,25 @@ def run_case(name: str, mutate, expect: int, marker: str, verbose: bool) -> dict
 
 
 def main(argv: list[str]) -> int:
+    gate = _mutation_suite_version_gate(
+        REPO
+    )
+
+    if gate is not None:
+        print(gate)
+        return 2
+
     verbose = "-v" in argv
-    results = [run_case(n, f, e, m, verbose) for n, f, e, m in CASES]
+    results = [
+        run_case(
+            n,
+            f,
+            e,
+            m,
+            verbose,
+        )
+        for n, f, e, m in CASES
+    ]
 
     width = max(len(r["name"]) for r in results)
     for r in results:

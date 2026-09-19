@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from pathlib import Path
+import ast
+import json
 import re
+import runpy
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -245,3 +248,110 @@ def test_publication_closeout_uses_v2_and_freezes_v1() -> None:
 
     for phrase in required:
         assert phrase in normalized, phrase
+def test_release_wide_mutation_suite_requires_unpublished_successor(
+    tmp_path,
+    capsys,
+) -> None:
+    ns = runpy.run_path(
+        str(
+            ROOT
+            / "tools/mutation_suite.py"
+        )
+    )
+
+    gate = ns[
+        "_mutation_suite_version_gate"
+    ]
+
+    fixture = tmp_path / "repo"
+    fixture.mkdir()
+
+    (
+        fixture
+        / "PUBLISHED_RELEASES.json"
+    ).write_text(
+        json.dumps({
+            "published_releases": [
+                {"version": "9.9.8"}
+            ],
+        })
+        + "\n"
+    )
+
+    (
+        fixture
+        / "PUBLICATION_ASSERTIONS.json"
+    ).write_text(
+        json.dumps({
+            "publication_assertions": [
+                {"version": "9.9.9"}
+            ],
+        })
+        + "\n"
+    )
+
+    (
+        fixture / "VERSION"
+    ).write_text("9.9.9\n")
+
+    assert gate(fixture) == (
+        "MUTATION_SUITE_REQUIRES_"
+        "UNPUBLISHED_SUCCESSOR_VERSION:"
+        "9.9.9"
+    )
+
+    (
+        fixture / "VERSION"
+    ).write_text("10.0.0\n")
+
+    assert gate(fixture) is None
+
+    main = ns["main"]
+
+    main.__globals__[
+        "_mutation_suite_version_gate"
+    ] = lambda root: (
+        "SYNTHETIC_LIFECYCLE_BLOCK"
+    )
+
+    assert main([]) == 2
+
+    assert (
+        "SYNTHETIC_LIFECYCLE_BLOCK"
+        in capsys.readouterr().out
+    )
+
+
+def test_excluded_registry_mutations_do_not_reseal_before_guard_execution() -> None:
+    tree = ast.parse(
+        (
+            ROOT
+            / "tools/mutation_suite.py"
+        ).read_text()
+    )
+
+    funcs = {
+        node.name: node
+        for node in tree.body
+        if isinstance(
+            node,
+            ast.FunctionDef,
+        )
+    }
+
+    for name in (
+        "m17_mutate_frozen_legacy_publication_registry",
+        "m18_forge_gitless_v2_successor_append",
+    ):
+        assert not any(
+            isinstance(node, ast.Call)
+            and isinstance(
+                node.func,
+                ast.Name,
+            )
+            and node.func.id
+            == "_reseal"
+            for node in ast.walk(
+                funcs[name]
+            )
+        )

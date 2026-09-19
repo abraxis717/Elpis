@@ -102,7 +102,17 @@ def test_current_manifest_and_published_registry_are_truthful_when_present():
             compact = runpy.run_path(str(ROOT / "tools/release_tree_digest.py"))
             compact["require_successor"](version)
             assert compact["verify_record"](ROOT, manifest.relative_to(ROOT).as_posix(), data) == []
-            paths = set(compact["publication_paths"](ROOT, manifest.relative_to(ROOT).as_posix()))
+            paths = set(
+                compact["publication_paths"](
+                    ROOT,
+                    manifest.relative_to(
+                        ROOT
+                    ).as_posix(),
+                    policy=data[
+                        "publication_policy"
+                    ],
+                )
+            )
         else:
             paths = {entry["path"] for entry in data["files"]}
         assert "VERSION" in paths
@@ -211,4 +221,3 @@ def test_base_install_no_torch_ci_contract_is_exact():
     assert "tests/test_feedback_refinement.py" in job
     assert 'grep -F "1 passed, 1 skipped"' in job
     assert "-o addopts=" in job
-

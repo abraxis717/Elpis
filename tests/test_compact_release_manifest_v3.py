@@ -418,3 +418,104 @@ def test_shallow_history_still_fails_closed_without_clone(tmp_path):
     ok, errors = check(require_git=True)
     assert not ok and len(errors) == 2
     assert all(e.startswith("REPOSITORY_HISTORY_INCOMPLETE:") for e in errors)
+def test_membership_v1_semantics_remain_historical(
+    tmp_path,
+):
+    root = tree(tmp_path)
+
+    (
+        root
+        / "PUBLISHED_RELEASES.json"
+    ).write_text("legacy-a\n")
+
+    (
+        root
+        / "PUBLICATION_ASSERTIONS.json"
+    ).write_text("v2-a\n")
+
+    data = (
+        header()
+        | V3["build_record"](
+            root,
+            REL,
+            policy=V3["POLICY_V1"],
+        )
+    )
+
+    write_record(root, data)
+
+    assert verify(root, data) == []
+
+    (
+        root
+        / "PUBLISHED_RELEASES.json"
+    ).write_text("legacy-b\n")
+
+    assert verify(root, data) == []
+
+    (
+        root
+        / "PUBLICATION_ASSERTIONS.json"
+    ).write_text("v2-b\n")
+
+    assert (
+        "V3_PUBLICATION_TREE_"
+        "SHA256_MISMATCH"
+        in verify(root, data)
+    )
+
+
+def test_membership_v2_excludes_both_publication_registries(
+    tmp_path,
+):
+    root = tree(tmp_path)
+
+    data = record(root)
+    write_record(root, data)
+
+    assert (
+        data["publication_policy"]
+        == V3["POLICY_V2"]
+    )
+
+    (
+        root
+        / "PUBLISHED_RELEASES.json"
+    ).write_text("legacy-a\n")
+
+    (
+        root
+        / "PUBLICATION_ASSERTIONS.json"
+    ).write_text("v2-a\n")
+
+    paths = set(
+        V3["publication_paths"](
+            root,
+            REL,
+            policy=V3["POLICY_V2"],
+        )
+    )
+
+    assert (
+        "PUBLISHED_RELEASES.json"
+        not in paths
+    )
+
+    assert (
+        "PUBLICATION_ASSERTIONS.json"
+        not in paths
+    )
+
+    assert verify(root, data) == []
+
+    (
+        root
+        / "PUBLISHED_RELEASES.json"
+    ).write_text("legacy-b\n")
+
+    (
+        root
+        / "PUBLICATION_ASSERTIONS.json"
+    ).write_text("v2-b\n")
+
+    assert verify(root, data) == []
