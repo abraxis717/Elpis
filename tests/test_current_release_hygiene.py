@@ -18,13 +18,37 @@ _FORWARD_LIFECYCLE_MARKERS = (
 )
 
 
-def _published_versions() -> set[str]:
-    payload = json.loads(
-        (ROOT / "PUBLISHED_RELEASES.json").read_text(encoding="utf-8")
+def _published_records() -> list[dict]:
+    legacy = json.loads(
+        (
+            ROOT
+            / "PUBLISHED_RELEASES.json"
+        ).read_text(
+            encoding="utf-8"
+        )
     )
+
+    successor = json.loads(
+        (
+            ROOT
+            / "PUBLICATION_ASSERTIONS.json"
+        ).read_text(
+            encoding="utf-8"
+        )
+    )
+
+    return [
+        *legacy["published_releases"],
+        *successor[
+            "publication_assertions"
+        ],
+    ]
+
+
+def _published_versions() -> set[str]:
     return {
         entry["version"]
-        for entry in payload["published_releases"]
+        for entry in _published_records()
     }
 
 
@@ -123,19 +147,55 @@ def test_current_manifest_and_published_registry_are_truthful_when_present():
         assert "tests/test_current_release_hygiene.py" in paths
         assert f"RELEASE_NOTES/Elpis{version}.md" in paths
 
-    registry = json.loads((ROOT / "PUBLISHED_RELEASES.json").read_text(encoding="utf-8"))
-    entries = registry["published_releases"]
-    versions = [entry["version"] for entry in entries]
-    assert len(versions) == len(set(versions))
+    entries = _published_records()
 
-    current = [entry for entry in entries if entry["version"] == version]
+    versions = [
+        entry["version"]
+        for entry in entries
+    ]
+
+    tags = [
+        entry["release_tag"]
+        for entry in entries
+    ]
+
+    assert len(versions) == len(
+        set(versions)
+    )
+    assert len(tags) == len(
+        set(tags)
+    )
+
+    current = [
+        entry
+        for entry in entries
+        if entry["version"] == version
+    ]
+
     if current:
         assert len(current) == 1
         assert manifest_sha is not None
+
         entry = current[0]
-        assert entry["release_tag"] == f"Elpis{version}"
-        assert entry["manifest_path"] == f"manifests/Elpis{version}.RELEASE_MANIFEST.json"
-        assert entry["manifest_sha256"] == manifest_sha
+
+        assert (
+            entry["release_tag"]
+            == f"Elpis{version}"
+        )
+
+        assert (
+            entry["manifest_path"]
+            == (
+                f"manifests/"
+                f"Elpis{version}."
+                f"RELEASE_MANIFEST.json"
+            )
+        )
+
+        assert (
+            entry["manifest_sha256"]
+            == manifest_sha
+        )
 
 
 def test_repository_completeness_explicitly_separates_source_only_integrations():

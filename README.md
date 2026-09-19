@@ -2,7 +2,7 @@
 
 **A deterministic structural-reasoning architecture for bounded learned proposals, explicit authority, and falsifiable runtime composition.**
 
-**Release line: Elpis2.2.19**
+**Release line: Elpis2.2.20**
 
 Elpis is a systems-research project about a narrow question: can learned components contribute useful structural proposals while deterministic machinery retains ownership of representation, admissibility, authority, validation, and terminal action?
 
@@ -14,11 +14,11 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 ## Release Notes
 
-**Elpis2.2.19** is the publication-authority corrective successor to immutable tagged-CI-failed Elpis2.2.18.
+**Elpis2.2.20** is the publication-authority v2 successor to externally published Elpis2.2.19.
 
-Elpis2.2.18 passed all public-main workflows and carried a valid annotated tag, but tag-triggered CI exposed a lifecycle defect: the repository inferred publication from semantic tag existence minus FAILED authority. That made the legitimate tagged-but-unpublished state impossible and caused CI/reference-runtime to reject the release before any GitHub Release or PyPI publication occurred.
+Elpis2.2.20 freezes `PUBLISHED_RELEASES.json` as legacy v1 publication history and moves successor publication closeout to append-only `PUBLICATION_ASSERTIONS.json`. V2 publication assertions bind the annotated tag object, peeled commit, exact tagged release-manifest bytes, and explicit GitHub Actions, GitHub Release, and PyPI observation receipts.
 
-Elpis2.2.19 makes publication explicit. Git tags remain release-identity authority; `PUBLISHED_RELEASES.json` records only releases whose external publication boundary has been proved and explicitly appended. Existing PUBLISHED assertions remain tag/manifest/commit validated and append-only.
+Compact release authority is also versioned: historical `elpis.publication-membership.v1` retains its original semantics, while successor membership v2 excludes both publication registries so post-publication fact cannot invalidate the release tree that necessarily existed first. The release-wide mutation harness fails closed when `VERSION` still names an already-published release and executes normally once metadata names an unpublished successor.
 
 The 2.2.x line includes:
 
@@ -38,7 +38,7 @@ The 2.2.x line includes:
 
 The immutable `Elpis2.2.0`, `Elpis2.2.9`, `Elpis2.2.12`, `Elpis2.2.15`, `Elpis2.2.16`, and `Elpis2.2.18` tags are retained as failed-not-published release evidence under `FAILED_RELEASES.json`.
 
-- Current notes: [`RELEASE_NOTES/Elpis2.2.19.md`](RELEASE_NOTES/Elpis2.2.19.md)
+- Current notes: [`RELEASE_NOTES/Elpis2.2.20.md`](RELEASE_NOTES/Elpis2.2.20.md)
 - Public component registry: [`manifests/PUBLIC_COMPONENT_REGISTRY.json`](manifests/PUBLIC_COMPONENT_REGISTRY.json)
 - Qualified writer-chain registry: [`manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json`](manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json)
 - Qualified ingress-trio coverage: [`manifests/INGRESS_TRIO_COVERAGE_R0.json`](manifests/INGRESS_TRIO_COVERAGE_R0.json)

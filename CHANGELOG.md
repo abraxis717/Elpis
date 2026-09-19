@@ -1,3 +1,14 @@
+## Elpis2.2.20 — Publication-authority v2 lifecycle successor
+
+- Preserve externally published Elpis2.2.19 and immutable failed Elpis2.2.18 without moving, rewriting, or reclassifying either release.
+- Freeze `PUBLISHED_RELEASES.json` as byte-stable legacy v1 history and disable its append mutation surface.
+- Introduce append-only `PUBLICATION_ASSERTIONS.json` with exact annotated-tag, peeled-commit, tagged-manifest, and explicit external-publication receipt binding.
+- Add Git-less structural validation without claiming unavailable Git-object proof.
+- Add lock/CAS/fsync/atomic-replace semantics for future v2 publication closeout.
+- Version compact publication membership so historical v1 semantics remain unchanged while successor v2 excludes both post-publication registries.
+- Make the release-wide mutation harness refuse published-current-version provisional resealing and preserve direct guard execution for excluded-registry mutation cases.
+- Advance canonical release metadata to 2.2.20 without creating a release manifest, tag, remote mutation, or publication assertion.
+
 ## Elpis2.2.19 — Explicit publication-authority corrective successor
 
 - Preserve Elpis2.2.18 as immutable `SEALED_TAGGED_CI_FAILED_NOT_PUBLISHED` evidence and record its exact tag, commit, manifest, and publication-authority failure classes.
