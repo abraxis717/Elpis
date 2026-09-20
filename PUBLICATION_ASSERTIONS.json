@@ -244,6 +244,86 @@
       "tag_object": "3d475406dedd38bd29715c25b911b42684fef17e",
       "tag_object_type": "tag",
       "version": "2.2.22"
+    },
+    {
+      "github_actions": {
+        "pypi_publish": {
+          "conclusion": "success",
+          "event": "release",
+          "head_sha": "d0e90f7f764bf09de366404fc808e4e14ee0cacc",
+          "run_id": 35533437796,
+          "workflow": "pypi-publish"
+        },
+        "release_event_ci": {
+          "conclusion": "success",
+          "event": "release",
+          "head_sha": "d0e90f7f764bf09de366404fc808e4e14ee0cacc",
+          "run_id": 35533437786,
+          "workflow": "CI"
+        },
+        "tag_ci": {
+          "conclusion": "success",
+          "event": "push",
+          "head_sha": "d0e90f7f764bf09de366404fc808e4e14ee0cacc",
+          "run_id": 35532816992,
+          "workflow": "CI"
+        },
+        "tag_component_attribution": {
+          "conclusion": "success",
+          "event": "push",
+          "head_sha": "d0e90f7f764bf09de366404fc808e4e14ee0cacc",
+          "run_id": 35532816968,
+          "workflow": "Component attribution"
+        },
+        "tag_platform_matrix": {
+          "conclusion": "success",
+          "event": "push",
+          "head_sha": "d0e90f7f764bf09de366404fc808e4e14ee0cacc",
+          "run_id": 35532816977,
+          "workflow": "platform-matrix"
+        },
+        "tag_reference_runtime": {
+          "conclusion": "success",
+          "event": "push",
+          "head_sha": "d0e90f7f764bf09de366404fc808e4e14ee0cacc",
+          "run_id": 35532817014,
+          "workflow": "reference-runtime"
+        }
+      },
+      "github_release": {
+        "published_at": "2026-09-20T19:47:12Z",
+        "release_id": 392552219,
+        "repository": "abraxis717/Elpis",
+        "tag_name": "Elpis2.2.23"
+      },
+      "manifest_path": "manifests/Elpis2.2.23.RELEASE_MANIFEST.json",
+      "manifest_sha256": "e680bf31b56431e6f9122bc5029ef8d8e64a2fd0a8c10fed398a68939d567a1f",
+      "peeled_commit": "d0e90f7f764bf09de366404fc808e4e14ee0cacc",
+      "peeled_object_type": "commit",
+      "pypi": {
+        "files": [
+          {
+            "filename": "elpisai-2.2.23-py3-none-any.whl",
+            "packagetype": "bdist_wheel",
+            "sha256": "e8c195420c27607a6bf15774b94e6e75bceb743ad3367f29d826f9c53fbe94c2",
+            "upload_time_iso_8601": "2026-09-20T19:49:50.585102Z",
+            "yanked": false
+          },
+          {
+            "filename": "elpisai-2.2.23.tar.gz",
+            "packagetype": "sdist",
+            "sha256": "7879441747a8d0038ffdbb44ff216d71b558abefc04de0085310d17ad99387f7",
+            "upload_time_iso_8601": "2026-09-20T19:49:52.365089Z",
+            "yanked": false
+          }
+        ],
+        "project": "elpisai",
+        "version": "2.2.23"
+      },
+      "release_tag": "Elpis2.2.23",
+      "tag_object": "5650cea1a800bb7afc56719293ffc6c0c1ccb74b",
+      "tag_object_type": "tag",
+      "version": "2.2.23"
     }
   ],
   "publication_fact_authority": "explicit-observation-receipts",
