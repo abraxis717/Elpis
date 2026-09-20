@@ -84,7 +84,7 @@ def test_224_release_guard_ci_is_lifecycle_aware():
     assert "returncode == 2" in wrapper
 
 
-def test_224_manifest_is_predeclared_and_not_materialized():
+def test_224_manifest_write_once_lifecycle_contract():
     immutable = json.loads(
         (ROOT / "tools/immutable_evidence_baseline_v1.json").read_text()
     )
@@ -107,7 +107,35 @@ def test_224_manifest_is_predeclared_and_not_materialized():
         "value": True,
     }
     assert expected in temporality["future_write_once_declarations"]
-    assert not (ROOT / MANIFEST_REL).exists()
+
+    manifest = ROOT / MANIFEST_REL
+    if not manifest.exists():
+        # Valid preseal state: authority is declared but first committed bytes
+        # have not yet been materialized.
+        return
+
+    data = json.loads(manifest.read_text())
+    assert data["schema"] == "elpis.release-manifest.v3"
+    assert data["package_name"] == "elpisai"
+    assert data["version"] == VERSION
+    assert data["release_name"] == TAG
+    assert data["release_tag"] == TAG
+    assert data["publication_policy"] == "elpis.publication-membership.v2"
+    assert data["tree_digest_algorithm"] == "elpis.publication-tree.sha256.v1"
+    assert data["full_elpis_runtime_admission"] is True
+    assert data["execution_authorized"] is False
+    assert data["generated_source_executed"] is False
+    assert data["experiments_shipped"] is False
+    assert data["output_authority_granted"] == 0
+    assert data["request_guidance_gate_default"] is False
+    assert data["validation_authority_propagated"] is False
+    assert isinstance(data["publication_tree_sha256"], str)
+    assert len(data["publication_tree_sha256"]) == 64
+    assert isinstance(data["git_tree_oid"], str)
+    assert data["git_tree_oid"]
+    assert data["git_object_format"] in {"sha1", "sha256"}
+    assert isinstance(data["file_count"], int)
+    assert data["file_count"] > 0
 
 
 def test_224_does_not_predeclare_publication_fact():
