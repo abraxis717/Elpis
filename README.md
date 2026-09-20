@@ -2,7 +2,7 @@
 
 **A deterministic structural-reasoning architecture for bounded learned proposals, explicit authority, and falsifiable runtime composition.**
 
-**Release line: Elpis2.2.23**
+**Release line: Elpis2.2.24**
 
 Elpis is a systems-research project about a narrow question: can learned components contribute useful structural proposals while deterministic machinery retains ownership of representation, admissibility, authority, validation, and terminal action?
 
@@ -14,12 +14,11 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 ## Release Notes
 
-**Elpis2.2.23** adds the qualified ECSContextProjector as a deterministic, read-only distributed package component. It projects committed ECS event history into bounded canonical context, includes a public-Kernel adapter that uses only public ECS surfaces, and is continuously enforced by component and root CI qualification.
+**Elpis2.2.24** is the corrective active-assembly and hosted-CI lifecycle successor. It makes the qualified R2 component assembly the current moving-tree authority with an exact 16-canonical / 16-public identity set and no canonical-only component exception.
 
-The projector does not own ECS mutation, validation, execution, model, network, tool, semantic-truth, or history-authentication authority. Its replay-backed adapter snapshots committed history through `Kernel.events()` and independently replays that materialized prefix before projection.
+The earlier R1 assembly remains immutable historical authority only. ECSContextProjector remains a separately distributed, deterministic read-only component and is not automatically admitted into the active component assembly.
 
-ECSContextProjector remains separately distributed and is not opportunistically admitted by the active component assembly. The current R2 assembly contains 16 canonical entries / 16 public entries with no canonical-only component exception. The earlier R1 assembly is retained strictly as immutable historical authority.
-
+Release-guard CI now invokes the release-wide mutation suite through a lifecycle-aware wrapper. Unpublished successor versions execute the full mutation suite; a published current version is treated as not applicable only for the exact guarded diagnostic that binds the checkout VERSION.
 The 2.2.x line includes:
 
 - physical-tree-aware release manifests and immutable-tag `git archive` build provenance;
@@ -31,14 +30,14 @@ The 2.2.x line includes:
 - qualified ECS Kernel -> topology projection -> topology analysis read-only composition;
 - DurableApplicationLedger schema v2 consumed by the qualified G5.3C application path;
 - the qualified Grid81 authority-to-publication chain: capability authority -> consumption compiler -> durable application -> promotion planner/authority -> isolated candidate constructor -> durable/atomic publisher;
-- complete five-node writer-chain binding coverage while the legacy public assembly remains unchanged;
+- complete five-node writer-chain binding coverage alongside the explicit active R2 16-canonical / 16-public component assembly;
 - bounded Regex/HACF/query-local proposal ingress with separate non-public coverage authority;
 - current secret/private-path, static-language, runtime-boundary, and plugin-trust hardening;
 - Branch36-40 science artifacts retained as evidence, not promoted to runtime API.
 
 The immutable `Elpis2.2.0`, `Elpis2.2.9`, `Elpis2.2.12`, `Elpis2.2.15`, `Elpis2.2.16`, and `Elpis2.2.18` tags are retained as failed-not-published release evidence under `FAILED_RELEASES.json`.
 
-- Current notes: [`RELEASE_NOTES/Elpis2.2.23.md`](RELEASE_NOTES/Elpis2.2.23.md)
+- Current notes: [`RELEASE_NOTES/Elpis2.2.24.md`](RELEASE_NOTES/Elpis2.2.24.md)
 - Public component registry: [`manifests/PUBLIC_COMPONENT_REGISTRY.json`](manifests/PUBLIC_COMPONENT_REGISTRY.json)
 - Qualified writer-chain registry: [`manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json`](manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json)
 - Qualified ingress-trio coverage: [`manifests/INGRESS_TRIO_COVERAGE_R0.json`](manifests/INGRESS_TRIO_COVERAGE_R0.json)

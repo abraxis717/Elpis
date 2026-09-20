@@ -37,40 +37,39 @@ def _sha(rel: str) -> str:
     return hashlib.sha256((ROOT / rel).read_bytes()).hexdigest()
 
 
-def test_223_release_identity_is_atomic_and_ratified():
-    assert (ROOT / "VERSION").read_text().strip() == VERSION
-
-    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text())
-    assert pyproject["project"]["name"] == "elpisai"
-    assert pyproject["project"]["version"] == VERSION
-
-    assert f'version: "{VERSION}"' in (ROOT / "CITATION.cff").read_text()
-
-    readme = (ROOT / "README.md").read_text()
-    assert f"**Release line: Elpis{VERSION}**" in readme
-    release = readme.split("## Release Notes", 1)[1].split(
-        "## Install and quick start", 1
-    )[0]
-    assert release.strip().startswith(f"**Elpis{VERSION}**")
-    assert f"RELEASE_NOTES/Elpis{VERSION}.md" in readme
-
-    note = ROOT / f"RELEASE_NOTES/Elpis{VERSION}.md"
-    assert note.is_file()
-    assert note.read_text().count(f"## Version: v{VERSION}") == 1
-
-    assert (ROOT / "CHANGELOG.md").read_text().startswith(
-        f"## Elpis{VERSION}"
+def test_223_release_identity_is_immutable_published_history():
+    manifest = ROOT / "manifests/Elpis2.2.23.RELEASE_MANIFEST.json"
+    assert manifest.is_file()
+    assert hashlib.sha256(manifest.read_bytes()).hexdigest() == (
+        "e680bf31b56431e6f9122bc5029ef8d8e64a2fd0a8c10fed398a68939d567a1f"
     )
 
+    data = json.loads(manifest.read_text())
+    assert data["schema"] == "elpis.release-manifest.v3"
+    assert data["version"] == VERSION
+    assert data["release_tag"] == "Elpis2.2.23"
+
+    assertions = json.loads(
+        (ROOT / "PUBLICATION_ASSERTIONS.json").read_text()
+    )["publication_assertions"]
+    rows = [x for x in assertions if x.get("version") == VERSION]
+    assert len(rows) == 1
+    assert rows[0]["release_tag"] == "Elpis2.2.23"
+    assert rows[0]["manifest_sha256"] == (
+        "e680bf31b56431e6f9122bc5029ef8d8e64a2fd0a8c10fed398a68939d567a1f"
+    )
+
+    note = ROOT / "RELEASE_NOTES/Elpis2.2.23.md"
+    assert note.is_file()
+    assert note.read_text().count("## Version: v2.2.23") == 1
+
     ns = runpy.run_path(str(ROOT / "tools/verify_public_release.py"))
-    assert ns["RELEASE_VERSION"] == VERSION
     assert ns["RELEASE_IDENTITIES"][VERSION] == {
         "primitive_closure_commit":
             "482d4064321392108b87124cd47343d9c748f5bc",
         "base_release_commit":
             "c911af22e01ee35c441d65e8dbcad18694bdcb2a",
     }
-
 
 def test_223_projector_bytes_and_non_authority_boundary_are_exact():
     component = ROOT / "components/ECSContextProjector"

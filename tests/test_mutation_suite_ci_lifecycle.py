@@ -95,37 +95,33 @@ def test_classifier_rejects_arbitrary_failure():
     assert ok is False
 
 
-def test_current_published_tree_wrapper_accepts_exact_lifecycle_na():
+def test_current_tree_gate_matches_publication_state():
+    import json
+
     version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
-    assert version == "2.2.23"
+    ns = runpy.run_path(str(MUTATION_SUITE))
+    gate = ns["_mutation_suite_version_gate"]
 
-    raw = subprocess.run(
-        [sys.executable, str(MUTATION_SUITE)],
-        cwd=ROOT,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    assert raw.returncode == 2
-    assert raw.stdout.strip() == (
-        "MUTATION_SUITE_REQUIRES_UNPUBLISHED_SUCCESSOR_VERSION:"
-        + version
-    )
-    assert raw.stderr == ""
+    published = set()
+    for filename, key in (
+        ("PUBLISHED_RELEASES.json", "published_releases"),
+        ("PUBLICATION_ASSERTIONS.json", "publication_assertions"),
+    ):
+        payload = json.loads((ROOT / filename).read_text(encoding="utf-8"))
+        published.update(
+            row["version"]
+            for row in payload[key]
+            if isinstance(row, dict) and isinstance(row.get("version"), str)
+        )
 
-    wrapped = subprocess.run(
-        [sys.executable, str(WRAPPER)],
-        cwd=ROOT,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    assert wrapped.returncode == 0, wrapped.stdout + wrapped.stderr
-    assert (
-        f"MUTATION_SUITE_NA_PUBLISHED_VERSION:{version}"
-        in wrapped.stdout
-    )
-
+    observed = gate(ROOT)
+    if version in published:
+        assert observed == (
+            "MUTATION_SUITE_REQUIRES_UNPUBLISHED_SUCCESSOR_VERSION:"
+            + version
+        )
+    else:
+        assert observed is None
 
 def test_unpublished_successor_gate_would_open():
     ns = runpy.run_path(str(MUTATION_SUITE))

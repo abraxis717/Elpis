@@ -1,3 +1,11 @@
+## Elpis2.2.24 — Active-assembly and release-lifecycle corrective successor
+
+- Promote the qualified R2 component assembly as the current moving-tree assembly with exact 16-canonical / 16-public identity parity and no canonical-only exception.
+- Retain the earlier R1 assembly only as closed historical authority while preserving its exact byte bindings.
+- Switch current component-map and hosted assembly gates to the R2 selector and verifier.
+- Make release-guard CI lifecycle-aware without weakening the release-wide mutation suite or its published-version reseal prohibition.
+- Preserve the immutable Elpis2.2.23 tag, v3 manifest, GitHub Release, PyPI witnesses, and publication assertion.
+
 ## Elpis2.2.23 — ECSContextProjector integration successor
 
 - Add the deterministic read-only `ECSContextProjector` package while preserving its qualified standalone projector core byte-for-byte.
