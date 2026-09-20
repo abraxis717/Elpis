@@ -1,0 +1,148 @@
+{
+  "schema": "elpis.ecs-context-projector.compatibility.v2",
+  "purpose": "Compatibility and qualification provenance for the Elpis2.2.22 retarget. Filesystem/hash based; no Git dependency. Evidence only; not runtime authentication or release authority.",
+  "target_release": "Elpis2.2.22",
+  "target_release_commit": "e483f7a8c0d98df6d62d14baf383c1f260b91c40",
+  "target_release_commit_provenance": "externally supplied authority; not derived from Git (Git use forbidden)",
+  "original_qualification_commit": "2291daa1dd5154e08f158e8ff48fddf65d186353",
+  "python_requirement_observed_in_current_pyproject": ">=3.11,<3.13",
+  "current_pyproject_version": "2.2.22",
+  "authority_surfaces": [
+    {
+      "path": "ECS/runtime/elpis_ecs/__init__.py",
+      "sha256": "cc29bed4b5f432cc829e927ea378e2dfb218ea0db1485f7699056e786c6ff44f",
+      "original_sha256": "cc29bed4b5f432cc829e927ea378e2dfb218ea0db1485f7699056e786c6ff44f",
+      "unchanged_relative_to_original_qualification": true
+    },
+    {
+      "path": "ECS/runtime/elpis_ecs/bus.py",
+      "sha256": "2f6975f146c966af98384f6bf711ef048a0304a52e113aa9ce6f9ef7ac4f37c2",
+      "original_sha256": "2f6975f146c966af98384f6bf711ef048a0304a52e113aa9ce6f9ef7ac4f37c2",
+      "unchanged_relative_to_original_qualification": true
+    },
+    {
+      "path": "ECS/runtime/elpis_ecs/canonical.py",
+      "sha256": "b42850627bae6da7a1322ca5967c66464b627db90ed4f3798dae5bc8f23efc05",
+      "original_sha256": "b42850627bae6da7a1322ca5967c66464b627db90ed4f3798dae5bc8f23efc05",
+      "unchanged_relative_to_original_qualification": true
+    },
+    {
+      "path": "ECS/runtime/elpis_ecs/entity.py",
+      "sha256": "f0fa9ec2672993a1850b5e7eba025d8b11f1123251404fbeb068dd7b90fb21cf",
+      "original_sha256": "f0fa9ec2672993a1850b5e7eba025d8b11f1123251404fbeb068dd7b90fb21cf",
+      "unchanged_relative_to_original_qualification": true
+    },
+    {
+      "path": "ECS/runtime/elpis_ecs/errors.py",
+      "sha256": "3ce29f6a1309dd47425f883b249ce77a9debe05abaf52712c088f82e0b68f8d2",
+      "original_sha256": "3ce29f6a1309dd47425f883b249ce77a9debe05abaf52712c088f82e0b68f8d2",
+      "unchanged_relative_to_original_qualification": true
+    },
+    {
+      "path": "ECS/runtime/elpis_ecs/kernel.py",
+      "sha256": "387c8d3fe1be3752c9ec4d4b383943af90ea9cc7bb887ace96de34312579ee4c",
+      "original_sha256": "387c8d3fe1be3752c9ec4d4b383943af90ea9cc7bb887ace96de34312579ee4c",
+      "unchanged_relative_to_original_qualification": true
+    },
+    {
+      "path": "ECS/runtime/elpis_ecs/limits.py",
+      "sha256": "762a4d8127edf6961a4ddbbc73ebb58d7b6f46c8c1e09259d1249080b0613633",
+      "original_sha256": "762a4d8127edf6961a4ddbbc73ebb58d7b6f46c8c1e09259d1249080b0613633",
+      "unchanged_relative_to_original_qualification": true
+    },
+    {
+      "path": "ECS/runtime/elpis_ecs/persistence.py",
+      "sha256": "f69f2691695e1777ee9ab1834b2468d3cfc2a90a9ed23bab6f1ebb9bc432b716",
+      "original_sha256": "f69f2691695e1777ee9ab1834b2468d3cfc2a90a9ed23bab6f1ebb9bc432b716",
+      "unchanged_relative_to_original_qualification": true
+    },
+    {
+      "path": "ECS/runtime/elpis_ecs/port.py",
+      "sha256": "735732f6270e24aba9fe982e8b91845cad26d1a9cc4e4755f12a800f98fd0afa",
+      "original_sha256": "735732f6270e24aba9fe982e8b91845cad26d1a9cc4e4755f12a800f98fd0afa",
+      "unchanged_relative_to_original_qualification": true
+    },
+    {
+      "path": "ECS/runtime/elpis_ecs/replay.py",
+      "sha256": "df7fb4ac995e44c4627ea19d6dba991cc25bd9c65fe42473285ba7702df339ef",
+      "original_sha256": "df7fb4ac995e44c4627ea19d6dba991cc25bd9c65fe42473285ba7702df339ef",
+      "unchanged_relative_to_original_qualification": true
+    },
+    {
+      "path": "ECS/runtime/elpis_ecs/scheduler.py",
+      "sha256": "c38e6591fe054dc41ae867b99249a7b55ea88fe55b2140cf2ea1daf06f2a22be",
+      "original_sha256": "c38e6591fe054dc41ae867b99249a7b55ea88fe55b2140cf2ea1daf06f2a22be",
+      "unchanged_relative_to_original_qualification": true
+    },
+    {
+      "path": "ECS/runtime/elpis_ecs/topology.py",
+      "sha256": "41dbf1fd1552e01726f93504841bcd9f0549ec5d0db38b96bf2222a90c6d07cb",
+      "original_sha256": "41dbf1fd1552e01726f93504841bcd9f0549ec5d0db38b96bf2222a90c6d07cb",
+      "unchanged_relative_to_original_qualification": true
+    },
+    {
+      "path": "ECS/runtime/elpis_ecs/topology_analysis.py",
+      "sha256": "f5f898e0f72887e5075b45efb405429bac12ec301e7f82f5e7ae143f7aac4383",
+      "original_sha256": "f5f898e0f72887e5075b45efb405429bac12ec301e7f82f5e7ae143f7aac4383",
+      "unchanged_relative_to_original_qualification": true
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "a3cf1efcbdfcb0b03c9914ba4f95d5a182d6c628bd522a22b678d680d0e78d58",
+      "original_sha256": "b1cbf4352984a8f84d6c9fb3f70d29e544638865955813634eb323b8a8aff533",
+      "unchanged_relative_to_original_qualification": false
+    },
+    {
+      "path": "src/elpis/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unchanged_relative_to_original_qualification": true
+    },
+    {
+      "path": "src/elpis/canonical_identity.py",
+      "sha256": "d64f9f19269ef516c96dfccf71c2d4052cda31f9d1031ded3e92726e9248f8d5",
+      "original_sha256": "d64f9f19269ef516c96dfccf71c2d4052cda31f9d1031ded3e92726e9248f8d5",
+      "unchanged_relative_to_original_qualification": true
+    }
+  ],
+  "surface_count": 16,
+  "unchanged_count": 15,
+  "drifted_count": 1,
+  "changed_pyproject_toml_treatment": {
+    "path": "pyproject.toml",
+    "original_sha256": "b1cbf4352984a8f84d6c9fb3f70d29e544638865955813634eb323b8a8aff533",
+    "current_sha256": "a3cf1efcbdfcb0b03c9914ba4f95d5a182d6c628bd522a22b678d680d0e78d58",
+    "classification": "release/version-only and behaviorally irrelevant to projector compatibility",
+    "differing_field": "project.version",
+    "original_value": "2.2.19",
+    "current_value": "2.2.22",
+    "all_other_fields_identical": true,
+    "requires_python_unchanged": true,
+    "rationale": "Only project.version changed (2.2.19 -> 2.2.22). requires-python, dependencies, optional-dependencies, build-system, package-discovery, and pytest configuration are byte-identical. The version label is not imported by the projector or the ECS runtime and is not part of any canonical byte/digest. See PROJECTOR_2_2_22_COMPATIBILITY_ANALYSIS.md."
+  },
+  "qualification_commands_run_overnight": [
+    "3.11.9 focused: PYTHONPATH=<proj>:<ECS/runtime>:<src>:<3.11 site-packages> python -B -m pytest -o addopts='' -q -p no:cacheprovider --basetemp=.qualification_tmp/focused-3.11.9 astra_ecs_context_projector/tests",
+    "3.11.9 regression: same env, targets ECS/tests tests/test_ecs_r0.py tests/test_ecs_r0_e0r2.py tests/test_ecs_r0_e0r3.py tests/test_ecs_r0_e0r3_runtime_integration.py tests/test_canonical_identity_v1.py",
+    "3.12.5 focused: venv --without-pip + .pth pointer to 3.11 site-packages; python -B -m pytest -o addopts='' -q -p no:cacheprovider --basetemp=.qualification_tmp/focused-3.12.5-venv astra_ecs_context_projector/tests",
+    "3.12.5 regression: same venv env, same regression targets"
+  ],
+  "qualification_outcomes": {
+    "python_3_11_9": {
+      "focused_projector": "109 passed, 0 failed, 0 skipped (81 original + 3 projector boundary/normalization + 14 verifier + 11 driver)",
+      "ecs_regression": "1070 passed, 0 failed, 0 skipped"
+    },
+    "python_3_12_5": {
+      "focused_projector": "109 passed, 0 failed, 0 skipped (81 original + 3 projector boundary/normalization + 14 verifier + 11 driver)",
+      "ecs_regression": "1070 passed, 0 failed, 0 skipped"
+    }
+  },
+  "new_regression_tests_added": [
+    "test_selector_cardinality_boundary_256_accepted (256 selector boundary acceptance; 257 already rejected)",
+    "test_kind_pattern_length_boundary_64_accepted (64-char pattern boundary acceptance; 65 already rejected)",
+    "test_ecs_error_normalization_preserves_cause (EcsError -> ProjectionError __cause__ chain)",
+    "tools/verify_compatibility.py + tests/test_verify_compatibility.py (14 tests: matching/drifted/missing, deterministic order, v1+v2 manifests, sha256, manifest rejection, CLI exit codes, real 2.2.22 manifest)",
+    "tools/run_qualification.py + tests/test_run_qualification.py (11 tests: argument validation, dry-run, error paths, evidence-only-with-output)"
+  ],
+  "generated_utc": "2026-09-19T21:22:16Z",
+  "statement": "This record is compatibility evidence only. It does not grant runtime integration, runtime authentication, or release admission for the projector. The projector does not read this file at runtime, does not enforce its hashes, and does not invoke Git."
+}

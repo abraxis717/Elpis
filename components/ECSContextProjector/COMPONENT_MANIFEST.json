@@ -1,0 +1,102 @@
+{
+  "canonical_admission_authority": false,
+  "claims_not_made": [
+    "canonical or public registry admission",
+    "runtime mutation or ECS transition authority",
+    "history authentication or issuer authentication",
+    "semantic truth authority",
+    "model, network, tool, or generated-code execution authority",
+    "streaming cursor or indexed retrieval qualification",
+    "replacement of ECS durable-log verification or replay"
+  ],
+  "component_content_digest": "99fb0018450fe17b6d52ce664bba0ac553e4263f76ce7455f459022de2cc3159",
+  "component_content_digest_contract": "sha256(canonical-json(source_inventory))",
+  "component_id": "ECSContextProjector",
+  "component_path": "components/ECSContextProjector",
+  "component_role": "DETERMINISTIC_READ_ONLY_ECS_HISTORY_PROJECTION",
+  "dependencies": [],
+  "evidence_references": {
+    "tests/test_ecs_context_projector_component_contract.py": {
+      "path": "tests/test_ecs_context_projector_component_contract.py",
+      "sha256": "2a35f79047dc6586826056c456ba0b11dba43c810af008ac6c27d9d02217ab1f",
+      "size": 1004
+    },
+    "tools/verify_ecs_context_projector.py": {
+      "path": "tools/verify_ecs_context_projector.py",
+      "sha256": "ab5289d9bc668d021a978138683308b3220752cdb361d266e699b3d896d47816",
+      "size": 7237
+    }
+  },
+  "execution_authority": false,
+  "history_authentication_authority": false,
+  "integration_base_commit": "85755f2e91cda900af857dacc4c2cadf799baa8c",
+  "integration_base_release": "Elpis2.2.22",
+  "kernel_adapter_sha256": "d74dbe83b5c52636ff677dfc05b467ee072c5384896f966a0ddf46cc233705e0",
+  "manifest_self_hash": "907a3e533160d0699b9a359125b3cca50fc96e44ae7bf355cb159384ac096c3c",
+  "manifest_self_hash_contract": "sha256(canonical-json(manifest without manifest_self_hash))",
+  "model_authority": false,
+  "mutation_authority": false,
+  "network_authority": false,
+  "package_name": "elpis_ecs_context",
+  "public_interface_paths": [
+    "src/elpis_ecs_context/"
+  ],
+  "public_registry_admission": false,
+  "qualification_command": "python tools/verify_ecs_context_projector.py",
+  "qualification_disposition": "QUALIFIED_READ_ONLY_COMPONENT",
+  "qualification_gate": "tests/test_ecs_context_projector_component_contract.py",
+  "qualified_core_sha256": {
+    "__init__.py": "38209b7560752dadb9fa15f9fb09d0b5aa81d60048023ea551ba407cc0217051",
+    "contracts.py": "424741f6390e68ca4930237c9c710109f359521ee2738978e3615489f1779e6c",
+    "projector.py": "459aa5608678f0e28e5528bb7a5f2e8ecd0183fae4e42aefce5cd0de0eca2f55"
+  },
+  "runtime_admission": false,
+  "runtime_import_dependencies": [
+    "elpis_ecs"
+  ],
+  "schema": "elpis.component_manifest.v1",
+  "semantic_truth_authority": false,
+  "source_inventory": [
+    {
+      "path": "COMPATIBILITY_ELPIS_2_2_22.json",
+      "sha256": "c28b1944692016ec49fc2e5dd899dd988caac4aa367dc06f48b697be3e19e95c",
+      "size": 8722
+    },
+    {
+      "path": "README.md",
+      "sha256": "9ab0fba4f8e95e135597bc43a8c2d5cb14761ff8e5fd01ed87558a0f47a0e77e",
+      "size": 1492
+    },
+    {
+      "path": "src/elpis_ecs_context/__init__.py",
+      "sha256": "38209b7560752dadb9fa15f9fb09d0b5aa81d60048023ea551ba407cc0217051",
+      "size": 385
+    },
+    {
+      "path": "src/elpis_ecs_context/contracts.py",
+      "sha256": "424741f6390e68ca4930237c9c710109f359521ee2738978e3615489f1779e6c",
+      "size": 6170
+    },
+    {
+      "path": "src/elpis_ecs_context/kernel_adapter.py",
+      "sha256": "d74dbe83b5c52636ff677dfc05b467ee072c5384896f966a0ddf46cc233705e0",
+      "size": 2144
+    },
+    {
+      "path": "src/elpis_ecs_context/projector.py",
+      "sha256": "459aa5608678f0e28e5528bb7a5f2e8ecd0183fae4e42aefce5cd0de0eca2f55",
+      "size": 8047
+    },
+    {
+      "path": "tests/test_kernel_adapter.py",
+      "sha256": "2e1dfce8b5d7b7904aaf94e914f341c7d7c9f5c62fd5ccdbd4005aa7768fa61a",
+      "size": 6514
+    },
+    {
+      "path": "tests/test_projector.py",
+      "sha256": "8eaa46f088733b9e4a9070181dca20dd016c7dbe84f25969aea824d5cb1fef11",
+      "size": 22914
+    }
+  ],
+  "version": "R0"
+}

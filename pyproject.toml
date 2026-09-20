@@ -1,6 +1,6 @@
 [project]
 name = "elpisai"
-version = "2.2.22"
+version = "2.2.23"
 description = "Elpis structural-guidance primitive with an end-to-end validated-source runtime"
 readme = "README.md"
 requires-python = ">=3.11,<3.13"
@@ -37,6 +37,7 @@ where = [
   "ECS/runtime",
   "src",
   "components",
+  "components/ECSContextProjector/src",
   "components/Pipeline/P0ControlProtocol/src",
   "components/TRMFractalSpine/src",
   "components/Grid81StructuralSemantics/src",
@@ -54,6 +55,7 @@ where = [
 ]
 include = [
   "elpis*",
+  "elpis_ecs_context*",
   "elpis_reference*",
   "DarwinianMatrix*",
   "elpis_p0*",
@@ -87,6 +89,7 @@ pythonpath = [
   "ECS/runtime",
   "src",
   "components",
+  "components/ECSContextProjector/src",
   "components/Pipeline/P0ControlProtocol/src",
   "components/TRMFractalSpine/src",
   "components/Grid81StructuralSemantics/src",

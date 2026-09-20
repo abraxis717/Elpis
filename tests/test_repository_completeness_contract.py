@@ -14,6 +14,7 @@ EXPECTED_PACKAGES = {
     "elpis_grid81_capability_authority", "elpis_grid81_consumption_compiler",
     "elpis_grid81_application_executor", "elpis_grid81_promotion_planner",
     "c_numpy_cortex", "elpis_header", "elpis_runtime_r0", "elpis_runtime_r1",
+    "elpis_ecs_context",
 }
 
 def test_public_registry_truthfully_excludes_nonshipped_nanbeige_host():
@@ -38,6 +39,7 @@ def test_package_discovery_declares_all_nested_source_roots():
     assert {name + "*" for name in EXPECTED_PACKAGES} <= includes
     assert "runtime/R0/src" in find["where"]
     assert "runtime/R1/src" in find["where"]
+    assert "components/ECSContextProjector/src" in find["where"]
     assert "components/Pipeline/P0ControlProtocol/src" in find["where"]
     assert "native/elpis-header/src" in find["where"]
 

@@ -1,3 +1,11 @@
+## Elpis2.2.23 — ECSContextProjector integration successor
+
+- Add the deterministic read-only `ECSContextProjector` package while preserving its qualified standalone projector core byte-for-byte.
+- Add the public-Kernel projection adapter without private Kernel access or ECS mutation/validation/execution authority.
+- Bind package discovery, installed-wheel behavior, component authority, and continuous CI/component-attribution qualification.
+- Preserve the legacy 17-canonical / 16-public assembly unchanged; ECSContextProjector remains outside the canonical/public registry pending a separately qualified assembly-generation transition.
+- Preserve historical release/publication evidence, primitive closure, original distribution baseline, and existing ECS authority.
+
 ## Elpis2.2.22 — Hosted-CI Needle3 regression corrective successor
 
 - Preserve the untagged, unpublished Elpis2.2.21 sealed candidate as immutable failed hosted-main-CI evidence; do not create or move an Elpis2.2.21 tag.

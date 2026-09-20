@@ -22,6 +22,10 @@ jobs:
             command: "env -u PYTHONPATH python tools/verify_furyan_locus_oracle.py"
             needs_torch: false
             attribution: configured-complete-suite
+          - owner: components/ECSContextProjector
+            command: "python tools/verify_ecs_context_projector.py && python -m pytest -q -p no:cacheprovider components/ECSContextProjector/tests tests/test_ecs_context_projector_component_contract.py"
+            needs_torch: false
+            attribution: configured-complete-suite
           - owner: components/CNumPyCortex
             command: "python -m pytest -q -p no:cacheprovider components/CNumPyCortex/tests"
             needs_torch: false
@@ -81,6 +85,7 @@ jobs:
       PYTHONNOUSERSITE: '1'
       ELPIS_COMPONENT_PYTHONPATH: >-
         runtime/R0/src:runtime/R1/src:native/elpis-header/src:
+        components/ECSContextProjector/src:
         components/CNumPyCortex/src:components/TRMFractalSpine/src:
         components/Grid81DeterministicCanonicalPromotionPlanner/src:
         components/Grid81DeterministicCapabilityApplicationExecutor/src:
