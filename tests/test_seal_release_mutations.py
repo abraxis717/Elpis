@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import json
 import os
 import shutil
 import subprocess
@@ -122,7 +123,45 @@ def test_real_sealed_tree_verifies_without_reseal(tmp_path: Path) -> None:
             pytest.fail(f"required sealed manifest absent: {manifest.name}")
         pytest.skip("pre-seal qualification: real-manifest control runs after sealing")
 
-    root = copy_repo(tmp_path)
+    assertions = json.loads(
+        (REPO / "PUBLICATION_ASSERTIONS.json").read_text(encoding="utf-8")
+    )["publication_assertions"]
+    published = [
+        row
+        for row in assertions
+        if row.get("version") == version
+    ]
+
+    if published:
+        assert len(published) == 1
+        row = published[0]
+        assert row["peeled_object_type"] == "commit"
+        archive_proc = subprocess.run(
+            [
+                "git",
+                "-C",
+                str(REPO),
+                "archive",
+                "--format=tar",
+                row["peeled_commit"],
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        assert archive_proc.returncode == 0, archive_proc.stderr.decode(
+            "utf-8", "replace"
+        )
+        root = tmp_path / "repo"
+        root.mkdir()
+        with tarfile.open(
+            fileobj=io.BytesIO(archive_proc.stdout),
+            mode="r:",
+        ) as archive:
+            archive.extractall(root)
+    else:
+        root = copy_repo(tmp_path)
+
     proc = run(root, str(VERIFIER))
 
     assert proc.returncode == 0, output(proc)

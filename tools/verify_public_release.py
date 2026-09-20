@@ -5,11 +5,14 @@ from __future__ import annotations
 
 import ast
 import hashlib
+import io
 import json
 import re
 import runpy
 import subprocess
 import sys
+import tarfile
+import tempfile
 import tomllib
 from pathlib import Path
 
@@ -560,11 +563,95 @@ def load_manifest():
     return data, errors
 
 
+def _published_current_record():
+    records = []
+
+    legacy_path = REPO / "PUBLISHED_RELEASES.json"
+    if legacy_path.is_file():
+        payload = json.loads(legacy_path.read_text(encoding="utf-8"))
+        records.extend(payload.get("published_releases", []))
+
+    successor_path = REPO / "PUBLICATION_ASSERTIONS.json"
+    if successor_path.is_file():
+        payload = json.loads(successor_path.read_text(encoding="utf-8"))
+        records.extend(payload.get("publication_assertions", []))
+
+    current = [
+        row
+        for row in records
+        if isinstance(row, dict) and row.get("version") == RELEASE_VERSION
+    ]
+    if len(current) > 1:
+        raise RuntimeError(
+            "CURRENT_PUBLICATION_RECORD_CARDINALITY:"
+            + str(len(current))
+        )
+    return current[0] if current else None
+
+
+def _verify_v3_release_snapshot(compact, data):
+    published = _published_current_record()
+
+    if published is None or not (REPO / ".git").exists():
+        return compact["verify_record"](
+            REPO,
+            MANIFEST_REL.as_posix(),
+            data,
+        )
+
+    if published.get("manifest_path") != MANIFEST_REL.as_posix():
+        return ["PUBLISHED_MANIFEST_PATH_MISMATCH"]
+
+    manifest_sha = hashlib.sha256(MANIFEST.read_bytes()).hexdigest()
+    if published.get("manifest_sha256") != manifest_sha:
+        return ["PUBLISHED_MANIFEST_SHA256_MISMATCH"]
+
+    if published.get("peeled_object_type") != "commit":
+        return ["PUBLISHED_PEELED_OBJECT_TYPE_INVALID"]
+
+    peeled = published.get("peeled_commit")
+    if not isinstance(peeled, str) or not re.fullmatch(r"[0-9a-f]{40,64}", peeled):
+        return ["PUBLISHED_PEELED_COMMIT_INVALID"]
+
+    proc = subprocess.run(
+        ["git", "-C", str(REPO), "archive", "--format=tar", peeled],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if proc.returncode != 0:
+        return [
+            "PUBLISHED_SEAL_ARCHIVE_FAILED:"
+            + proc.stderr.decode("utf-8", "replace").strip()
+        ]
+
+    with tempfile.TemporaryDirectory() as td:
+        sealed_root = Path(td)
+        with tarfile.open(
+            fileobj=io.BytesIO(proc.stdout),
+            mode="r:",
+        ) as archive:
+            archive.extractall(sealed_root)
+
+        sealed_manifest = sealed_root / MANIFEST_REL
+        if not sealed_manifest.is_file():
+            return ["PUBLISHED_SEAL_MANIFEST_MISSING"]
+
+        if hashlib.sha256(sealed_manifest.read_bytes()).hexdigest() != manifest_sha:
+            return ["PUBLISHED_SEAL_MANIFEST_SHA256_MISMATCH"]
+
+        return compact["verify_record"](
+            sealed_root,
+            MANIFEST_REL.as_posix(),
+            data,
+        )
+
+
 def check_manifest():
     data, errors = load_manifest()
     if data.get("schema") == "elpis.release-manifest.v3":
         compact = runpy.run_path(str(Path(__file__).with_name("release_tree_digest.py")))
-        errors += compact["verify_record"](REPO, MANIFEST_REL.as_posix(), data)
+        errors += _verify_v3_release_snapshot(compact, data)
         return not errors, errors
     return _check_inventory_manifest(data, errors)
 
