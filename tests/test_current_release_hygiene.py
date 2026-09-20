@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 from pathlib import Path
 import runpy
+import subprocess
+import tarfile
+import tempfile
 import tomllib
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -125,18 +129,67 @@ def test_current_manifest_and_published_registry_are_truthful_when_present():
         if data["schema"] == "elpis.release-manifest.v3":
             compact = runpy.run_path(str(ROOT / "tools/release_tree_digest.py"))
             compact["require_successor"](version)
-            assert compact["verify_record"](ROOT, manifest.relative_to(ROOT).as_posix(), data) == []
-            paths = set(
-                compact["publication_paths"](
-                    ROOT,
-                    manifest.relative_to(
-                        ROOT
-                    ).as_posix(),
-                    policy=data[
-                        "publication_policy"
-                    ],
+            manifest_rel = manifest.relative_to(ROOT).as_posix()
+
+            published_current = [
+                entry
+                for entry in _published_records()
+                if entry["version"] == version
+            ]
+
+            if published_current:
+                assert len(published_current) == 1
+                published = published_current[0]
+                assert published["manifest_path"] == manifest_rel
+                assert published["manifest_sha256"] == manifest_sha
+                peeled = published["peeled_commit"]
+                assert published["peeled_object_type"] == "commit"
+
+                if (ROOT / ".git").exists():
+                    proc = subprocess.run(
+                        ["git", "-C", str(ROOT), "archive", "--format=tar", peeled],
+                        capture_output=True,
+                        check=False,
+                    )
+                    assert proc.returncode == 0, proc.stderr.decode("utf-8", "replace")
+                    with tempfile.TemporaryDirectory() as td:
+                        sealed_root = Path(td)
+                        with tarfile.open(
+                            fileobj=io.BytesIO(proc.stdout),
+                            mode="r:",
+                        ) as archive:
+                            archive.extractall(sealed_root)
+                        sealed_manifest = sealed_root / manifest_rel
+                        assert hashlib.sha256(
+                            sealed_manifest.read_bytes()
+                        ).hexdigest() == manifest_sha
+                        assert compact["verify_record"](
+                            sealed_root, manifest_rel, data
+                        ) == []
+                        paths = set(
+                            compact["publication_paths"](
+                                sealed_root,
+                                manifest_rel,
+                                policy=data["publication_policy"],
+                            )
+                        )
+                else:
+                    paths = set(
+                        compact["publication_paths"](
+                            ROOT,
+                            manifest_rel,
+                            policy=data["publication_policy"],
+                        )
+                    )
+            else:
+                assert compact["verify_record"](ROOT, manifest_rel, data) == []
+                paths = set(
+                    compact["publication_paths"](
+                        ROOT,
+                        manifest_rel,
+                        policy=data["publication_policy"],
+                    )
                 )
-            )
         else:
             paths = {entry["path"] for entry in data["files"]}
         assert "VERSION" in paths

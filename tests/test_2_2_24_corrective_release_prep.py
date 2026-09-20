@@ -138,11 +138,105 @@ def test_224_manifest_write_once_lifecycle_contract():
     assert data["file_count"] > 0
 
 
-def test_224_does_not_predeclare_publication_fact():
+def test_224_publication_fact_is_append_only_and_exact_after_closeout():
     assertions = json.loads(
         (ROOT / "PUBLICATION_ASSERTIONS.json").read_text()
     )["publication_assertions"]
-    assert not any(row.get("version") == VERSION for row in assertions)
+
+    rows = [row for row in assertions if row.get("version") == VERSION]
+    assert len(rows) == 1
+    row = rows[0]
+
+    assert row["release_tag"] == TAG
+    assert row["manifest_path"] == MANIFEST_REL
+    assert row["manifest_sha256"] == (
+        "7a7d4c340678fd97f0a33967a803cc7fdc5645d1f6056f51f07632a91195abdf"
+    )
+    assert row["peeled_commit"] == (
+        "f75ea4fed361aa0aba9538d396375ea413ab6744"
+    )
+    assert row["peeled_object_type"] == "commit"
+    assert row["tag_object"] == (
+        "9d38a35cd9de0ed61bbb098b8bb11800d776ea5e"
+    )
+    assert row["tag_object_type"] == "tag"
+
+    assert row["github_release"] == {
+        "published_at": "2026-09-20T21:41:34Z",
+        "release_id": 392583798,
+        "repository": "abraxis717/Elpis",
+        "tag_name": TAG,
+    }
+
+    assert row["github_actions"] == {
+        "pypi_publish": {
+            "conclusion": "success",
+            "event": "release",
+            "head_sha": "f75ea4fed361aa0aba9538d396375ea413ab6744",
+            "run_id": 35539483836,
+            "workflow": "pypi-publish",
+        },
+        "release_event_ci": {
+            "conclusion": "success",
+            "event": "release",
+            "head_sha": "f75ea4fed361aa0aba9538d396375ea413ab6744",
+            "run_id": 35539483844,
+            "workflow": "CI",
+        },
+        "tag_ci": {
+            "conclusion": "success",
+            "event": "push",
+            "head_sha": "f75ea4fed361aa0aba9538d396375ea413ab6744",
+            "run_id": 35539076848,
+            "workflow": "CI",
+        },
+        "tag_component_attribution": {
+            "conclusion": "success",
+            "event": "push",
+            "head_sha": "f75ea4fed361aa0aba9538d396375ea413ab6744",
+            "run_id": 35539076852,
+            "workflow": "Component attribution",
+        },
+        "tag_platform_matrix": {
+            "conclusion": "success",
+            "event": "push",
+            "head_sha": "f75ea4fed361aa0aba9538d396375ea413ab6744",
+            "run_id": 35539076838,
+            "workflow": "platform-matrix",
+        },
+        "tag_reference_runtime": {
+            "conclusion": "success",
+            "event": "push",
+            "head_sha": "f75ea4fed361aa0aba9538d396375ea413ab6744",
+            "run_id": 35539076874,
+            "workflow": "reference-runtime",
+        },
+    }
+
+    assert row["pypi"] == {
+        "project": "elpisai",
+        "version": VERSION,
+        "files": [
+            {
+                "filename": "elpisai-2.2.24-py3-none-any.whl",
+                "packagetype": "bdist_wheel",
+                "sha256": (
+                    "9d3ca0a9e99b1d06470a3c175898fd08c8d63bc76e4cb2eb00ea25b7f6c9bf10"
+                ),
+                "upload_time_iso_8601": "2026-09-20T21:43:56.105091Z",
+                "yanked": False,
+            },
+            {
+                "filename": "elpisai-2.2.24.tar.gz",
+                "packagetype": "sdist",
+                "sha256": (
+                    "966daeb10f03a1a1d01e008e83ae25d106c0d4c4a4436d3ccea7b1465b0907b2"
+                ),
+                "upload_time_iso_8601": "2026-09-20T21:43:58.295074Z",
+                "yanked": False,
+            },
+        ],
+    }
 
     legacy = json.loads(
         (ROOT / "PUBLISHED_RELEASES.json").read_text()
