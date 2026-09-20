@@ -170,4 +170,17 @@ def test_223_manifest_path_is_predeclared_but_not_materialized():
     }
     assert expected in temporality["future_write_once_declarations"]
 
-    assert not (ROOT / rel).exists()
+    manifest = ROOT / rel
+    if not manifest.exists():
+        # Explicit pre-seal lifecycle: the path is predeclared write-once
+        # authority but has not yet been materialized.
+        return
+
+    # Once materialized, validate the selected release identity instead of
+    # incorrectly demanding perpetual absence.
+    data = json.loads(manifest.read_text())
+    assert data["schema"] == "elpis.release-manifest.v3"
+    assert data["package_name"] == "elpisai"
+    assert data["version"] == VERSION
+    assert data["release_name"] == f"Elpis{VERSION}"
+    assert data["release_tag"] == f"Elpis{VERSION}"
