@@ -17,7 +17,6 @@ The current public tree includes native subprojects such as:
 - `hacf_bridge/`
 - `semantic-spine/`
 - `elpis-header/`
-- `elpis-nanbeige42-host/`
 
 Their presence in the repository does not imply that each subtree is required
 by, or admitted into, the current runnable reference path.

@@ -18,7 +18,7 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 The projector does not own ECS mutation, validation, execution, model, network, tool, semantic-truth, or history-authentication authority. Its replay-backed adapter snapshots committed history through `Kernel.events()` and independently replays that materialized prefix before projection.
 
-ECSContextProjector is intentionally **not** admitted to the legacy canonical/public assembly in this release. The separately qualified legacy assembly remains 17 canonical entries / 16 public entries with `elpis_nanbeige42_host` canonical-only and non-shipped. Public-registry admission for the projector requires a separately qualified assembly-generation transition rather than rewriting historical R0 authority surfaces.
+ECSContextProjector remains separately distributed and is not opportunistically admitted by the active component assembly. The current R2 assembly contains 16 canonical entries / 16 public entries with no canonical-only component exception. The earlier R1 assembly is retained strictly as immutable historical authority.
 
 The 2.2.x line includes:
 

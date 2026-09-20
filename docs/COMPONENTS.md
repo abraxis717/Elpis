@@ -1,6 +1,6 @@
 # Components
 
-17 canonical components in the qualified assembly; 16 are shipped in the public component registry.
+The active R2 assembly contains 16 canonical components and the same 16 components in the public registry. The earlier R1 17/16 assembly is retained only as historical closed authority.
 
 FuryanLocusOracle R0 is separately qualified as an independent verification
 component, outside those historical assembly counts. Its
@@ -28,4 +28,3 @@ see [the qualification contract](../components/FuryanLocusOracle/QUALIFICATION.m
 | P0 Control Protocol | P0.3 | components/Pipeline/P0ControlProtocol | QUALIFIED | FALSE |
 | CNumPy Cortex | 0.1.0 | components/CNumPyCortex | QUALIFIED | OPTIONAL |
 | Elpis Header | 0.1.0 | native/elpis-header | SEALED | FALSE |
-| Elpis Nanbeige42 Host | P14.0b | not shipped (canonical-only metadata) | CANONICAL_ONLY | FALSE |

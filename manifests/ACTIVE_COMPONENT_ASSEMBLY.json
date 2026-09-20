@@ -1,0 +1,26 @@
+{
+  "schema": "elpis.active-component-assembly.v1",
+  "active_assembly": "ELPIS_CANONICAL_ASSEMBLY_R2",
+  "canonical_manifest": "manifests/ELPIS_CANONICAL_ASSEMBLY_R2.json",
+  "component_registry": "manifests/ELPIS_COMPONENT_REGISTRY_R2.json",
+  "public_registry": "manifests/PUBLIC_COMPONENT_REGISTRY.json",
+  "public_dependency_graph": "manifests/PUBLIC_DEPENDENCY_GRAPH.json",
+  "component_count": 16,
+  "public_component_count": 16,
+  "canonical_only_component_ids": [],
+  "retired_component_ids": [
+    "elpis_nanbeige42_host"
+  ],
+  "runtime_admission": false,
+  "legacy_r1": {
+    "canonical_manifest": "ELPIS_CANONICAL_MANIFEST.json",
+    "canonical_sha256": "1f48892c45c29c713d45c9cacc58314235589cc4984156ad9113f705ec22ba00",
+    "component_registry": "COMPONENT_REGISTRY.json",
+    "component_registry_sha256": "660e30abcec3e761b29ebb81e7d5ad25195099413e127a8a7f91e466ecbbb402",
+    "public_registry": "manifests/PUBLIC_COMPONENT_REGISTRY.json",
+    "public_registry_sha256": "67bef85dac088c98c7d0af45508c5f2491154fd93c476c3830b6db702676ba73",
+    "public_dependency_graph": "manifests/PUBLIC_DEPENDENCY_GRAPH.json",
+    "public_dependency_graph_sha256": "f977e342820bf861fd49584d1c1cf4d2367677667cc5b7a1c0d24e2f80777ad4",
+    "status": "HISTORICAL_CLOSED_AUTHORITY"
+  }
+}
