@@ -607,7 +607,7 @@ jobs:
       - run: python -m pip install --upgrade pip
       - name: Read-only assembly/tooling gates before installation
         run: |
-          python tools/verify_canonical_assembly.py
+          python tools/verify_active_component_assembly.py
           python tools/print_component_map.py >/tmp/elpis-component-map.txt
           PYTHONPATH=src python tools/qualify_allocator_budget.py >/tmp/elpis-allocator-budget.json
       - name: Install repository-completeness dependencies

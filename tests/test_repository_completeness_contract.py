@@ -17,19 +17,44 @@ EXPECTED_PACKAGES = {
     "elpis_ecs_context",
 }
 
-def test_public_registry_truthfully_excludes_nonshipped_nanbeige_host():
-    canonical = json.loads((ROOT / "ELPIS_CANONICAL_MANIFEST.json").read_text())
-    public = json.loads((ROOT / "manifests/PUBLIC_COMPONENT_REGISTRY.json").read_text())
+def test_active_component_assembly_matches_public_registry_exactly():
+    selector = json.loads(
+        (ROOT / "manifests/ACTIVE_COMPONENT_ASSEMBLY.json").read_text()
+    )
+    canonical = json.loads(
+        (ROOT / selector["canonical_manifest"]).read_text()
+    )
+    registry = json.loads(
+        (ROOT / selector["component_registry"]).read_text()
+    )
+    public = json.loads(
+        (ROOT / selector["public_registry"]).read_text()
+    )
+
     canonical_ids = {c["component_id"] for c in canonical["components"]}
+    registry_ids = {c["component_id"] for c in registry["components"]}
     public_ids = {c["component_id"] for c in public["components"]}
-    assert canonical_ids - public_ids == {"elpis_nanbeige42_host"}
+
+    assert canonical["component_count"] == 16
+    assert registry["component_count"] == 16
     assert public["component_count"] == 16
+    assert canonical_ids == registry_ids == public_ids
+    assert selector["canonical_only_component_ids"] == []
+    assert "elpis_nanbeige42_host" not in canonical_ids
     assert not (ROOT / "native/elpis-nanbeige42-host").exists()
     assert not (ROOT / "components/elpis_nanbeige42_host").exists()
 
-def test_canonical_assembly_verifier_is_green():
-    cp = subprocess.run([sys.executable, str(ROOT / "tools/verify_canonical_assembly.py")],
-                        cwd=ROOT, text=True, capture_output=True)
+
+def test_active_component_assembly_verifier_is_green():
+    cp = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "tools/verify_active_component_assembly.py"),
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+    )
     assert cp.returncode == 0, cp.stdout + cp.stderr
 
 def test_package_discovery_declares_all_nested_source_roots():
@@ -46,7 +71,7 @@ def test_package_discovery_declares_all_nested_source_roots():
 def test_ci_has_complete_top_level_suite_and_read_only_assembly_gate():
     workflow = (ROOT / ".github/workflows/ci.yml").read_text()
     assert "python -m pytest -q -p no:cacheprovider tests/" in workflow
-    assert "python tools/verify_canonical_assembly.py" in workflow
+    assert "python tools/verify_active_component_assembly.py" in workflow
     assert "python tools/print_component_map.py" in workflow
     assert "python tools/qualify_allocator_budget.py" in workflow
 
