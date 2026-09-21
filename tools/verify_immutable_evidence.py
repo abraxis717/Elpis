@@ -55,9 +55,9 @@ def permanent_paths(root:Path)->list[str]:
     for rel in exact:
         if (root/rel).is_file(): found.add(rel)
 
-    gen=root/"components/Grid81/state/Canonical/Grid81/generations"
-    if gen.is_dir():
-        for p in gen.glob("*.json"):
+    canon=root/"components/Grid81/state/Canonical"
+    if canon.is_dir():
+        for p in canon.rglob("*"):
             if p.is_file(): found.add(p.relative_to(root).as_posix())
 
     sci=root/"ECS/science"
@@ -69,8 +69,7 @@ def permanent_paths(root:Path)->list[str]:
             if not p.is_file(): continue
             rel=p.relative_to(root).as_posix()
             if not any(m in rel for m in markers): continue
-            if "PRECOMMIT_V0" in p.parts or any(t in p.name for t in tokens):
-                found.add(rel)
+            found.add(rel)
     return sorted(found)
 
 def registry_snapshot(root:Path,rel:str,list_key:str)->dict:
