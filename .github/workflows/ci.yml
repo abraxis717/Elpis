@@ -54,6 +54,7 @@ jobs:
           tests/test_release_repository_identity.py
           tests/test_release_lifecycle_ordering.py
           tests/test_current_release_hygiene.py
+          tests/test_tag_disposition_closure.py
 
   release-guards:
     name: Release and authority negative branches
