@@ -1,3 +1,11 @@
+## Elpis2.2.25 — Qualified inference infrastructure R0 successor
+
+- Carry the closed inference infrastructure R0 onto the successor release line after exact-SHA hosted-main and performance closure.
+- Ship `src/elpis/inference` through the existing `elpis*` distribution surface while keeping Runtime R3 source-only and outside root package discovery.
+- Preserve proposal-only structural guidance, passive prefetch, target-authoritative speculation, exact expert/row identity, and the no-substitution authority boundaries.
+- Record P12 14/14, mutation sensitivity 11/11, independent DS4 oracle equivalence, full root regression, repository gates, and bounded deterministic performance characterization.
+- Preserve Elpis2.2.24 tag, manifest, GitHub Release, PyPI witnesses, and publication assertion as immutable historical authority.
+
 ## Elpis2.2.24 — Active-assembly and release-lifecycle corrective successor
 
 - Promote the qualified R2 component assembly as the current moving-tree assembly with exact 16-canonical / 16-public identity parity and no canonical-only exception.

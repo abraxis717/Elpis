@@ -2,7 +2,7 @@
 
 **A deterministic structural-reasoning architecture for bounded learned proposals, explicit authority, and falsifiable runtime composition.**
 
-**Release line: Elpis2.2.24**
+**Release line: Elpis2.2.25**
 
 Elpis is a systems-research project about a narrow question: can learned components contribute useful structural proposals while deterministic machinery retains ownership of representation, admissibility, authority, validation, and terminal action?
 
@@ -14,35 +14,18 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 ## Release Notes
 
-**Elpis2.2.24** is the corrective active-assembly and hosted-CI lifecycle successor. It makes the qualified R2 component assembly the current moving-tree authority with an exact 16-canonical / 16-public identity set and no canonical-only component exception.
+**Elpis2.2.25** carries the qualified inference infrastructure R0 into the current release line after exact-SHA main closure and bounded performance characterization. The release adds sparse associative addressing, bounded file-backed asset access, exact row retrieval, context lifetime/compaction machinery, proposal-only structural guidance, passive prefetch, exact expert selection, local/global context state, and the compact deterministic neural target infrastructure.
 
-The earlier R1 assembly remains immutable historical authority only. ECSContextProjector remains a separately distributed, deterministic read-only component and is not automatically admitted into the active component assembly.
+The `src/elpis/inference` package is part of the existing `elpis*` distribution surface. Runtime R3 remains source-only: `runtime/R3/src` is not in root package discovery, so this release does not silently promote the transactional/speculative R3 package into the public wheel. Speculative semantics remain target-authoritative and carry no measured-acceleration claim.
 
-Release-guard CI now invokes the release-wide mutation suite through a lifecycle-aware wrapper. Unpublished successor versions execute the full mutation suite; a published current version is treated as not applicable only for the exact guarded diagnostic that binds the checkout VERSION.
-The 2.2.x line includes:
+Qualification includes the closed P12 adversarial suite (14/14), 11/11 caught source-level mutants, the independent DS4 row/hash oracle, full root regression, repository gates, and final deterministic performance characterization. These results do not claim production DeepSeek/Qwen trained-table compatibility, production-scale throughput, GPU performance, or execution authority for learned/proposal layers.
 
-- physical-tree-aware release manifests and immutable-tag `git archive` build provenance;
-- lifecycle-aware repository identity, full-history hosted ancestry proofs, and annotated-tag object enforcement;
-- repository-level immutable-evidence, append-only release-record, and model/checkpoint identity gates;
-- canonical identity v1 receipt framing with an explicit direct SHA-256 sink census;
-- portable root/package-derived inter-code bindings with Git-less relocation qualification;
-- E0R3 whole-column participation referents with a qualified ECS R0 production consumer;
-- qualified ECS Kernel -> topology projection -> topology analysis read-only composition;
-- DurableApplicationLedger schema v2 consumed by the qualified G5.3C application path;
-- the qualified Grid81 authority-to-publication chain: capability authority -> consumption compiler -> durable application -> promotion planner/authority -> isolated candidate constructor -> durable/atomic publisher;
-- complete five-node writer-chain binding coverage alongside the explicit active R2 16-canonical / 16-public component assembly;
-- bounded Regex/HACF/query-local proposal ingress with separate non-public coverage authority;
-- current secret/private-path, static-language, runtime-boundary, and plugin-trust hardening;
-- Branch36-40 science artifacts retained as evidence, not promoted to runtime API.
+The 2.2.x line continues to enforce physical-tree-aware release manifests, immutable release history, lifecycle-aware repository identity, explicit authority boundaries, append-only publication facts, repository hygiene, and exact external publication observation.
 
-The immutable `Elpis2.2.0`, `Elpis2.2.9`, `Elpis2.2.12`, `Elpis2.2.15`, `Elpis2.2.16`, and `Elpis2.2.18` tags are retained as failed-not-published release evidence under `FAILED_RELEASES.json`.
-
-- Current notes: [`RELEASE_NOTES/Elpis2.2.24.md`](RELEASE_NOTES/Elpis2.2.24.md)
+- Current notes: [`RELEASE_NOTES/Elpis2.2.25.md`](RELEASE_NOTES/Elpis2.2.25.md)
+- Inference provenance: [`components/InferenceInfrastructure/PROVENANCE.md`](components/InferenceInfrastructure/PROVENANCE.md)
 - Public component registry: [`manifests/PUBLIC_COMPONENT_REGISTRY.json`](manifests/PUBLIC_COMPONENT_REGISTRY.json)
-- Qualified writer-chain registry: [`manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json`](manifests/GRID81_WRITER_CHAIN_SUCCESSOR_REGISTRY_R0.json)
-- Qualified ingress-trio coverage: [`manifests/INGRESS_TRIO_COVERAGE_R0.json`](manifests/INGRESS_TRIO_COVERAGE_R0.json)
 - Inference-plugin trust boundary: [`docs/INFERENCE_PLUGIN_TRUST_BOUNDARY.md`](docs/INFERENCE_PLUGIN_TRUST_BOUNDARY.md)
-- 2.2 qualified-internal adoption policy: [`manifests/ELPIS_2_2_0_ADOPTION_POLICY_R0.json`](manifests/ELPIS_2_2_0_ADOPTION_POLICY_R0.json)
 - Release-note archive: [`RELEASE_NOTES/`](RELEASE_NOTES/)
 - ECS authority and science: [`ECS/`](ECS/)
 

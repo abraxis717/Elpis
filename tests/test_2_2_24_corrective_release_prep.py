@@ -12,41 +12,44 @@ TAG = "Elpis2.2.24"
 MANIFEST_REL = "manifests/Elpis2.2.24.RELEASE_MANIFEST.json"
 
 
-def test_224_release_identity_is_atomic_and_ratified():
-    assert (ROOT / "VERSION").read_text().strip() == VERSION
+def test_224_release_identity_is_immutable_published_history():
+    manifest = ROOT / MANIFEST_REL
+    assert manifest.is_file()
+    assert hashlib.sha256(manifest.read_bytes()).hexdigest() == (
+        "7a7d4c340678fd97f0a33967a803cc7fdc5645d1f6056f51f07632a91195abdf"
+    )
 
-    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text())
-    assert pyproject["project"]["name"] == "elpisai"
-    assert pyproject["project"]["version"] == VERSION
+    data = json.loads(manifest.read_text())
+    assert data["schema"] == "elpis.release-manifest.v3"
+    assert data["version"] == VERSION
+    assert data["release_tag"] == TAG
 
-    assert f'version: "{VERSION}"' in (ROOT / "CITATION.cff").read_text()
+    rows = json.loads(
+        (ROOT / "PUBLICATION_ASSERTIONS.json").read_text()
+    )["publication_assertions"]
+    row = [x for x in rows if x.get("version") == VERSION]
+    assert len(row) == 1
+    assert row[0]["manifest_sha256"] == (
+        "7a7d4c340678fd97f0a33967a803cc7fdc5645d1f6056f51f07632a91195abdf"
+    )
+    assert row[0]["peeled_commit"] == (
+        "f75ea4fed361aa0aba9538d396375ea413ab6744"
+    )
+    assert row[0]["tag_object"] == (
+        "9d38a35cd9de0ed61bbb098b8bb11800d776ea5e"
+    )
 
-    readme = (ROOT / "README.md").read_text()
-    assert f"**Release line: Elpis{VERSION}**" in readme
-    section = readme.split("## Release Notes", 1)[1].split(
-        "## Install and quick start", 1
-    )[0]
-    assert section.strip().startswith(f"**Elpis{VERSION}**")
-    assert f"RELEASE_NOTES/Elpis{VERSION}.md" in readme
-    assert "nanbeige" not in section.lower()
-
-    note = ROOT / f"RELEASE_NOTES/Elpis{VERSION}.md"
+    note = ROOT / "RELEASE_NOTES/Elpis2.2.24.md"
     assert note.is_file()
-    note_text = note.read_text()
-    assert note_text.count(f"## Version: v{VERSION}") == 1
-    assert "nanbeige" not in note_text.lower()
-
-    assert (ROOT / "CHANGELOG.md").read_text().startswith(f"## Elpis{VERSION}")
+    assert note.read_text().count("## Version: v2.2.24") == 1
 
     ns = runpy.run_path(str(ROOT / "tools/verify_public_release.py"))
-    assert ns["RELEASE_VERSION"] == VERSION
     assert ns["RELEASE_IDENTITIES"][VERSION] == {
         "primitive_closure_commit":
             "482d4064321392108b87124cd47343d9c748f5bc",
         "base_release_commit":
             "c911af22e01ee35c441d65e8dbcad18694bdcb2a",
     }
-
 
 def test_224_active_assembly_is_r2_16_16_without_canonical_only_gap():
     selector = json.loads(
