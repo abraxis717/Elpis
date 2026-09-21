@@ -1,0 +1,18 @@
+Elpis experimental inference infrastructure
+
+Associative addressing adapts DeepSeek V4.1 Engram (Copyright (c) 2023
+DeepSeek, MIT) and vLLM Qwen PLE (Apache License 2.0). DS4 supplies an
+independent local qualification oracle and row-access reference (Copyright
+(c) 2026 The ds4.c authors; Copyright (c) 2023-2026 The ggml authors;
+Copyright (c) 2023 DeepSeek, MIT).
+
+DeepSpec architecture references are Copyright (c) 2026 The DeepSpec Authors,
+MIT. ZCode context-lifetime references are licensed under Apache License 2.0.
+
+Changes: independent Elpis typed contracts, explicit immutable state,
+validation, canonical identity, and bounded infrastructure interfaces.
+No donor package is included as a production runtime dependency.
+
+Detailed paths, local source identities, roles, and retained license texts:
+components/InferenceInfrastructure/PROVENANCE.md and licenses/.
+No upstream NOTICE was present in the supplied donor subsets.

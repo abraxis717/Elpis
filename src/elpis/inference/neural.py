@@ -1,0 +1,253 @@
+"""Compact fixture neural target, not a production DeepSeek model.
+
+Local SWA, shared compressed KV, sparse index and SwiGLU experts draw their
+architectural decomposition from DeepSeek V4.1 inference/model.py (MIT,
+UPSTREAM_REVISION_UNPINNED; see InferenceInfrastructure/PROVENANCE.md).
+Arithmetic is explicit CPU F32; there is no GPU determinism claim.
+"""
+from dataclasses import dataclass, replace
+from time import perf_counter_ns
+import numpy as np
+from .associative import DSV41Parameters, History
+from .contracts import Code, ProposalOnly, RowIdentity, digest_value, identity, integer, require
+from .file_assets import raw_digest
+from .global_context import GlobalCandidate,IndexConfig,IndexMode,IndexResult,select_global,selected_values
+
+
+def vector(x): return tuple(float(v) for v in np.asarray(x,dtype='<f4'))
+
+
+def softmax(x):
+    x=np.asarray(x,dtype='<f4'); e=np.exp(x-np.max(x))
+    return e/np.sum(e,dtype=np.float32)
+
+
+@dataclass(frozen=True)
+class Tensor:
+    shape: tuple[int,...]
+    data: bytes
+
+    def __post_init__(self):
+        require(type(self.shape) is tuple and len(self.shape)>0)
+        count=1
+        for n in self.shape: count*=integer(n,1)
+        require(type(self.data) is bytes and len(self.data)==count*4,detail='F32 tensor size')
+        require(np.all(np.isfinite(self.array())),Code.ENCODING,'model tensor nonfinite')
+
+    def array(self): return np.frombuffer(self.data,dtype='<f4').reshape(self.shape)
+
+    @property
+    def digest(self): return identity('tensor',dict(shape=self.shape,dtype='F32_LE',packing='ROW_MAJOR',content=raw_digest(self.data)))
+
+
+@dataclass(frozen=True)
+class LatentProjection:
+    channel: str
+    source_schema: str
+    model: str
+    weights: Tensor
+    version: int=0
+
+    def __post_init__(self):
+        require(self.channel in ('M','G','X','R') and bool(self.source_schema) and bool(self.model))
+        require(len(self.weights.shape)==2 and self.version==0)
+
+    @property
+    def digest(self):
+        return identity('latent-projection',dict(channel=self.channel,source_schema=self.source_schema,
+                        model=self.model,weights=self.weights.digest,version=self.version))
+
+
+@dataclass(frozen=True)
+class LatentInput(ProposalOnly):
+    channel: str
+    source_schema: str
+    source: str
+    context_snapshot: str
+    projection: str
+    values: tuple[float,...]
+
+    @property
+    def digest(self): return identity('latent-input',self)
+
+
+@dataclass(frozen=True)
+class TargetConfig:
+    model: str
+    tokenizer: str
+    vocab: int
+    dimension: int
+    local_window: int
+    compression: int
+    global_top_k: int
+    expert_ids: tuple[int,...]
+    active_experts: int
+    shared_experts: tuple[int,...]=()
+    layer: int=0
+    max_tokens: int=4096
+
+    def __post_init__(self):
+        require(bool(self.model) and bool(self.tokenizer))
+        for n in (self.vocab,self.dimension,self.local_window,self.compression,self.global_top_k,self.active_experts,self.max_tokens): integer(n,1)
+        require(type(self.expert_ids) is tuple and len(set(self.expert_ids))==len(self.expert_ids))
+        require(self.active_experts<=len(self.expert_ids) and not set(self.shared_experts).intersection(self.expert_ids))
+        for i in self.expert_ids+self.shared_experts: integer(i)
+
+    @property
+    def digest(self): return identity('target-config',self)
+
+
+@dataclass(frozen=True)
+class NeuralState:
+    model: str
+    context_snapshot: str
+    tokens: tuple[int,...]
+    history: History
+    local_keys: tuple[tuple[float,...],...]=()
+    local_values: tuple[tuple[float,...],...]=()
+    pending: tuple[tuple,...]=()  # (K,V,compression score)
+    global_pool: tuple[GlobalCandidate,...]=()
+    index: IndexResult | None=None
+    hidden: tuple[float,...]=()
+    logits: tuple[float,...]=()
+
+    @property
+    def digest(self): return identity('neural-state',self)
+
+
+@dataclass(frozen=True)
+class StepReceipt:
+    model: str
+    tokenizer: str
+    input_state: str
+    context_snapshot: str
+    token: int
+    scheme: str
+    parameters: str
+    associative_result: str
+    bank: str
+    rows: tuple[int,...]
+    global_index: str
+    latents: tuple[str,...]
+    expert_route: tuple[int,...]
+    expert_contents: tuple[str,...]
+    assets: tuple[str,...]
+    output_state: str
+
+    @property
+    def digest(self): return identity('target-step',self)
+
+
+class CompactTarget:
+    def __init__(self,config,weights,projections,scheme,rows,experts):
+        self.config=config; self.weights=dict(weights); self.projections={p.channel:p for p in projections}
+        d=config.dimension; v=config.vocab
+        expected={'embedding':(v,d),'q':(d,d),'k':(d,d),'v':(d,d),'out':(d,v),
+                  'router':(d,len(config.expert_ids)),'compress':(d,1)}
+        require(set(weights)==set(expected),detail='model weight roles')
+        for key,shape in expected.items(): require(type(weights[key]) is Tensor and weights[key].shape==shape,detail='model geometry')
+        require(set(self.projections)=={'M','G','X','R'} and len(projections)==4,detail='latent channels')
+        for p in projections:
+            require(p.model==config.model and p.weights.shape[1]==d,Code.IDENTITY,'latent projection model/dimension')
+        require(scheme.parameters.tokenizer==config.tokenizer,Code.IDENTITY,'target tokenizer')
+        raw_vocab=len(scheme.parameters.token_map) if type(scheme.parameters) is DSV41Parameters else scheme.parameters.vocab
+        require(raw_vocab==v,Code.IDENTITY,'target vocabulary')
+        scheme.validate_bank(rows.table.bank)
+        require(rows.table.bank.model==config.model and experts.model==config.model,Code.IDENTITY,'target assets model')
+        require(self.projections['M'].weights.shape[0]==rows.table.bank.dimension,detail='memory projection dimension')
+        for i in config.expert_ids+config.shared_experts:
+            m=experts.manifest(config.layer,i)
+            require(m.tensors[0].shape[0]==d,detail='expert target dimension')
+        self.scheme=scheme; self.rows=rows; self.experts=experts
+        self.model_identity=identity('target-model',dict(config=config.digest,
+              weights=tuple((k,t.digest) for k,t in sorted(weights.items())),
+              projections=tuple(p.digest for p in projections),parameters=scheme.parameters.digest,
+              bank=rows.table.bank.digest,experts=experts.digest))
+        self.index_config=IndexConfig(config.model,weights['k'].digest,d,config.global_top_k,4,4)
+        self.last_metrics={}
+
+    def initial(self,context_snapshot):
+        digest_value(context_snapshot)
+        return NeuralState(self.model_identity,context_snapshot,(),self.scheme.initial())
+
+    def _latent(self,packet,context):
+        require(type(packet) is LatentInput and packet.channel in self.projections,detail='latent packet')
+        projection=self.projections[packet.channel]
+        digest_value(packet.source)
+        require(packet.context_snapshot==context and packet.projection==projection.digest and
+                packet.source_schema==projection.source_schema,Code.IDENTITY,'latent provenance/projection')
+        require(type(packet.values) is tuple and len(packet.values)==projection.weights.shape[0] and
+                all(np.isfinite(x) for x in packet.values),detail='latent input geometry')
+        return np.asarray(packet.values,dtype='<f4')@projection.weights.array()
+
+    def step(self,state,token,*,expected_state,latents=(),resident_experts=None,index_mode=IndexMode.FULL):
+        start=perf_counter_ns(); c=self.config; w={k:t.array() for k,t in self.weights.items()}
+        require(type(state) is NeuralState and state.digest==expected_state,Code.STALE,'target state')
+        require(state.model==self.model_identity,Code.IDENTITY,'target state model')
+        integer(token,0,c.vocab-1)
+        require(len(state.tokens)<c.max_tokens,Code.LIMIT,'explicit target context capacity')
+        require(state.history.position==len(state.tokens),Code.STALE,'token/hash position')
+        require(type(latents) is tuple and len({p.channel for p in latents})==len(latents),detail='latent channels')
+        begin=perf_counter_ns()
+        hashed=self.scheme.hash(state.history,(token,),expected_history=state.history.digest)
+        hash_ns=perf_counter_ns()-begin
+        p=self.scheme.parameters
+        layer_index=p.layers.index(self.rows.table.bank.layer) if type(p) is DSV41Parameters else 0
+        row_ids=hashed.rows[0][layer_index]
+        memory=self.rows.lookup(tuple(RowIdentity(self.rows.table.bank.digest,r) for r in row_ids)).mean(axis=0,dtype=np.float32)
+        mp=self.projections['M']
+        internal=LatentInput('M',mp.source_schema,hashed.digest,state.context_snapshot,mp.digest,vector(memory))
+        require(all(p.channel!='M' for p in latents),detail='associative channel is target-owned')
+        x=w['embedding'][token].copy()+self._latent(internal,state.context_snapshot)
+        for packet in latents:
+            value=self._latent(packet,state.context_snapshot)
+            # R is a recorded proposal only; mathematical routing is learned.
+            if packet.channel!='R': x+=value
+        begin=perf_counter_ns()
+        key=x@w['k']; val=x@w['v']; query=x@w['q']
+        keys=(state.local_keys+(vector(key),))[-c.local_window:]
+        values=(state.local_values+(vector(val),))[-c.local_window:]
+        score=np.asarray(keys,dtype='<f4')@query/np.float32(c.dimension**.5)
+        local=softmax(score)@np.asarray(values,dtype='<f4')
+        local_ns=perf_counter_ns()-begin
+        pending=state.pending+((vector(key),vector(val),float((x@w['compress'])[0])),)
+        pool=state.global_pool
+        if len(pending)==c.compression:
+            a=softmax([item[2] for item in pending])
+            ck=a@np.asarray([item[0] for item in pending],dtype='<f4')
+            cv=a@np.asarray([item[1] for item in pending],dtype='<f4')
+            source=identity('native-kv-source',dict(model=state.model,tokens=state.tokens+(token,),context=state.context_snapshot))
+            pool+=(GlobalCandidate(str(len(pool)),c.model,self.index_config.projection,len(state.tokens),vector(ck),vector(cv),source),)
+            pending=()
+        begin=perf_counter_ns()
+        previous=None if index_mode is IndexMode.FULL else state.index
+        index=select_global(self.index_config,pool,vector(query),context_snapshot=state.context_snapshot,
+                            position=len(state.tokens),mode=index_mode,previous=previous,
+                            expected_previous=None if previous is None else previous.digest)
+        selected=selected_values(pool,index)
+        global_value=np.zeros(c.dimension,dtype='<f4')
+        if selected:
+            score=np.asarray([v.key for v in selected],dtype='<f4')@query/np.float32(c.dimension**.5)
+            global_value=softmax(score)@np.asarray([v.value for v in selected],dtype='<f4')
+        global_ns=perf_counter_ns()-begin
+        hidden=np.tanh(x+local+global_value).astype('<f4')
+        route_logits=hidden@w['router']
+        indexes=sorted(range(len(c.expert_ids)),key=lambda i:(-float(route_logits[i]),c.expert_ids[i]))[:c.active_experts]
+        route=tuple(c.expert_ids[i] for i in indexes)
+        route_weights=tuple(float(v) for v in softmax(route_logits[indexes]))
+        hidden+=self.experts.execute(hidden,model=c.model,layer=c.layer,route=route,weights=route_weights,
+                                    shared=c.shared_experts,resident=resident_experts)
+        logits=hidden@w['out']
+        require(np.all(np.isfinite(logits)),Code.ENCODING,'target logits')
+        out=NeuralState(state.model,state.context_snapshot,state.tokens+(token,),hashed.history,
+                        keys,values,pending,pool,index,vector(hidden),vector(logits))
+        expert_manifests=tuple(self.experts.manifest(c.layer,i) for i in route+c.shared_experts)
+        assets=tuple(sorted({self.rows.table.asset}|{t.asset for m in expert_manifests for t in m.tensors}))
+        receipt=StepReceipt(state.model,c.tokenizer,state.digest,state.context_snapshot,token,p.schema,p.digest,
+                            hashed.digest,self.rows.table.bank.digest,row_ids,index.digest,
+                            tuple(packet.digest for packet in (internal,)+latents),route,
+                            tuple(m.digest for m in expert_manifests),assets,out.digest)
+        self.last_metrics=dict(hash_ns=hash_ns,local_context_ns=local_ns,global_index_ns=global_ns,
+                               target_ns=perf_counter_ns()-start,rows=dict(self.rows.last_metrics),
+                               experts=dict(self.experts.last_metrics),device_copy_ns=None)
+        return out,receipt
