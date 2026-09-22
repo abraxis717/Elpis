@@ -1,3 +1,13 @@
+## Elpis2.2.28 — red-team corrective successor
+
+- Preserve published Elpis2.2.27 as immutable historical release evidence.
+- Make `inference-native-r0` a required hosted main and annotated-tag release witness for 2.2.28+.
+- Extend publication assertion validation backward-compatibly: historical receipts retain their original witness set, while 2.2.28+ receipts require `tag_inference_native`.
+- Bind native qualification to exact pytest node IDs and native-locus test-source SHA-256s; cardinality remains only a secondary sanity check.
+- Pin external GitHub Actions to immutable commit SHAs and remove the mixed PyTorch/PyPI index install pattern from Runtime R0 CI.
+- Pin the native qualification numerical stack to the exact successful 2.2.27 hosted baseline (`numpy==1.26.4`, `scipy==1.17.1`, `pytest==9.0.2`).
+- Do not materialize or seal the Elpis2.2.28 release manifest in this milestone.
+
 ## Elpis2.2.27 — Hosted native workflow-context corrective successor
 
 - Preserve untagged Elpis2.2.26 seal `61b8b12dc44e7389ba690abd1ad36f168f9080cc` and manifest `b31cf459bf2ff8d08206b22f1fe6fc6c258c5d5e6daf502129cf03d1863c5838` as immutable failed hosted-main-CI evidence.

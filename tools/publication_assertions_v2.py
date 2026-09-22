@@ -26,7 +26,7 @@ HEX_RE = re.compile(r"^[0-9a-f]{40}$|^[0-9a-f]{64}$")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 DIST_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
-REQUIRED_ACTIONS = {
+BASE_REQUIRED_ACTIONS = {
     "tag_ci": ("CI", "push"),
     "tag_reference_runtime": ("reference-runtime", "push"),
     "tag_component_attribution": ("Component attribution", "push"),
@@ -34,6 +34,17 @@ REQUIRED_ACTIONS = {
     "release_event_ci": ("CI", "release"),
     "pypi_publish": ("pypi-publish", "release"),
 }
+NATIVE_REQUIRED_ACTION = {
+    "tag_inference_native": ("inference-native-r0", "push"),
+}
+ALL_ACTIONS = {**BASE_REQUIRED_ACTIONS, **NATIVE_REQUIRED_ACTION}
+
+
+def required_actions(tag: str) -> dict[str, tuple[str, str]]:
+    actions = dict(BASE_REQUIRED_ACTIONS)
+    if _semver_key(tag) >= (2, 2, 28):
+        actions.update(NATIVE_REQUIRED_ACTION)
+    return actions
 ENTRY_KEYS = {
     "github_actions",
     "github_release",
@@ -229,13 +240,13 @@ def _manifest_identity(root: Path, tag: str, peeled: str) -> dict[str, str]:
 
 
 def _validate_action(name: str, value: Any, *, peeled: str) -> dict[str, Any]:
-    if name not in REQUIRED_ACTIONS:
+    if name not in ALL_ACTIONS:
         raise PublicationAuthorityError(f"UNEXPECTED_ACTION_WITNESS:{name}")
     if not isinstance(value, dict):
         raise PublicationAuthorityError(f"ACTION_WITNESS_NOT_OBJECT:{name}")
     if set(value) != {"conclusion", "event", "head_sha", "run_id", "workflow"}:
         raise PublicationAuthorityError(f"ACTION_WITNESS_FIELDS_INVALID:{name}")
-    workflow, event = REQUIRED_ACTIONS[name]
+    workflow, event = ALL_ACTIONS[name]
     if value.get("workflow") != workflow:
         raise PublicationAuthorityError(f"ACTION_WORKFLOW_MISMATCH:{name}")
     if value.get("event") != event:
@@ -273,7 +284,7 @@ def _validate_external_receipt(receipt: Any, *, tag: str, peeled: str) -> dict[s
         raise PublicationAuthorityError("GITHUB_RELEASE_PUBLISHED_AT_INVALID")
 
     actions = receipt.get("github_actions")
-    if not isinstance(actions, dict) or set(actions) != set(REQUIRED_ACTIONS):
+    if not isinstance(actions, dict) or set(actions) != set(required_actions(tag)):
         raise PublicationAuthorityError("GITHUB_ACTION_WITNESS_SET_INVALID")
     clean_actions = {
         name: _validate_action(name, actions[name], peeled=peeled)

@@ -40,6 +40,16 @@ WORKFLOWS = {
     'component_attribution': ('Component attribution', 'component-attribution.yml'),
     'platform_matrix': ('platform-matrix', 'platform-matrix.yml'),
 }
+NATIVE_WORKFLOW = ('inference-native-r0', 'inference-native-r0.yml')
+NATIVE_REQUIRED_FROM = (2, 2, 28)
+
+
+def required_workflows(intent: dict) -> dict:
+    result = dict(WORKFLOWS)
+    version = tuple(map(int, intent['version'].split('.')))
+    if version >= NATIVE_REQUIRED_FROM:
+        result['inference_native'] = NATIVE_WORKFLOW
+    return result
 
 
 class ReleaseError(ValueError):
@@ -111,10 +121,11 @@ def validate_tag(observed: dict, intent: dict) -> None:
     require(observed == tag_identity(intent), 'TAG_OBJECT_MISMATCH')
 
 
-def action_specs(state: str) -> dict:
+def action_specs(state: str, intent: dict) -> dict:
     if state in {'MAIN_HOSTED_GREEN', 'TAG_HOSTED_GREEN'}:
         prefix = 'main_' if state == 'MAIN_HOSTED_GREEN' else 'tag_'
-        return {prefix + key: (name, path, 'push') for key, (name, path) in WORKFLOWS.items()}
+        return {prefix + key: (name, path, 'push')
+                for key, (name, path) in required_workflows(intent).items()}
     if state == 'RELEASE_EVENT_GREEN':
         return {'release_event_ci': ('CI', 'ci.yml', 'release')}
     return {'pypi_publish': ('pypi-publish', 'pypi-publish.yaml', 'release')}
@@ -131,7 +142,7 @@ def timestamp(value: str) -> float:
 
 
 def validate_actions(state: str, runs: dict, intent: dict) -> None:
-    specs = action_specs(state)
+    specs = action_specs(state, intent)
     require(set(runs) == set(specs), f'WORKFLOW_WITNESS_SET_MISMATCH:{state}')
     ids = []
     for key, (name, path, event) in specs.items():

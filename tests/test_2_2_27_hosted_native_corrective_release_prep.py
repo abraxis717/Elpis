@@ -17,40 +17,32 @@ FAILED_226_MANIFEST_SHA = (
 FAILED_226_RUN_ID = 35732077852
 
 
-def test_227_release_identity_is_atomic_and_ratified():
-    assert (ROOT / "VERSION").read_text().strip() == VERSION
-    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text())
-    assert pyproject["project"]["name"] == "elpisai"
-    assert pyproject["project"]["version"] == VERSION
-    assert f'version: "{VERSION}"' in (ROOT / "CITATION.cff").read_text()
+def test_227_release_identity_is_immutable_published_evidence():
+    manifest = ROOT / MANIFEST_REL
+    assert manifest.is_file()
+    assert hashlib.sha256(manifest.read_bytes()).hexdigest() == (
+        "97b7e2e7ed4615c961b3fddb104871733a7eaf82b918528d45a40ef6028bedd2"
+    )
+    data = json.loads(manifest.read_text())
+    assert data["version"] == VERSION
+    assert data["release_name"] == TAG
+    assert data["release_tag"] == TAG
 
-    readme = (ROOT / "README.md").read_text()
-    assert f"**Release line: Elpis{VERSION}**" in readme
-    section = readme.split("## Release Notes", 1)[1].split(
-        "## Install and quick start", 1
-    )[0]
-    assert section.strip().startswith(f"**Elpis{VERSION}**")
-    assert f"RELEASE_NOTES/Elpis{VERSION}.md" in readme
-
-    note = ROOT / f"RELEASE_NOTES/Elpis{VERSION}.md"
+    note = ROOT / "RELEASE_NOTES/Elpis2.2.27.md"
     assert note.is_file()
-    text = note.read_text()
-    assert text.count(f"## Version: v{VERSION}") == 1
-    assert FAILED_226_COMMIT in text
-    assert FAILED_226_MANIFEST_SHA in text
-    assert str(FAILED_226_RUN_ID) in text
-    assert "RUNNER_TEMP" in text
-    assert "GITHUB_ENV" in text
+    assert note.read_text().count("## Version: v2.2.27") == 1
 
-    assert (ROOT / "CHANGELOG.md").read_text().startswith(f"## Elpis{VERSION}")
-    ns = runpy.run_path(str(ROOT / "tools/verify_public_release.py"))
-    assert ns["RELEASE_VERSION"] == VERSION
-    assert ns["RELEASE_IDENTITIES"][VERSION] == {
-        "primitive_closure_commit": "482d4064321392108b87124cd47343d9c748f5bc",
-        "base_release_commit": "c911af22e01ee35c441d65e8dbcad18694bdcb2a",
-    }
-
-
+    rows = json.loads(
+        (ROOT / "PUBLICATION_ASSERTIONS.json").read_text()
+    )["publication_assertions"]
+    current = [row for row in rows if row.get("version") == VERSION]
+    assert len(current) == 1
+    assert current[0]["peeled_commit"] == (
+        "21e9b0e592d043dec5060efec2162be984360b6e"
+    )
+    assert current[0]["tag_object"] == (
+        "7266a55363a37a5b551e512eeceda89701d5706b"
+    )
 def test_227_manifest_write_once_lifecycle_contract():
     immutable = json.loads(
         (ROOT / "tools/immutable_evidence_baseline_v1.json").read_text()

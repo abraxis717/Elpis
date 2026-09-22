@@ -29,7 +29,7 @@ def runs(state, i):
                   'run_id': index * 100 + n, 'run_attempt': 1, 'status': 'completed', 'conclusion': 'success',
                   'created_at': date + 'T00:00:00Z', 'updated_at': date + 'T01:00:00Z',
                   'repository': i['repository']}
-            for n, (key, (name, path, event)) in enumerate(m.action_specs(state).items())}
+            for n, (key, (name, path, event)) in enumerate(m.action_specs(state, i).items())}
 
 
 class Crash(BaseException):
@@ -112,6 +112,25 @@ def run(i, boundary, path):
 
 def mutations(boundary):
     return [s for kind, s in boundary.calls if kind == 'mutate']
+
+
+
+def test_228_requires_native_main_and_tag_witnesses():
+    i = dict(intent(), version="2.2.28")
+    main = m.action_specs("MAIN_HOSTED_GREEN", i)
+    tag = m.action_specs("TAG_HOSTED_GREEN", i)
+    assert main["main_inference_native"] == (
+        "inference-native-r0", "inference-native-r0.yml", "push"
+    )
+    assert tag["tag_inference_native"] == (
+        "inference-native-r0", "inference-native-r0.yml", "push"
+    )
+
+
+def test_227_historical_workflow_set_remains_without_native():
+    i = dict(intent(), version="2.2.27")
+    assert "main_inference_native" not in m.action_specs("MAIN_HOSTED_GREEN", i)
+    assert "tag_inference_native" not in m.action_specs("TAG_HOSTED_GREEN", i)
 
 
 def test_positive_control_duplicate_invocation(tmp_path):

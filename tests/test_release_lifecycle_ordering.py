@@ -159,7 +159,7 @@ def test_every_repository_verifier_workflow_job_fetches_full_git_history() -> No
             if "verify_public_release.py" not in block:
                 continue
             proof_jobs.append((path.name, job_name))
-            assert "uses: actions/checkout@v4" in block, (
+            assert "uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262" in block, (
                 path.name,
                 job_name,
             )

@@ -2,7 +2,7 @@
 
 **A deterministic structural-reasoning architecture for bounded learned proposals, explicit authority, and falsifiable runtime composition.**
 
-**Release line: Elpis2.2.27**
+**Release line: Elpis2.2.28**
 
 Elpis is a systems-research project about a narrow question: can learned components contribute useful structural proposals while deterministic machinery retains ownership of representation, admissibility, authority, validation, and terminal action?
 
@@ -14,19 +14,11 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 ## Release Notes
 
-**Elpis2.2.27** is the hosted-CI corrective successor to the untagged, unpublished Elpis2.2.26 seal. The Elpis2.2.26 native workflow was rejected before runner allocation because it referenced the `runner` context from job-level `env`.
+**Elpis2.2.28** is the red-team corrective successor to published Elpis2.2.27. Its first milestone makes hosted native inference qualification a required and durable release witness, binds the exact native pytest locus rather than trusting counts alone, and removes mutable CI action refs from the release-critical workflow surface.
 
-Elpis2.2.27 preserves the exact Elpis2.2.26 inference, Runtime R3, native-provider, and package-authority bytes while moving runner-derived workspace paths to runtime initialization from `RUNNER_TEMP` and `GITHUB_ENV`.
+The runtime-integrity findings from the Elpis2.2.27 red-team remain active successor work until separately qualified. Elpis2.2.27 stays immutable published historical evidence.
 
-Elpis2.2.26 remains immutable failed hosted-main-CI evidence at `61b8b12dc44e7389ba690abd1ad36f168f9080cc` with manifest SHA-256 `b31cf459bf2ff8d08206b22f1fe6fc6c258c5d5e6daf502129cf03d1863c5838` and hosted failure run `35732077852`. It was never tagged or published.
-
-- Current notes: [`RELEASE_NOTES/Elpis2.2.27.md`](RELEASE_NOTES/Elpis2.2.27.md)
-- Inference provenance: [`components/InferenceInfrastructure/PROVENANCE.md`](components/InferenceInfrastructure/PROVENANCE.md)
-- Public component registry: [`manifests/PUBLIC_COMPONENT_REGISTRY.json`](manifests/PUBLIC_COMPONENT_REGISTRY.json)
-- Inference-plugin trust boundary: [`docs/INFERENCE_PLUGIN_TRUST_BOUNDARY.md`](docs/INFERENCE_PLUGIN_TRUST_BOUNDARY.md)
-- Release-note archive: [`RELEASE_NOTES/`](RELEASE_NOTES/)
-- ECS authority and science: [`ECS/`](ECS/)
-
+See [`RELEASE_NOTES/Elpis2.2.28.md`](RELEASE_NOTES/Elpis2.2.28.md).
 ## Install and quick start
 
 The Python distribution project name is **`elpisai`**. The console command remains **`elpis`**, and the existing Python import-package names remain unchanged.

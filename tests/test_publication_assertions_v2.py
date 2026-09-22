@@ -85,14 +85,7 @@ def add_release(repo: Path, version: str, *, annotated: bool = True) -> tuple[st
 
 def receipt(tag: str, commit: str, base: int = 1000) -> dict:
     version = tag.removeprefix("Elpis")
-    action_specs = {
-        "tag_ci": ("CI", "push"),
-        "tag_reference_runtime": ("reference-runtime", "push"),
-        "tag_component_attribution": ("Component attribution", "push"),
-        "tag_platform_matrix": ("platform-matrix", "push"),
-        "release_event_ci": ("CI", "release"),
-        "pypi_publish": ("pypi-publish", "release"),
-    }
+    action_specs = pubv2.required_actions(tag)
     actions = {}
     for offset, (name, (workflow, event)) in enumerate(action_specs.items()):
         actions[name] = {
@@ -138,6 +131,31 @@ def write_receipt(repo: Path, value: dict, name: str = "receipt.json") -> Path:
     p = repo / name
     p.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
     return p
+
+
+
+def test_227_historical_receipt_does_not_require_native(tmp_path: Path):
+    repo = tmp_path / "repo"
+    seed(repo)
+    tag, commit = add_release(repo, "2.2.27")
+    r = receipt(tag, commit)
+    assert "tag_inference_native" not in r["github_actions"]
+    rec = write_receipt(repo, r)
+    proc = run_tool(repo, "--append-receipt", str(rec))
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+
+
+def test_228_successor_receipt_requires_native(tmp_path: Path):
+    repo = tmp_path / "repo"
+    seed(repo)
+    tag, commit = add_release(repo, "2.2.28")
+    r = receipt(tag, commit)
+    assert "tag_inference_native" in r["github_actions"]
+    del r["github_actions"]["tag_inference_native"]
+    rec = write_receipt(repo, r)
+    proc = run_tool(repo, "--append-receipt", str(rec))
+    assert proc.returncode != 0
+    assert "GITHUB_ACTION_WITNESS_SET_INVALID" in proc.stdout
 
 
 def test_append_binds_annotated_tag_commit_and_tagged_manifest(tmp_path: Path):

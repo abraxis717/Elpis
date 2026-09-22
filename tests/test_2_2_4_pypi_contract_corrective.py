@@ -24,7 +24,7 @@ def test_repaired_pypi_workflow_contract_is_current():
         'python tools/verify_public_release.py --verify-repository-identity',
         'git archive --format=tar "${RELEASE_TAG}"',
         "      id-token: write",
-        "pypa/gh-action-pypi-publish@release/v1",
+        "pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33",
     ):
         assert marker in text, marker
     assert 'git rev-list -n 1 "${{ github.event.release.tag_name }})' not in text

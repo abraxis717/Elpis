@@ -348,6 +348,12 @@ RELEASE_IDENTITIES = {
         "primitive_closure_commit": "482d4064321392108b87124cd47343d9c748f5bc",
         "base_release_commit": "c911af22e01ee35c441d65e8dbcad18694bdcb2a",
     },
+    "2.2.28": {
+        # Red-team corrective successor; primitive closure and original
+        # distribution baseline remain unchanged.
+        "primitive_closure_commit": "482d4064321392108b87124cd47343d9c748f5bc",
+        "base_release_commit": "c911af22e01ee35c441d65e8dbcad18694bdcb2a",
+    },
 }
 RELEASE_MANIFEST_REL = Path(f"manifests/Elpis{RELEASE_VERSION}.RELEASE_MANIFEST.json")
 DISTRIBUTION_MANIFEST_REL = Path(f"manifests/Elpis{RELEASE_VERSION}.DISTRIBUTION_MANIFEST.json")

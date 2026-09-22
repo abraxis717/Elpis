@@ -188,7 +188,7 @@ class LiveBoundary:
         branch = 'main' if state == 'MAIN_HOSTED_GREEN' else machine.tag_name(intent)
         runs = {}
         waiting = False
-        for key, (_, path, event) in machine.action_specs(state).items():
+        for key, (_, path, event) in machine.action_specs(state, intent).items():
             rows = []
             for page in range(1, 12):
                 endpoint = (f"repos/{intent['repository']}/actions/workflows/{path}/runs"

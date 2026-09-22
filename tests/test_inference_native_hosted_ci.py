@@ -39,6 +39,8 @@ def _contract_errors(text: str) -> list[str]:
         LOCUS_EXPECTED,
         'NATIVE_INFERENCE_LOCUS_CARDINALITY_NONPASS',
         'NATIVE_INFERENCE_LOCUS_149_OF_149_PASS',
+        'tools/verify_inference_native_locus.py --check',
+        'scipy==1.17.1',
         '-p no:cacheprovider',
         "PYTHONDONTWRITEBYTECODE: '1'",
         'RUNNER_TEMP',

@@ -97,8 +97,8 @@ jobs:
         components/Grid81StructuralSemantics/src:
         components/Pipeline/P0ControlProtocol/src:components:src
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.11'
       - name: Install shared component test dependencies
@@ -131,7 +131,7 @@ jobs:
           - owner: native/semantic-spine
             command: "cmake -S native/semantic-spine -B \"$RUNNER_TEMP/semantic-spine\" -DCMAKE_BUILD_TYPE=Release -DELPIS_HACF_ROOT=\"$GITHUB_WORKSPACE/native/hacf\" && cmake --build \"$RUNNER_TEMP/semantic-spine\" --parallel && total=\"$(ctest --test-dir \"$RUNNER_TEMP/semantic-spine\" -N | sed -n 's/^Total Tests: //p')\" && nested=\"$(ctest --test-dir \"$RUNNER_TEMP/semantic-spine/hacf\" -N | sed -n 's/^Total Tests: //p')\" && test \"$total\" = 96 && test \"$nested\" = 21 && test \"$((total - nested))\" = 75 && ctest --test-dir \"$RUNNER_TEMP/semantic-spine\" --output-on-failure"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Install native build dependencies
         run: |
           test -f /etc/apt/sources.list.d/ubuntu.sources

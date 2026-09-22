@@ -18,7 +18,7 @@ def test_trusted_publisher_identity_and_oidc_boundary():
     assert "required: true" in text
     assert "name: pypi" in text
     assert "id-token: write" in text
-    assert "pypa/gh-action-pypi-publish@release/v1" in text
+    assert "pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33" in text
     assert "python-package-distributions" in text
 
     forbidden = (
@@ -85,5 +85,5 @@ def test_publish_job_still_consumes_only_uploaded_build_artifact():
     assert "actions/checkout" not in publish
     assert "git archive" not in publish
     assert "python -m build" not in publish
-    assert "actions/download-artifact@v4" in publish
-    assert "pypa/gh-action-pypi-publish@release/v1" in publish
+    assert "actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093" in publish
+    assert "pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33" in publish

@@ -64,10 +64,14 @@ a compare-and-swap constraint; the independent ancestry check prohibits a
 non-fast-forward change. `--no-follow-tags` prevents an incidental tag push.
 The explicit GitHub repository URL is used instead of an ambient remote alias.
 
-All four workflows (CI, reference-runtime, Component attribution, platform-matrix)
-must be green independently for main and tag. The exact workflow path, name,
+Historical releases through Elpis2.2.27 retain the original four hosted
+workflow witnesses (CI, reference-runtime, Component attribution, platform-matrix).
+Starting with Elpis2.2.28, `inference-native-r0` is a fifth required workflow and
+must be green independently for both main and tag. The exact workflow path, name,
 repository, event, head ref, SHA, run ID, attempt, status, conclusion, and timestamps
-are recorded. Pagination is explicit and capped censuses fail closed. Multiple
+are recorded. The publication receipt likewise requires the successful
+`tag_inference_native` witness for Elpis2.2.28 and later without rewriting
+historical receipts. Pagination is explicit and capped censuses fail closed. Multiple
 matching runs are ambiguous; reruns are forbidden. A failed required workflow
 durably terminates this intent even if someone later deletes or reruns it.
 
