@@ -11,39 +11,33 @@ TAG = "Elpis2.2.25"
 MANIFEST_REL = "manifests/Elpis2.2.25.RELEASE_MANIFEST.json"
 
 
-def test_225_release_identity_is_atomic_and_ratified():
-    assert (ROOT / "VERSION").read_text().strip() == VERSION
-    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text())
-    assert pyproject["project"]["name"] == "elpisai"
-    assert pyproject["project"]["version"] == VERSION
-    assert f'version: "{VERSION}"' in (ROOT / "CITATION.cff").read_text()
+def test_225_release_identity_is_immutable_published_history():
+    manifest = ROOT / MANIFEST_REL
+    assert manifest.is_file()
+    data = json.loads(manifest.read_text())
+    assert data["schema"] == "elpis.release-manifest.v3"
+    assert data["version"] == VERSION
+    assert data["release_tag"] == TAG
 
-    readme = (ROOT / "README.md").read_text()
-    assert f"**Release line: Elpis{VERSION}**" in readme
-    section = readme.split("## Release Notes", 1)[1].split(
-        "## Install and quick start", 1
-    )[0]
-    assert section.strip().startswith(f"**Elpis{VERSION}**")
-    assert f"RELEASE_NOTES/Elpis{VERSION}.md" in readme
+    assertions = json.loads(
+        (ROOT / "PUBLICATION_ASSERTIONS.json").read_text()
+    )["publication_assertions"]
+    rows = [row for row in assertions if row.get("version") == VERSION]
+    assert len(rows) == 1
+    row = rows[0]
+    assert row["manifest_sha256"] == (
+        "82d630c37bbf7f8741f91142c5d8b0f9deee39d8f8d62dfe03852450a523772d"
+    )
+    assert row["peeled_commit"] == (
+        "37fdac9edf34d421093f61a1481a73f850d18610"
+    )
+    assert row["tag_object"] == (
+        "4434f663dff5884898d4056ab4f8cf1579bf6a87"
+    )
 
-    note = ROOT / f"RELEASE_NOTES/Elpis{VERSION}.md"
+    note = ROOT / "RELEASE_NOTES/Elpis2.2.25.md"
     assert note.is_file()
-    text = note.read_text()
-    assert text.count(f"## Version: v{VERSION}") == 1
-    assert "production DeepSeek V4.1 implementation" in text
-    assert "no speculative speedup claim" in text
-
-    assert (ROOT / "CHANGELOG.md").read_text().startswith(f"## Elpis{VERSION}")
-
-    ns = runpy.run_path(str(ROOT / "tools/verify_public_release.py"))
-    assert ns["RELEASE_VERSION"] == VERSION
-    assert ns["RELEASE_IDENTITIES"][VERSION] == {
-        "primitive_closure_commit":
-            "482d4064321392108b87124cd47343d9c748f5bc",
-        "base_release_commit":
-            "c911af22e01ee35c441d65e8dbcad18694bdcb2a",
-    }
-
+    assert note.read_text().count("## Version: v2.2.25") == 1
 
 def test_225_manifest_write_once_lifecycle_contract():
     immutable = json.loads(

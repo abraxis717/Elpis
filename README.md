@@ -2,7 +2,7 @@
 
 **A deterministic structural-reasoning architecture for bounded learned proposals, explicit authority, and falsifiable runtime composition.**
 
-**Release line: Elpis2.2.25**
+**Release line: Elpis2.2.26**
 
 Elpis is a systems-research project about a narrow question: can learned components contribute useful structural proposals while deterministic machinery retains ownership of representation, admissibility, authority, validation, and terminal action?
 
@@ -14,15 +14,15 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 ## Release Notes
 
-**Elpis2.2.25** carries the qualified inference infrastructure R0 into the current release line after exact-SHA main closure and bounded performance characterization. The release adds sparse associative addressing, bounded file-backed asset access, exact row retrieval, context lifetime/compaction machinery, proposal-only structural guidance, passive prefetch, exact expert selection, local/global context state, and the compact deterministic neural target infrastructure.
+**Elpis2.2.26** is the corrective successor to published Elpis2.2.25. It closes the hosted native-qualification and Runtime R3 integrity gaps identified during independent post-publication review without widening the public wheel.
 
-The `src/elpis/inference` package is part of the existing `elpis*` distribution surface. Runtime R3 remains source-only: `runtime/R3/src` is not in root package discovery, so this release does not silently promote the transactional/speculative R3 package into the public wheel. Speculative semantics remain target-authoritative and carry no measured-acceleration claim.
+The dedicated native workflow now builds the FMS file-asset provider under an explicit bounded workspace, proves the 7/7 provider sentinel, and requires the complete native-backed inference + Runtime R3 locus to execute 149/149 with zero skips, failures, or errors.
 
-Qualification includes the closed P12 adversarial suite (14/14), 11/11 caught source-level mutants, the independent DS4 row/hash oracle, full root regression, repository gates, and final deterministic performance characterization. These results do not claim production DeepSeek/Qwen trained-table compatibility, production-scale throughput, GPU performance, or execution authority for learned/proposal layers.
+Runtime R3 remains source-only and outside root package discovery. Its corrective hardening converts malformed latent inputs into deterministic typed atomic failures and verifies historical `StepReceipt` provenance by deterministic target replay for previously unknown state digests. Same-runtime produced or replay-validated states use a process-local validation cache so ordinary continuation does not replay the full history.
 
-The 2.2.x line continues to enforce physical-tree-aware release manifests, immutable release history, lifecycle-aware repository identity, explicit authority boundaries, append-only publication facts, repository hygiene, and exact external publication observation.
+This is deterministic internal provenance validation, not external cryptographic attestation. Elpis2.2.25 remains immutable published authority.
 
-- Current notes: [`RELEASE_NOTES/Elpis2.2.25.md`](RELEASE_NOTES/Elpis2.2.25.md)
+- Current notes: [`RELEASE_NOTES/Elpis2.2.26.md`](RELEASE_NOTES/Elpis2.2.26.md)
 - Inference provenance: [`components/InferenceInfrastructure/PROVENANCE.md`](components/InferenceInfrastructure/PROVENANCE.md)
 - Public component registry: [`manifests/PUBLIC_COMPONENT_REGISTRY.json`](manifests/PUBLIC_COMPONENT_REGISTRY.json)
 - Inference-plugin trust boundary: [`docs/INFERENCE_PLUGIN_TRUST_BOUNDARY.md`](docs/INFERENCE_PLUGIN_TRUST_BOUNDARY.md)

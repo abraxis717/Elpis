@@ -1,3 +1,11 @@
+## Elpis2.2.26 — Native qualification and Runtime R3 integrity corrective successor
+
+- Add explicit hosted native-provider qualification with exact 7/7 provider and 149/149 native inference/Runtime R3 zero-skip contracts.
+- Close malformed latent caller-input atomicity so invalid non-canonical inputs return deterministic typed failure receipts without state mutation.
+- Close historical `StepReceipt` provenance gaps by deterministic replay of all receipt fields for previously unknown state digests while caching already validated states.
+- Keep Runtime R3 source-only and outside public wheel package discovery.
+- Preserve published Elpis2.2.25 manifest, tag, GitHub Release, PyPI witnesses, and publication assertion as immutable historical authority.
+
 ## Elpis2.2.25 — Qualified inference infrastructure R0 successor
 
 - Carry the closed inference infrastructure R0 onto the successor release line after exact-SHA hosted-main and performance closure.
