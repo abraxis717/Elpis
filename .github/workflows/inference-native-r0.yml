@@ -1,0 +1,112 @@
+name: inference-native-r0
+
+on:
+  push:
+    branches:
+      - main
+      - 'ci/**'
+    tags:
+      - 'Elpis*'
+  pull_request:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  native-inference:
+    name: Native-backed inference and R3 qualification
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONNOUSERSITE: '1'
+      PYTHONPATH: runtime/R3/src:src
+      ELPIS_INFERENCE_WORKSPACE: ${{ runner.temp }}/elpis-inference-native
+      ELPIS_FMS_FILE_LIBRARY: ${{ runner.temp }}/elpis-inference-native/native-build/libelpis_fms_file_assets_r0.so
+      TMPDIR: ${{ runner.temp }}/elpis-inference-native/tmp
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install qualification dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest==9.0.2 numpy==1.26.4 scipy
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake
+
+      - name: Build native file-asset provider in bounded workspace
+        run: |
+          mkdir -p "${ELPIS_INFERENCE_WORKSPACE}/native-build" "${TMPDIR}"
+          cmake \
+            -S native/hacf/file_assets_r0 \
+            -B "${ELPIS_INFERENCE_WORKSPACE}/native-build" \
+            -DCMAKE_BUILD_TYPE=Release
+          cmake --build "${ELPIS_INFERENCE_WORKSPACE}/native-build" --parallel
+          test -f "${ELPIS_FMS_FILE_LIBRARY}"
+
+      - name: Prove provider-backed core exact cardinality
+        run: |
+          python -m pytest \
+            -q -p no:cacheprovider \
+            --junitxml="${ELPIS_INFERENCE_WORKSPACE}/provider-sentinel.xml" \
+            tests/test_inference_file_assets_r0.py
+
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+
+          report = Path(os.environ['ELPIS_INFERENCE_WORKSPACE']) / 'provider-sentinel.xml'
+          root = ET.parse(report).getroot()
+          suites = [root] if root.tag.endswith('testsuite') else list(root)
+          totals = {
+              key: sum(int(s.attrib.get(key, '0')) for s in suites)
+              for key in ('tests', 'failures', 'errors', 'skipped')
+          }
+          expected = {'tests': 7, 'failures': 0, 'errors': 0, 'skipped': 0}
+          print('NATIVE_PROVIDER_SENTINEL_JUNIT', totals)
+          if totals != expected:
+              raise SystemExit('NATIVE_PROVIDER_CORE_CARDINALITY_NONPASS:' + repr(totals))
+          print('NATIVE_PROVIDER_CORE_7_OF_7_PASS')
+          PY
+
+      - name: Run complete native-backed inference and R3 locus
+        run: |
+          python -m pytest \
+            -q -p no:cacheprovider \
+            --junitxml="${ELPIS_INFERENCE_WORKSPACE}/inference-native.xml" \
+            tests/test_inference_file_assets_r0.py \
+            tests/test_inference_rows_r0.py \
+            tests/test_inference_experts_r0.py \
+            tests/test_inference_neural_r0.py \
+            tests/test_inference_prefetch_r0.py \
+            tests/test_inference_runtime_r3.py \
+            tests/test_inference_speculative_r0.py \
+            runtime/R3/tests/
+
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+
+          report = Path(os.environ['ELPIS_INFERENCE_WORKSPACE']) / 'inference-native.xml'
+          root = ET.parse(report).getroot()
+          suites = [root] if root.tag.endswith('testsuite') else list(root)
+          totals = {
+              key: sum(int(s.attrib.get(key, '0')) for s in suites)
+              for key in ('tests', 'failures', 'errors', 'skipped')
+          }
+          expected = {'tests': 132, 'failures': 0, 'errors': 0, 'skipped': 0}
+          print('NATIVE_INFERENCE_JUNIT', totals)
+          if totals != expected:
+              raise SystemExit('NATIVE_INFERENCE_LOCUS_CARDINALITY_NONPASS:' + repr(totals))
+          print('NATIVE_INFERENCE_LOCUS_132_OF_132_PASS')
+          PY
