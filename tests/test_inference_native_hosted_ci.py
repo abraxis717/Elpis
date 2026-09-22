@@ -18,7 +18,7 @@ PROVIDER_EXPECTED = (
     "expected = {'tests': 7, 'failures': 0, 'errors': 0, 'skipped': 0}"
 )
 LOCUS_EXPECTED = (
-    "expected = {'tests': 132, 'failures': 0, 'errors': 0, 'skipped': 0}"
+    "expected = {'tests': 149, 'failures': 0, 'errors': 0, 'skipped': 0}"
 )
 
 
@@ -38,7 +38,7 @@ def _contract_errors(text: str) -> list[str]:
         'inference-native.xml',
         LOCUS_EXPECTED,
         'NATIVE_INFERENCE_LOCUS_CARDINALITY_NONPASS',
-        'NATIVE_INFERENCE_LOCUS_132_OF_132_PASS',
+        'NATIVE_INFERENCE_LOCUS_149_OF_149_PASS',
         '-p no:cacheprovider',
         "PYTHONDONTWRITEBYTECODE: '1'",
     ) + REQUIRED_TESTS

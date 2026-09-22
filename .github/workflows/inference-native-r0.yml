@@ -104,9 +104,9 @@ jobs:
               key: sum(int(s.attrib.get(key, '0')) for s in suites)
               for key in ('tests', 'failures', 'errors', 'skipped')
           }
-          expected = {'tests': 132, 'failures': 0, 'errors': 0, 'skipped': 0}
+          expected = {'tests': 149, 'failures': 0, 'errors': 0, 'skipped': 0}
           print('NATIVE_INFERENCE_JUNIT', totals)
           if totals != expected:
               raise SystemExit('NATIVE_INFERENCE_LOCUS_CARDINALITY_NONPASS:' + repr(totals))
-          print('NATIVE_INFERENCE_LOCUS_132_OF_132_PASS')
+          print('NATIVE_INFERENCE_LOCUS_149_OF_149_PASS')
           PY
