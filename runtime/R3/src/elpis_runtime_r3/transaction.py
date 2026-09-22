@@ -31,6 +31,7 @@ class DecodeState:
     structural: tuple[AddressProposal,...]=()
     prefetch: tuple[PrefetchPlan,...]=()
     receipts: tuple[StepReceipt,...]=()
+    step_latents: tuple[tuple[LatentInput,...],...]=()
 
     @property
     def digest(self): return identity('r3.committed-state',self)
@@ -88,29 +89,62 @@ class RuntimeR3:
     def __init__(self,target,*,prefetch_catalog=None):
         self.target=target
         self.prefetch_catalog={} if prefetch_catalog is None else dict(prefetch_catalog)
+        self._validated_states=set()
 
     def initial(self,context):
         require(type(context) is Snapshot)
-        try:
-            return DecodeState(self.target.initial(context.digest),context)
-        except InferenceError:
-            raise
-        except Exception as exc:
-            raise typed_failure(exc) from exc
+        state=DecodeState(self.target.initial(context.digest),context)
+        self._validated_states.add(state.digest)
+        return state
+
+    def _validate_request_latents(self,latents):
+        require(type(latents) is tuple,Code.INVALID,'latent packet collection')
+        for packet in latents:
+            require(type(packet) is LatentInput,Code.INVALID,'latent packet type')
+            for name in ('channel','source_schema','source','context_snapshot','projection'):
+                require(type(getattr(packet,name)) is str,Code.INVALID,'latent packet field')
+            require(type(packet.values) is tuple,Code.INVALID,'latent packet values')
+            for value in packet.values:
+                require(type(value) in (int,float) and type(value) is not bool,
+                        Code.INVALID,'latent packet scalar')
+                require(bool(np.isfinite(value)),Code.INVALID,'latent packet scalar')
 
     def _validate_receipt_lineage(self,state):
         expected_input=self.target.initial(state.context.digest).digest
-        for token,receipt in zip(state.neural.tokens,state.receipts,strict=True):
+        require(len(state.step_latents)==len(state.neural.tokens),Code.STALE,
+                'receipt latent-input lineage')
+        for token,receipt,latents in zip(
+            state.neural.tokens,state.receipts,state.step_latents,strict=True
+        ):
             require(type(receipt) is StepReceipt,Code.IDENTITY,'receipt type')
             require(receipt.model==self.target.model_identity,Code.IDENTITY,'receipt model')
             require(receipt.tokenizer==self.target.config.tokenizer,Code.IDENTITY,'receipt tokenizer')
             require(receipt.context_snapshot==state.context.digest,Code.STALE,'receipt context lineage')
             require(receipt.token==token,Code.IDENTITY,'receipt token lineage')
             require(receipt.input_state==expected_input,Code.STALE,'receipt input lineage')
+            self._validate_request_latents(latents)
             expected_input=receipt.output_state
         require(expected_input==state.neural.digest,Code.STALE,'receipt output lineage')
 
+        if state.digest in self._validated_states:
+            return
+
+        replayed=self.target.initial(state.context.digest)
+        for token,receipt,latents in zip(
+            state.neural.tokens,state.receipts,state.step_latents,strict=True
+        ):
+            replayed,expected_receipt=self.target.step(
+                replayed,
+                token,
+                expected_state=replayed.digest,
+                latents=latents,
+            )
+            require(expected_receipt==receipt,Code.IDENTITY,'receipt provenance')
+        require(replayed==state.neural,Code.IDENTITY,'neural replay provenance')
+        self._validated_states.add(state.digest)
+
     def _validate(self,state,request):
+        self._validate_request_latents(request.latents)
         require(state.neural.context_snapshot==state.context.digest==request.context_snapshot,
                 Code.STALE,'runtime context snapshot')
         require(state.neural.model==self.target.model_identity,Code.IDENTITY,'runtime model')
@@ -129,12 +163,44 @@ class RuntimeR3:
             prefetch_results=execute_prefetch(self.target.rows.provider,plan,state=state.neural.digest,
                     context_snapshot=state.context.digest,step=len(state.neural.tokens))
         neural,receipt=self.target.step(state.neural,token,expected_state=state.neural.digest,latents=request.latents)
-        out=DecodeState(neural,state.context,request.proposals,state.prefetch+(plan,),state.receipts+(receipt,))
+        out=DecodeState(neural,state.context,request.proposals,state.prefetch+(plan,),state.receipts+(receipt,),state.step_latents+(request.latents,))
+        self._validated_states.add(out.digest)
         return out,dict(target=dict(self.target.last_metrics),prefetch=prefetch_results)
 
-    def receipt(self,request,before,after,*,draft=None,accepted=(),failure=None):
+    def _failure_request_identity(self,request):
+        try:
+            return request.digest
+        except Exception:
+            def stable(value):
+                if value is None or type(value) in (str,int,bool):
+                    return value
+                if type(value) is float and bool(np.isfinite(value)):
+                    return value
+                return {'type':type(value).__module__+'.'+type(value).__qualname__}
+            latents=request.latents if type(request.latents) is tuple else ()
+            proposals=request.proposals if type(request.proposals) is tuple else ()
+            tokens=request.tokens if type(request.tokens) is tuple else ()
+            return identity(
+                'r3.invalid-request',
+                dict(
+                    request_id=stable(request.request_id),
+                    context_snapshot=stable(request.context_snapshot),
+                    mode=stable(request.mode),
+                    token_count=len(tokens),
+                    count=stable(request.count),
+                    proposal_count=len(proposals),
+                    latent_types=tuple(
+                        type(packet).__module__+'.'+type(packet).__qualname__
+                        for packet in latents
+                    ),
+                ),
+            )
+
+    def receipt(self,request,before,after,*,draft=None,accepted=(),failure=None,
+                request_identity=None):
         steps=after.receipts[len(before.receipts):]
-        return RuntimeReceipt(request.digest,'elpis.runtime.r3.r0',self.target.model_identity,
+        request_digest=request.digest if request_identity is None else request_identity
+        return RuntimeReceipt(request_digest,'elpis.runtime.r3.r0',self.target.model_identity,
                self.target.config.tokenizer,before.digest,before.context.digest,
                tuple(p.digest for p in request.proposals),steps,draft,accepted,after.digest,
                'COMMITTED' if failure is None else 'FAILED',failure)
@@ -145,6 +211,7 @@ class RuntimeR3:
             # Fail closed on a non-canonical (tampered) identity before any work,
             # so the failure-receipt path below only ever sees canonical digests.
             base_digest=state.digest
+            self._validate_request_latents(request.latents)
             request_digest=request.digest  # noqa: F841  (canonicality gate)
             require(base_digest==expected_state,Code.STALE,'runtime committed base')
             self._validate(state,request)
@@ -156,7 +223,10 @@ class RuntimeR3:
                 telemetry.append(metrics)
         except InferenceError as exc:
             # Physical cache warming may survive failure; semantic state cannot.
-            return RuntimeResult(state,self.receipt(request,state,state,failure=exc.code.value),tuple(telemetry))
+            return RuntimeResult(state,self.receipt(
+                request,state,state,failure=exc.code.value,
+                request_identity=self._failure_request_identity(request),
+            ),tuple(telemetry))
         except Exception as exc:
             # A non-canonical (tampered) identity must fail closed as a typed
             # identity error, never as an untyped canonicalization error.
