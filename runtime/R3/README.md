@@ -7,7 +7,7 @@ Execution is in process; Python and ctypes are not an isolation boundary.
 `RuntimeR3.initial(snapshot)` creates immutable committed state.
 `execute(state, request, expected_state=...)` performs prefill or deterministic
 greedy generation through a private overlay. Typed failure returns the original
-state with a failure receipt. `replay` checks the complete semantic receipt.
+state with a failure receipt. `replay` checks the complete semantic receipt within the same recorded numerical execution profile; machine-agnostic bitwise replay is not claimed.
 Performance telemetry is separate from receipt identity. Physical cache warming
 may survive rollback; tokens, KV, n-gram history, global selection, structural
 proposals, logical prefetch plans, context and committed step receipts may not.

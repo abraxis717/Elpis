@@ -42,3 +42,33 @@ def test_structural_authority_and_identity_defects():
         with pytest.raises(InferenceError): adapt(proposal_fixture(),**{key:'0'*64})
     with pytest.raises(TypeError):
         RouteRule('x',row_ids=(1,))
+
+
+def test_structural_ingress_rejects_duplicate_keys_and_missing_digests():
+    raw=(
+        '{"schema":"elpis.regex-hacf-context-proposal.r1",'
+        '"semantic_authority":true,"semantic_authority":false,'
+        '"admission_authority":false,"execution_authority":false,'
+        '"runtime_admission":false,"candidate_status":"PROPOSED_UNADMITTED",'
+        '"source_sha256":"' + '1'*64 + '","proposal_digest":"' + '2'*64 + '",'
+        '"hacf":{"corpus_manifest_digest":"' + '3'*64 + '",'
+        '"context_graph_manifest_digest":"' + '4'*64 + '","retrieval":[]}}'
+    ).encode()
+    with pytest.raises(InferenceError,match='INVALID:ingress JSON'):
+        from_regex_hacf(
+            raw,expected_payload=raw_digest(raw),expected_source='1'*64,
+            expected_corpus='3'*64,context_snapshot='7'*64,query_overlay='8'*64,
+            rules=()
+        )
+    for field in ('proposal_digest','context_graph_manifest_digest'):
+        bad=proposal_fixture()
+        if field=='proposal_digest':
+            del bad[field]
+        else:
+            del bad['hacf'][field]
+        with pytest.raises(InferenceError):
+            adapt(bad)
+
+
+def test_structural_unknown_confidence_is_absent_not_fabricated():
+    assert adapt(proposal_fixture())[0].confidence is None

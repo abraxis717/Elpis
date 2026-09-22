@@ -135,6 +135,8 @@ class RuntimeR3:
                         Code.STALE,'structural snapshot')
 
     def _validate_receipt_lineage(self,state):
+        require(state.neural.numerical_profile==self.target.numerical_profile,
+                Code.UNSUPPORTED,'numerical replay profile')
         token_count=len(state.neural.tokens)
         expected_input=self.target.initial(state.context.digest).digest
         require(len(state.receipts)==token_count,Code.STALE,'receipt/token lineage')

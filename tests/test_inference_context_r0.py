@@ -42,3 +42,20 @@ def test_context_planted_defects():
     assert not replacement.semantic_authority and not out.mutation_authority
     with pytest.raises((AttributeError,TypeError)):
         object.__setattr__(out,'semantic_authority',True)
+
+
+def test_compaction_verifier_binds_entire_output_snapshot():
+    s=populated()
+    replacement=ContextItem('summary-x','model',b'lossy',Lifetime.DYNAMIC)
+    out,record=compact_context(
+        s,1,3,replacement,expected=s.digest,replacement_digest=replacement.digest,
+        policy='p',reason='r'
+    )
+    verify_compaction(s,out,record)
+    for mutated in (
+        replace(out,branch='forged'),
+        replace(out,generation=out.generation+1),
+        replace(out,retired=('forged',)),
+    ):
+        with pytest.raises(InferenceError):
+            verify_compaction(s,mutated,replace(record,output_snapshot=mutated.digest))

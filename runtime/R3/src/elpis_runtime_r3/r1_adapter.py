@@ -41,7 +41,7 @@ def from_r1_bundle(
         (),
         tuple(item.chunk_digest for item in bundle.items),
         (),
-        0.5,
+        None,
         (
             expected_bundle,
             bundle.graph_snapshot_digest,

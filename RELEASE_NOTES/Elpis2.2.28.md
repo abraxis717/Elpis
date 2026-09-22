@@ -31,6 +31,14 @@ Elpis2.2.27 remains immutable published evidence. Its native main and tag workfl
 
 ## Remaining corrective scope
 
-Numerical cross-machine replay, asset/native trust roots, memory-accounting claims, compaction verification, ingress parsing, confidence evidence semantics, and lower-priority ABI/telemetry findings remain open until separately qualified.
+Runtime R3 deterministic replay is explicitly bound to the recorded numerical execution profile; machine-agnostic bitwise replay is not claimed. Elpis2.2.28 also does not claim an independent asset-manifest provenance root, race-free openat2 path resolution, pre-load cryptographic native-library identity, or measured Python allocation high-water telemetry. Those surfaces are outside this corrective release's qualified claims.
 
-No Elpis2.2.28 manifest, tag, GitHub Release, or PyPI publication is created by this milestone.
+
+## Final corrective scope
+
+- Bind receipt-bearing target state and step receipts to a numerical execution profile; mismatched-profile replay fails typed `UNSUPPORTED` before target replay.
+- Verify the complete context-compaction output snapshot.
+- Reject duplicate JSON keys and make missing structural digest fields typed validation failures.
+- Represent absent structural confidence as `None` for Regex/HACF and Runtime-R1 adapters.
+- Bound `max_pages` to the native `uint32_t` ABI and reject unexpected native tier values.
+- Preserve explicit nonclaims for asset/native trust-root and true allocation-measurement work not implemented here.

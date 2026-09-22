@@ -118,13 +118,27 @@ def compact_context(snapshot,start,stop,replacement,*,expected,replacement_diges
 
 
 def verify_compaction(before,after,record):
-    require(record.input_snapshot==before.digest and record.output_snapshot==after.digest and
+    require(type(before) is Snapshot and type(after) is Snapshot and
+            type(record) is CompactionRecord,detail='compaction record types')
+    require(record.input_snapshot==before.digest and
+            record.output_snapshot==after.digest and
             after.predecessor==before.digest,Code.STALE,'compaction lineage')
+    require(after.branch==before.branch,Code.IDENTITY,'compaction branch changed')
+    require(after.generation==before.generation+1,Code.IDENTITY,'compaction generation')
+    require(after.retired==before.retired,Code.IDENTITY,'compaction retired set changed')
     require(before.canonical==after.canonical,Code.IDENTITY,'canonical evidence changed')
     input_ids=tuple(i.digest for i in before.visible)
     require(record.compacted and all(d in input_ids for d in record.compacted))
     start=input_ids.index(record.compacted[0]); stop=start+len(record.compacted)
     require(input_ids[start:stop]==record.compacted,detail='noncontiguous compaction')
     require(input_ids[:start]+input_ids[stop:]==record.preserved,detail='preserved region')
-    require(tuple(i.digest for i in after.visible)==input_ids[:start]+(record.replacement,)+input_ids[stop:],
-            Code.IDENTITY,'model-visible replacement')
+    require(len(after.visible)==len(before.visible)-len(record.compacted)+1,
+            Code.IDENTITY,'compaction output geometry')
+    replacement=after.visible[start]
+    require(replacement.digest==record.replacement,Code.IDENTITY,'compaction replacement')
+    expected=replace(
+        before,generation=before.generation+1,predecessor=before.digest,
+        visible=before.visible[:start]+(replacement,)+before.visible[stop:]
+    )
+    require(after==expected,Code.IDENTITY,'compaction output snapshot')
+    require(record.output_snapshot==expected.digest,Code.IDENTITY,'compaction output digest')

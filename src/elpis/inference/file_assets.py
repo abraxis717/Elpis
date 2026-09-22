@@ -183,7 +183,7 @@ class FMSFileAssets:
                  storage_bytes=1<<40,max_pages=1024,hot_absent_policy='FOLD_DOWN'):
         self.root=Path(root)
         library=bounded_path(root,library); scratch=bounded_path(root,scratch)
-        integer(warm_bytes,1); integer(staging_bytes,1); integer(storage_bytes,1); integer(max_pages,1)
+        integer(warm_bytes,1); integer(staging_bytes,1); integer(storage_bytes,1); integer(max_pages,1,(1<<32)-1)
         require(hot_absent_policy in ('FOLD_DOWN','REJECT'))
         scratch.mkdir(parents=True,exist_ok=True)
         self._native=_NativePages(library,scratch,warm_bytes,max_pages,int(hot_absent_policy=='REJECT'))
@@ -284,7 +284,8 @@ class FMSFileAssets:
                 for key,lease,_,_,_ in parts:
                     self._native.release(lease); self._pins[key]-=1
                 raise
-            return RangeLease(self,parts,offset,length,('HOT','WARM','COLD')[actual])
+            require(actual in (0,1),Code.INTEGRITY,'native lease tier')
+            return RangeLease(self,parts,offset,length,('HOT','WARM')[actual])
 
     def evict(self,asset=None):
         with self._lock:

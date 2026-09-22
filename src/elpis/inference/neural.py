@@ -6,12 +6,35 @@ UPSTREAM_REVISION_UNPINNED; see InferenceInfrastructure/PROVENANCE.md).
 Arithmetic is explicit CPU F32; there is no GPU determinism claim.
 """
 from dataclasses import dataclass, replace
+from contextlib import redirect_stdout
+from io import StringIO
+import os
+import platform
 from time import perf_counter_ns
 import numpy as np
 from .associative import DSV41Parameters, History
 from .contracts import Code, ProposalOnly, RowIdentity, digest_value, identity, integer, require
 from .file_assets import raw_digest
 from .global_context import GlobalCandidate,IndexConfig,IndexMode,IndexResult,select_global,selected_values
+
+
+def numerical_profile():
+    buf=StringIO()
+    with redirect_stdout(buf):
+        np.__config__.show()
+    return identity(
+        'numerical-execution-profile',
+        dict(
+            numpy=np.__version__,
+            numpy_config=buf.getvalue(),
+            system=platform.system(),
+            machine=platform.machine(),
+            processor=platform.processor(),
+            openblas_coretype=os.environ.get('OPENBLAS_CORETYPE'),
+            openblas_num_threads=os.environ.get('OPENBLAS_NUM_THREADS'),
+            omp_num_threads=os.environ.get('OMP_NUM_THREADS'),
+        ),
+    )
 
 
 def vector(x): return tuple(float(v) for v in np.asarray(x,dtype='<f4'))
@@ -101,6 +124,7 @@ class TargetConfig:
 class NeuralState:
     model: str
     context_snapshot: str
+    numerical_profile: str
     tokens: tuple[int,...]
     history: History
     local_keys: tuple[tuple[float,...],...]=()
@@ -119,6 +143,7 @@ class NeuralState:
 class StepReceipt:
     model: str
     tokenizer: str
+    numerical_profile: str
     input_state: str
     context_snapshot: str
     token: int
@@ -159,6 +184,7 @@ class CompactTarget:
             m=experts.manifest(config.layer,i)
             require(m.tensors[0].shape[0]==d,detail='expert target dimension')
         self.scheme=scheme; self.rows=rows; self.experts=experts
+        self.numerical_profile=numerical_profile()
         self.model_identity=identity('target-model',dict(config=config.digest,
               weights=tuple((k,t.digest) for k,t in sorted(weights.items())),
               projections=tuple(p.digest for p in projections),parameters=scheme.parameters.digest,
@@ -168,7 +194,7 @@ class CompactTarget:
 
     def initial(self,context_snapshot):
         digest_value(context_snapshot)
-        return NeuralState(self.model_identity,context_snapshot,(),self.scheme.initial())
+        return NeuralState(self.model_identity,context_snapshot,self.numerical_profile,(),self.scheme.initial())
 
     def _latent(self,packet,context):
         require(type(packet) is LatentInput and packet.channel in self.projections,detail='latent packet')
@@ -184,6 +210,7 @@ class CompactTarget:
         start=perf_counter_ns(); c=self.config; w={k:t.array() for k,t in self.weights.items()}
         require(type(state) is NeuralState and state.digest==expected_state,Code.STALE,'target state')
         require(state.model==self.model_identity,Code.IDENTITY,'target state model')
+        require(state.numerical_profile==self.numerical_profile,Code.UNSUPPORTED,'numerical execution profile')
         integer(token,0,c.vocab-1)
         require(len(state.tokens)<c.max_tokens,Code.LIMIT,'explicit target context capacity')
         require(state.history.position==len(state.tokens),Code.STALE,'token/hash position')
@@ -239,11 +266,11 @@ class CompactTarget:
                                     shared=c.shared_experts,resident=resident_experts)
         logits=hidden@w['out']
         require(np.all(np.isfinite(logits)),Code.ENCODING,'target logits')
-        out=NeuralState(state.model,state.context_snapshot,state.tokens+(token,),hashed.history,
+        out=NeuralState(state.model,state.context_snapshot,state.numerical_profile,state.tokens+(token,),hashed.history,
                         keys,values,pending,pool,index,vector(hidden),vector(logits))
         expert_manifests=tuple(self.experts.manifest(c.layer,i) for i in route+c.shared_experts)
         assets=tuple(sorted({self.rows.table.asset}|{t.asset for m in expert_manifests for t in m.tensors}))
-        receipt=StepReceipt(state.model,c.tokenizer,state.digest,state.context_snapshot,token,p.schema,p.digest,
+        receipt=StepReceipt(state.model,c.tokenizer,state.numerical_profile,state.digest,state.context_snapshot,token,p.schema,p.digest,
                             hashed.digest,self.rows.table.bank.digest,row_ids,index.digest,
                             tuple(packet.digest for packet in (internal,)+latents),route,
                             tuple(m.digest for m in expert_manifests),assets,out.digest)

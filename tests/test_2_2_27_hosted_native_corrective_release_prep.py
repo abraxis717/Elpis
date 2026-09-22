@@ -191,18 +191,20 @@ def test_227_preserves_untagged_failed_226_exactly():
                    for row in failed.get("failed_releases", []))
 
 
-def test_227_native_workflow_uses_runner_runtime_environment_not_job_expression():
+def test_227_native_workflow_historical_result_and_runner_fix_are_preserved():
+    note = (ROOT / "RELEASE_NOTES/Elpis2.2.27.md").read_text()
+    assert "RUNNER_TEMP" in note
+    assert "GITHUB_ENV" in note
+
     workflow = (ROOT / ".github/workflows/inference-native-r0.yml").read_text()
     contract = (ROOT / "tests/test_inference_native_hosted_ci.py").read_text()
     assert "${{ runner.temp }}" not in workflow
     assert "RUNNER_TEMP" in workflow
     assert "GITHUB_ENV" in workflow
-    assert 'ELPIS_INFERENCE_WORKSPACE="${RUNNER_TEMP}/elpis-inference-native"' in workflow
-    assert "NATIVE_INFERENCE_LOCUS_149_OF_149_PASS" in workflow
     assert "NATIVE_PROVIDER_CORE_7_OF_7_PASS" in workflow
-    assert "149" in contract
+    assert "NATIVE_INFERENCE_LOCUS_EXACT_SET_PASS" in workflow
+    assert "tools/verify_inference_native_locus.py --check" in workflow
     assert "FORBIDDEN_JOB_LEVEL_RUNNER_CONTEXT" in contract
-
 
 def test_227_runtime_and_packaging_authority_are_unchanged():
     pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text())
