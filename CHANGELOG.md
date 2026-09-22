@@ -1,3 +1,11 @@
+## Elpis2.2.27 — Hosted native workflow-context corrective successor
+
+- Preserve untagged Elpis2.2.26 seal `61b8b12dc44e7389ba690abd1ad36f168f9080cc` and manifest `b31cf459bf2ff8d08206b22f1fe6fc6c258c5d5e6daf502129cf03d1863c5838` as immutable failed hosted-main-CI evidence.
+- Correct GitHub Actions workflow-definition failure from job-level `${{ runner.temp }}` usage by initializing native workspace paths after runner allocation via `RUNNER_TEMP` and `GITHUB_ENV`.
+- Preserve the exact 7/7 provider sentinel, 149/149 native inference/Runtime R3 locus, zero-skip policy, Runtime R3 corrective source, and package boundary.
+- Do not tag or publish Elpis2.2.26.
+- Predeclare the Elpis2.2.27 manifest without materializing it.
+
 ## Elpis2.2.26 — Native qualification and Runtime R3 integrity corrective successor
 
 - Add explicit hosted native-provider qualification with exact 7/7 provider and 149/149 native inference/Runtime R3 zero-skip contracts.

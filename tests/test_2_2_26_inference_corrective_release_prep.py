@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 import runpy
@@ -11,41 +12,18 @@ TAG = "Elpis2.2.26"
 MANIFEST_REL = "manifests/Elpis2.2.26.RELEASE_MANIFEST.json"
 
 
-def test_226_release_identity_is_atomic_and_prepublication():
-    assert (ROOT / "VERSION").read_text().strip() == VERSION
-
-    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text())
-    assert pyproject["project"]["name"] == "elpisai"
-    assert pyproject["project"]["version"] == VERSION
-    assert f'version: "{VERSION}"' in (ROOT / "CITATION.cff").read_text()
-
-    readme = (ROOT / "README.md").read_text()
-    assert f"**Release line: Elpis{VERSION}**" in readme
-    section = readme.split("## Release Notes", 1)[1].split(
-        "## Install and quick start", 1
-    )[0]
-    assert section.strip().startswith(f"**Elpis{VERSION}**")
-    assert f"RELEASE_NOTES/Elpis{VERSION}.md" in readme
-
-    note = ROOT / f"RELEASE_NOTES/Elpis{VERSION}.md"
+def test_226_release_identity_is_immutable_untagged_failed_hosted_main_evidence():
+    manifest = ROOT / MANIFEST_REL
+    assert manifest.is_file()
+    assert hashlib.sha256(manifest.read_bytes()).hexdigest() == (
+        "b31cf459bf2ff8d08206b22f1fe6fc6c258c5d5e6daf502129cf03d1863c5838"
+    )
+    data = json.loads(manifest.read_text())
+    assert data["version"] == VERSION
+    assert data["release_tag"] == TAG
+    note = ROOT / "RELEASE_NOTES/Elpis2.2.26.md"
     assert note.is_file()
-    text = note.read_text()
-    assert text.count(f"## Version: v{VERSION}") == 1
-    assert "149/149 PASS" in text
-    assert "deterministic internal provenance validation" in text
-    assert "Runtime R3 remains source-only" in text
-
-    assert (ROOT / "CHANGELOG.md").read_text().startswith(f"## Elpis{VERSION}")
-
-    ns = runpy.run_path(str(ROOT / "tools/verify_public_release.py"))
-    assert ns["RELEASE_VERSION"] == VERSION
-    assert ns["RELEASE_IDENTITIES"][VERSION] == {
-        "primitive_closure_commit":
-            "482d4064321392108b87124cd47343d9c748f5bc",
-        "base_release_commit":
-            "c911af22e01ee35c441d65e8dbcad18694bdcb2a",
-    }
-
+    assert note.read_text().count("## Version: v2.2.26") == 1
 
 def test_226_manifest_write_once_lifecycle_contract():
     immutable = json.loads(

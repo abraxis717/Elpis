@@ -2,7 +2,7 @@
 
 **A deterministic structural-reasoning architecture for bounded learned proposals, explicit authority, and falsifiable runtime composition.**
 
-**Release line: Elpis2.2.26**
+**Release line: Elpis2.2.27**
 
 Elpis is a systems-research project about a narrow question: can learned components contribute useful structural proposals while deterministic machinery retains ownership of representation, admissibility, authority, validation, and terminal action?
 
@@ -14,15 +14,13 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 ## Release Notes
 
-**Elpis2.2.26** is the corrective successor to published Elpis2.2.25. It closes the hosted native-qualification and Runtime R3 integrity gaps identified during independent post-publication review without widening the public wheel.
+**Elpis2.2.27** is the hosted-CI corrective successor to the untagged, unpublished Elpis2.2.26 seal. The Elpis2.2.26 native workflow was rejected before runner allocation because it referenced the `runner` context from job-level `env`.
 
-The dedicated native workflow now builds the FMS file-asset provider under an explicit bounded workspace, proves the 7/7 provider sentinel, and requires the complete native-backed inference + Runtime R3 locus to execute 149/149 with zero skips, failures, or errors.
+Elpis2.2.27 preserves the exact Elpis2.2.26 inference, Runtime R3, native-provider, and package-authority bytes while moving runner-derived workspace paths to runtime initialization from `RUNNER_TEMP` and `GITHUB_ENV`.
 
-Runtime R3 remains source-only and outside root package discovery. Its corrective hardening converts malformed latent inputs into deterministic typed atomic failures and verifies historical `StepReceipt` provenance by deterministic target replay for previously unknown state digests. Same-runtime produced or replay-validated states use a process-local validation cache so ordinary continuation does not replay the full history.
+Elpis2.2.26 remains immutable failed hosted-main-CI evidence at `61b8b12dc44e7389ba690abd1ad36f168f9080cc` with manifest SHA-256 `b31cf459bf2ff8d08206b22f1fe6fc6c258c5d5e6daf502129cf03d1863c5838` and hosted failure run `35732077852`. It was never tagged or published.
 
-This is deterministic internal provenance validation, not external cryptographic attestation. Elpis2.2.25 remains immutable published authority.
-
-- Current notes: [`RELEASE_NOTES/Elpis2.2.26.md`](RELEASE_NOTES/Elpis2.2.26.md)
+- Current notes: [`RELEASE_NOTES/Elpis2.2.27.md`](RELEASE_NOTES/Elpis2.2.27.md)
 - Inference provenance: [`components/InferenceInfrastructure/PROVENANCE.md`](components/InferenceInfrastructure/PROVENANCE.md)
 - Public component registry: [`manifests/PUBLIC_COMPONENT_REGISTRY.json`](manifests/PUBLIC_COMPONENT_REGISTRY.json)
 - Inference-plugin trust boundary: [`docs/INFERENCE_PLUGIN_TRUST_BOUNDARY.md`](docs/INFERENCE_PLUGIN_TRUST_BOUNDARY.md)

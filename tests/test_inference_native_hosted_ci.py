@@ -41,10 +41,14 @@ def _contract_errors(text: str) -> list[str]:
         'NATIVE_INFERENCE_LOCUS_149_OF_149_PASS',
         '-p no:cacheprovider',
         "PYTHONDONTWRITEBYTECODE: '1'",
+        'RUNNER_TEMP',
+        'GITHUB_ENV',
     ) + REQUIRED_TESTS
     for marker in required:
         if marker not in text:
             errors.append('MISSING:' + marker)
+    if '${{ runner.temp }}' in text:
+        errors.append('FORBIDDEN_JOB_LEVEL_RUNNER_CONTEXT')
     return errors
 
 
@@ -78,3 +82,12 @@ def test_native_inference_workflow_detects_locus_exact_count_removal():
     text = WORKFLOW.read_text(encoding='utf-8')
     mutated = text.replace(LOCUS_EXPECTED, 'expected = {}')
     assert 'MISSING:' + LOCUS_EXPECTED in _contract_errors(mutated)
+
+def test_native_inference_workflow_rejects_job_level_runner_context():
+    text = WORKFLOW.read_text(encoding='utf-8')
+    mutated = text.replace(
+        '"${RUNNER_TEMP}/elpis-inference-native"',
+        '"${{ runner.temp }}/elpis-inference-native"',
+        1,
+    )
+    assert 'FORBIDDEN_JOB_LEVEL_RUNNER_CONTEXT' in _contract_errors(mutated)

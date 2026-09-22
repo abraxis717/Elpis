@@ -22,9 +22,6 @@ jobs:
       PYTHONDONTWRITEBYTECODE: '1'
       PYTHONNOUSERSITE: '1'
       PYTHONPATH: runtime/R3/src:src
-      ELPIS_INFERENCE_WORKSPACE: ${{ runner.temp }}/elpis-inference-native
-      ELPIS_FMS_FILE_LIBRARY: ${{ runner.temp }}/elpis-inference-native/native-build/libelpis_fms_file_assets_r0.so
-      TMPDIR: ${{ runner.temp }}/elpis-inference-native/tmp
 
     steps:
       - uses: actions/checkout@v4
@@ -34,6 +31,18 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
+      - name: Initialize bounded native workspace on runner
+        run: |
+          ELPIS_INFERENCE_WORKSPACE="${RUNNER_TEMP}/elpis-inference-native"
+          ELPIS_FMS_FILE_LIBRARY="${ELPIS_INFERENCE_WORKSPACE}/native-build/libelpis_fms_file_assets_r0.so"
+          TMPDIR="${ELPIS_INFERENCE_WORKSPACE}/tmp"
+          mkdir -p "${ELPIS_INFERENCE_WORKSPACE}/native-build" "${TMPDIR}"
+          {
+            echo "ELPIS_INFERENCE_WORKSPACE=${ELPIS_INFERENCE_WORKSPACE}"
+            echo "ELPIS_FMS_FILE_LIBRARY=${ELPIS_FMS_FILE_LIBRARY}"
+            echo "TMPDIR=${TMPDIR}"
+          } >> "${GITHUB_ENV}"
 
       - name: Install qualification dependencies
         run: |
