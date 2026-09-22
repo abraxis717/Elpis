@@ -20,8 +20,17 @@ This milestone repairs the release machinery before runtime semantics are change
 
 Elpis2.2.27 remains immutable published evidence. Its native main and tag workflows did execute successfully, but the canonical release orchestrator and publication receipt did not require or durably retain the native witness. This successor corrects that authority gap prospectively.
 
+## Runtime R3 replay and typed-failure milestone R0
+
+- Persist each step's exact structural proposal tuple alongside `step_latents`.
+- Recompute every logical prefetch plan during fresh-state replay and require the final structural plane to match replayed proposal history.
+- Reject malformed proposal elements as typed `INVALID` inputs and make both normal and speculative failure receipts structurally defensive.
+- Stop admitting private transaction/speculative overlay states into the replay-validation cache.
+- Bound replay-validation cache retention to 1024 committed or externally replay-validated state identities.
+- Replace the historical fixed 149 live-workflow cardinality with the exact committed native node-ID authority; JUnit cardinality remains a secondary zero-skip sanity check.
+
 ## Remaining corrective scope
 
-Replay completeness, typed malformed-request failure handling, numerical cross-machine replay, validation-cache rollback, asset/native trust roots, memory-accounting claims, compaction verification, ingress parsing, and lower-priority ABI/telemetry findings remain open until separately qualified.
+Numerical cross-machine replay, asset/native trust roots, memory-accounting claims, compaction verification, ingress parsing, confidence evidence semantics, and lower-priority ABI/telemetry findings remain open until separately qualified.
 
 No Elpis2.2.28 manifest, tag, GitHub Release, or PyPI publication is created by this milestone.

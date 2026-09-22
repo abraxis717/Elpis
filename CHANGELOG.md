@@ -7,6 +7,10 @@
 - Pin external GitHub Actions to immutable commit SHAs and remove the mixed PyTorch/PyPI index install pattern from Runtime R0 CI.
 - Pin the native qualification numerical stack to the exact successful 2.2.27 hosted baseline (`numpy==1.26.4`, `scipy==1.17.1`, `pytest==9.0.2`).
 - Do not materialize or seal the Elpis2.2.28 release manifest in this milestone.
+- Persist and replay per-step structural proposals and logical prefetch plans in Runtime R3.
+- Normalize malformed structural proposal failures across normal and speculative execution.
+- Cache only committed/replayed Runtime R3 states and bound the validation cache.
+- Let the exact native node-ID authority define successor locus cardinality instead of freezing historical 149.
 
 ## Elpis2.2.27 — Hosted native workflow-context corrective successor
 

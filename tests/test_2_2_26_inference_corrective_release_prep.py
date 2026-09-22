@@ -98,22 +98,13 @@ def test_226_publication_fact_is_absent_before_external_closeout():
     )
 
 
-def test_226_native_hosted_contract_is_exact_149_and_zero_skip():
-    workflow = (
-        ROOT / ".github/workflows/inference-native-r0.yml"
-    ).read_text()
-    contract = (
-        ROOT / "tests/test_inference_native_hosted_ci.py"
-    ).read_text()
-    expected = "expected = {'tests': 149, 'failures': 0, 'errors': 0, 'skipped': 0}"
-    assert expected in workflow
-    assert "NATIVE_INFERENCE_LOCUS_149_OF_149_PASS" in workflow
-    assert "ELPIS_FMS_FILE_LIBRARY" in workflow
-    assert "ELPIS_INFERENCE_WORKSPACE" in workflow
-    assert "149" in contract
-    assert "132" not in workflow
-    assert "132" not in contract
-
+def test_226_native_hosted_historical_149_result_is_preserved():
+    note = (ROOT / "RELEASE_NOTES/Elpis2.2.26.md").read_text()
+    assert (
+        "Require the complete native-backed inference + Runtime R3 locus "
+        "to execute exactly 149/149 tests with zero skips, failures, or errors."
+    ) in note
+    assert "Native-backed Runtime R3/inference locus: 149/149 PASS, zero skips." in note
 
 def test_226_runtime_r3_corrective_is_source_only():
     pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text())

@@ -1,6 +1,6 @@
 {
   "locus": {
-    "count": 149,
+    "count": 157,
     "nodeids": [
       "tests/test_inference_file_assets_r0.py::test_ranges_cache_accounting_and_leases",
       "tests/test_inference_file_assets_r0.py::test_changed_truncated_corrupt_metadata",
@@ -112,6 +112,14 @@
       "runtime/R3/tests/test_r3_receipt_lineage.py::test_non_stepreceipt_type_fails_closed",
       "runtime/R3/tests/test_r3_receipt_lineage.py::test_truncated_chain_with_extra_tokens_fails_closed",
       "runtime/R3/tests/test_r3_receipt_lineage.py::test_full_lineage_revalidates_after_growth",
+      "runtime/R3/tests/test_r3_redteam_228.py::test_inference_request_rejects_malformed_proposal_elements_at_construction",
+      "runtime/R3/tests/test_r3_redteam_228.py::test_tampered_malformed_proposals_return_typed_atomic_failure_receipt",
+      "runtime/R3/tests/test_r3_redteam_228.py::test_speculative_malformed_proposals_cannot_escape_failure_receipt",
+      "runtime/R3/tests/test_r3_redteam_228.py::test_fresh_runtime_replays_structural_and_prefetch_history",
+      "runtime/R3/tests/test_r3_redteam_228.py::test_forged_structural_prefetch_planes_are_rejected_and_not_cached",
+      "runtime/R3/tests/test_r3_redteam_228.py::test_failed_transaction_does_not_cache_transient_overlay_states",
+      "runtime/R3/tests/test_r3_redteam_228.py::test_rejected_speculative_suffix_does_not_enter_validation_cache",
+      "runtime/R3/tests/test_r3_redteam_228.py::test_validation_cache_is_bounded",
       "runtime/R3/tests/test_r3_rollback_faults.py::test_failed_prefill_returns_original_state_all_planes",
       "runtime/R3/tests/test_r3_rollback_faults.py::test_failed_generation_mid_stream_returns_original_state",
       "runtime/R3/tests/test_r3_rollback_faults.py::test_failed_transaction_leaves_no_prefetch_plan",
@@ -152,7 +160,7 @@
       "runtime/R3/tests/test_r3_speculative_exactness.py::test_speculative_prefill_mode_rejected",
       "runtime/R3/tests/test_r3_speculative_exactness.py::test_speculative_never_overproduces"
     ],
-    "nodeids_sha256": "999d0503f75d90004844f386a3ff28e51479698901d6ea163ab91f69a6874ff7",
+    "nodeids_sha256": "6db248bc86b91cbb01b768952c5c7b043f288146e05abb787a71fb3428694129",
     "paths": [
       "tests/test_inference_file_assets_r0.py",
       "tests/test_inference_rows_r0.py",
@@ -193,6 +201,7 @@
     "runtime/R3/tests/test_r3_provider_cleanup.py": "449a871627958760acf4c063b8f3650c3b82d336e37e44b6d38a7e02126c43ed",
     "runtime/R3/tests/test_r3_r1_adapter.py": "d685a82956eca54715b2c529efe1ac1edba6a21389e8e24b92b834b94862cf3f",
     "runtime/R3/tests/test_r3_receipt_lineage.py": "5e1db959391ec306c31a5f4e1e3c6fa1ad66545ba2d9f7509284c1e30c458448",
+    "runtime/R3/tests/test_r3_redteam_228.py": "3cb3598e7ec3d0e8acc7b0ba5a283d0c404b77be58a64300eaa0ea38840710ef",
     "runtime/R3/tests/test_r3_rollback_faults.py": "6fc4ebedf87286c4d021869cbf11b680ea72a7c100a2850ffa25fbb38116269b",
     "runtime/R3/tests/test_r3_scaling.py": "547720a9acee655387fd84b43719854f1b00f9232d65bc0df210110473ed983e",
     "runtime/R3/tests/test_r3_snapshot_replay.py": "359fbb86586ab6ca2d94f3f2a981c73cd89f1d68a655ae0ef45cafadcf189dc0",

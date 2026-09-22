@@ -17,9 +17,6 @@ REQUIRED_TESTS = (
 PROVIDER_EXPECTED = (
     "expected = {'tests': 7, 'failures': 0, 'errors': 0, 'skipped': 0}"
 )
-LOCUS_EXPECTED = (
-    "expected = {'tests': 149, 'failures': 0, 'errors': 0, 'skipped': 0}"
-)
 
 
 def _contract_errors(text: str) -> list[str]:
@@ -36,9 +33,9 @@ def _contract_errors(text: str) -> list[str]:
         'NATIVE_PROVIDER_CORE_7_OF_7_PASS',
         '--junitxml=',
         'inference-native.xml',
-        LOCUS_EXPECTED,
+        "authority['locus']['count']",
         'NATIVE_INFERENCE_LOCUS_CARDINALITY_NONPASS',
-        'NATIVE_INFERENCE_LOCUS_149_OF_149_PASS',
+        'NATIVE_INFERENCE_LOCUS_EXACT_SET_PASS',
         'tools/verify_inference_native_locus.py --check',
         'scipy==1.17.1',
         '-p no:cacheprovider',
@@ -80,10 +77,17 @@ def test_native_inference_workflow_detects_provider_exact_count_removal():
     assert 'MISSING:' + PROVIDER_EXPECTED in _contract_errors(mutated)
 
 
-def test_native_inference_workflow_detects_locus_exact_count_removal():
+def test_native_inference_workflow_detects_exact_locus_authority_removal():
     text = WORKFLOW.read_text(encoding='utf-8')
-    mutated = text.replace(LOCUS_EXPECTED, 'expected = {}')
-    assert 'MISSING:' + LOCUS_EXPECTED in _contract_errors(mutated)
+    mutated = text.replace(
+        'tools/verify_inference_native_locus.py --check',
+        'REMOVED_EXACT_LOCUS_AUTHORITY',
+    )
+    assert (
+        'MISSING:tools/verify_inference_native_locus.py --check'
+        in _contract_errors(mutated)
+    )
+
 
 def test_native_inference_workflow_rejects_job_level_runner_context():
     text = WORKFLOW.read_text(encoding='utf-8')

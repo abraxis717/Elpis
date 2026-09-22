@@ -79,18 +79,21 @@ class MarkovDrafter:
         return Draft(state.digest,self.target_model,self.digest,tuple(tokens),(confidence,)*len(tokens))
 
 
-def verify_draft(runtime,state,request,draft,*,prefetch_enabled=False):
+def _verify_draft(runtime,state,request,draft,*,prefetch_enabled=False,validate_base=True):
     try:
         require(type(draft) is Draft and draft.committed_base==state.digest and
                 draft.target_model==runtime.target.model_identity,Code.STALE,'draft committed base/model')
         require(len(draft.tokens)<=128,Code.LIMIT,'draft block')
-        runtime._validate(state,request)
+        if validate_base:
+            runtime._validate(state,request)
         require(bool(state.neural.logits),detail='verification requires target logits')
         states=[state]; target_ns=0
         for token in draft.tokens:
             integer(token,0,runtime.target.config.vocab-1)
             begin=perf_counter_ns()
-            next_state,_=runtime.advance(states[-1],token,request,prefetch_enabled=prefetch_enabled)
+            next_state,_=runtime._advance_validated(
+                states[-1],token,request,prefetch_enabled=prefetch_enabled
+            )
             target_ns+=perf_counter_ns()-begin
             states.append(next_state)
         overlay=SpeculativeOverlay(state.digest,tuple(states))
@@ -100,24 +103,30 @@ def verify_draft(runtime,state,request,draft,*,prefetch_enabled=False):
             accepted+=1
         committed=overlay.states[accepted]
         correction=int(np.argmax(committed.neural.logits)) if accepted<len(draft.tokens) or not draft.tokens else None
-        result=Verification(committed,accepted,correction,draft.digest,
-                             identity('deepspec.accepted-prefix',dict(base=state.digest,tokens=draft.tokens[:accepted],output=committed.digest)))
-        # Rejected suffix states, including KV/history/context/receipts and logical
-        # prefetch state, lose their only reference here. No in-place merge exists.
-        return result,dict(candidate_tokens=len(draft.tokens),accepted_prefix=accepted,
-                           acceptance_by_position=tuple(i<accepted for i in range(len(draft.tokens))),
-                           target_verifier_steps=len(draft.tokens),target_ns=target_ns)
+        result=Verification(
+            committed,accepted,correction,draft.digest,
+            identity('deepspec.accepted-prefix',
+                     dict(base=state.digest,tokens=draft.tokens[:accepted],output=committed.digest))
+        )
+        return result,dict(
+            candidate_tokens=len(draft.tokens),accepted_prefix=accepted,
+            acceptance_by_position=tuple(i<accepted for i in range(len(draft.tokens))),
+            target_verifier_steps=len(draft.tokens),target_ns=target_ns
+        )
     except InferenceError:
         raise
     except Exception as exc:
-        # A non-canonical (tampered) state/draft identity must fail closed as a
-        # typed identity error, never as an untyped canonicalization error.
         raise typed_failure(exc) from exc
 
 
+def verify_draft(runtime,state,request,draft,*,prefetch_enabled=False):
+    return _verify_draft(
+        runtime,state,request,draft,
+        prefetch_enabled=prefetch_enabled,validate_base=True
+    )
+
+
 def run_speculative(runtime,state,request,drafter,*,expected_state,block_size=4,prefetch_enabled=False):
-    # Caller preconditions (API misuse) raise; transaction failures return a
-    # typed failure receipt.
     require(request.mode=='GREEDY',detail='speculation applies to generation')
     integer(block_size,1,128)
     before=state; telemetry=[]; rounds=[]; remaining=request.count
@@ -130,23 +139,35 @@ def run_speculative(runtime,state,request,drafter,*,expected_state,block_size=4,
             draft_ns=perf_counter_ns()-begin
             require(len(draft.tokens)<=remaining,Code.LIMIT,'drafter overproduction')
             begin=perf_counter_ns()
-            verification,metrics=verify_draft(runtime,state,request,draft,prefetch_enabled=prefetch_enabled)
+            verification,metrics=_verify_draft(
+                runtime,state,request,draft,
+                prefetch_enabled=prefetch_enabled,validate_base=False
+            )
             metrics.update(draft_ns=draft_ns,verification_ns=perf_counter_ns()-begin)
             rounds.append((draft.digest,verification.accepted_count,verification.verified_prefix))
             begin=perf_counter_ns()
             state=verification.accepted_state; remaining-=verification.accepted_count
             if remaining and verification.correction is not None:
-                state,correction_metrics=runtime.advance(state,verification.correction,request,prefetch_enabled=prefetch_enabled)
+                state,correction_metrics=runtime._advance_validated(
+                    state,verification.correction,request,prefetch_enabled=prefetch_enabled
+                )
                 remaining-=1; metrics['correction']=correction_metrics
             metrics['commit_ns']=perf_counter_ns()-begin
             telemetry.append(metrics)
     except InferenceError as exc:
-        receipt=runtime.receipt(request,before,before,draft=identity('deepspec.rounds',tuple(rounds)),failure=exc.code.value)
+        receipt=runtime.receipt(
+            request,before,before,
+            draft=identity('deepspec.rounds',tuple(rounds)),
+            failure=exc.code.value,
+            request_identity=runtime._failure_request_identity(request),
+        )
         return RuntimeResult(before,receipt,tuple(telemetry))
     except Exception as exc:
-        # A non-canonical (tampered) identity must fail closed as a typed
-        # identity error, never as an untyped canonicalization error.
         raise typed_failure(exc) from exc
-    receipt=runtime.receipt(request,before,state,draft=identity('deepspec.rounds',tuple(rounds)),
-                            accepted=state.neural.tokens[len(before.neural.tokens):])
+    receipt=runtime.receipt(
+        request,before,state,
+        draft=identity('deepspec.rounds',tuple(rounds)),
+        accepted=state.neural.tokens[len(before.neural.tokens):]
+    )
+    runtime._remember_validated(state.digest)
     return RuntimeResult(state,receipt,tuple(telemetry))
