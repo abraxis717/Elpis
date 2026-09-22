@@ -17,7 +17,7 @@ FAILED_226_MANIFEST_SHA = (
 FAILED_226_RUN_ID = 35732077852
 
 
-def test_227_release_identity_is_atomic_and_prepublication():
+def test_227_release_identity_is_atomic_and_ratified():
     assert (ROOT / "VERSION").read_text().strip() == VERSION
     pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text())
     assert pyproject["project"]["name"] == "elpisai"
@@ -101,6 +101,82 @@ def test_227_manifest_write_once_lifecycle_contract():
     assert isinstance(data["git_tree_oid"], str)
     assert data["git_tree_oid"]
     assert data["git_object_format"] in {"sha1", "sha256"}
+
+def test_227_publication_fact_is_append_only_and_exact_after_closeout():
+    assertions = json.loads(
+        (ROOT / "PUBLICATION_ASSERTIONS.json").read_text()
+    )["publication_assertions"]
+
+    rows = [row for row in assertions if row.get("version") == VERSION]
+    assert len(rows) == 1
+    row = rows[0]
+
+    assert row["release_tag"] == TAG
+    assert row["manifest_path"] == MANIFEST_REL
+    assert row["manifest_sha256"] == (
+        "97b7e2e7ed4615c961b3fddb104871733a7eaf82b918528d45a40ef6028bedd2"
+    )
+    assert row["peeled_commit"] == (
+        "21e9b0e592d043dec5060efec2162be984360b6e"
+    )
+    assert row["peeled_object_type"] == "commit"
+    assert row["tag_object"] == (
+        "7266a55363a37a5b551e512eeceda89701d5706b"
+    )
+    assert row["tag_object_type"] == "tag"
+
+    assert row["github_release"] == {
+        "published_at": "2026-09-22T15:26:23Z",
+        "release_id": 393864563,
+        "repository": "abraxis717/Elpis",
+        "tag_name": TAG,
+    }
+
+    expected_runs = {
+        "pypi_publish": 35747353209,
+        "release_event_ci": 35747353359,
+        "tag_ci": 35745434226,
+        "tag_component_attribution": 35745434345,
+        "tag_platform_matrix": 35745434363,
+        "tag_reference_runtime": 35745434339,
+    }
+    assert {
+        name: witness["run_id"]
+        for name, witness in row["github_actions"].items()
+    } == expected_runs
+    assert all(
+        witness["conclusion"] == "success"
+        and witness["head_sha"]
+        == "21e9b0e592d043dec5060efec2162be984360b6e"
+        for witness in row["github_actions"].values()
+    )
+
+    files = {x["filename"]: x for x in row["pypi"]["files"]}
+    assert row["pypi"]["project"] == "elpisai"
+    assert row["pypi"]["version"] == VERSION
+    assert files["elpisai-2.2.27-py3-none-any.whl"]["sha256"] == (
+        "1e511c0baff24c77b7ef554e89543a4259071df3897186c220213c99e9974870"
+    )
+    assert files["elpisai-2.2.27.tar.gz"]["sha256"] == (
+        "54d558b79348e66600b8444ba282766838fa60089498fb7f9dba1afb63530ba4"
+    )
+    assert all(not x["yanked"] for x in files.values())
+
+    legacy = json.loads(
+        (ROOT / "PUBLISHED_RELEASES.json").read_text()
+    )["published_releases"]
+    assert not any(row.get("version") == VERSION for row in legacy)
+
+    failed = json.loads((ROOT / "FAILED_RELEASES.json").read_text())
+    records = failed.get(
+        "failed_releases",
+        failed if isinstance(failed, list) else [],
+    )
+    assert not any(
+        isinstance(row, dict) and row.get("version") == VERSION
+        for row in records
+    )
+
 
 def test_227_preserves_untagged_failed_226_exactly():
     manifest = ROOT / "manifests/Elpis2.2.26.RELEASE_MANIFEST.json"
