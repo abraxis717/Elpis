@@ -7,6 +7,21 @@ from elpis.inference.contracts import Code,InferenceError,identity,integer,requi
 from elpis.inference.neural import LatentInput,NeuralState,StepReceipt
 from elpis.inference.prefetch import PrefetchPlan,execute_prefetch,plan_prefetch
 from elpis.inference.structural import AddressProposal
+from elpis.canonical_identity import CanonicalIdentityError
+
+
+def typed_failure(exc):
+    """Map a non-canonical identity error to the typed failure contract.
+
+    A tampered state/request may carry non-canonical values (e.g. NaN floats)
+    whose digest raises CanonicalIdentityError. The public contract is that
+    every typed failure is an InferenceError; a non-canonical identity is a
+    tampered identity. Any other exception is returned unchanged so genuine
+    bugs are never swallowed.
+    """
+    if isinstance(exc, CanonicalIdentityError):
+        return InferenceError(Code.IDENTITY, 'non-canonical identity')
+    return exc
 
 
 @dataclass(frozen=True)
@@ -76,7 +91,12 @@ class RuntimeR3:
 
     def initial(self,context):
         require(type(context) is Snapshot)
-        return DecodeState(self.target.initial(context.digest),context)
+        try:
+            return DecodeState(self.target.initial(context.digest),context)
+        except InferenceError:
+            raise
+        except Exception as exc:
+            raise typed_failure(exc) from exc
 
     def _validate_receipt_lineage(self,state):
         expected_input=self.target.initial(state.context.digest).digest
@@ -120,9 +140,13 @@ class RuntimeR3:
                'COMMITTED' if failure is None else 'FAILED',failure)
 
     def execute(self,state,request,*,expected_state,prefetch_enabled=False):
-        require(state.digest==expected_state,Code.STALE,'runtime committed base')
         overlay=state; telemetry=[]
         try:
+            # Fail closed on a non-canonical (tampered) identity before any work,
+            # so the failure-receipt path below only ever sees canonical digests.
+            base_digest=state.digest
+            request_digest=request.digest  # noqa: F841  (canonicality gate)
+            require(base_digest==expected_state,Code.STALE,'runtime committed base')
             self._validate(state,request)
             if request.mode=='GREEDY': require(bool(state.neural.logits),detail='greedy generation needs prefill')
             count=len(request.tokens) if request.mode=='PREFILL' else request.count
@@ -133,6 +157,10 @@ class RuntimeR3:
         except InferenceError as exc:
             # Physical cache warming may survive failure; semantic state cannot.
             return RuntimeResult(state,self.receipt(request,state,state,failure=exc.code.value),tuple(telemetry))
+        except Exception as exc:
+            # A non-canonical (tampered) identity must fail closed as a typed
+            # identity error, never as an untyped canonicalization error.
+            raise typed_failure(exc) from exc
         start=perf_counter_ns()
         receipt=self.receipt(request,state,overlay,accepted=overlay.neural.tokens[len(state.neural.tokens):])
         telemetry.append(dict(commit_ns=perf_counter_ns()-start))

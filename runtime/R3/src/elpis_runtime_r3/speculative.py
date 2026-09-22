@@ -13,7 +13,7 @@ import numpy as np
 from elpis.inference.contracts import Code,InferenceError,ProposalOnly,identity,integer,require
 from elpis.inference.context import Lifetime
 from elpis.inference.neural import Tensor
-from .transaction import DecodeState,RuntimeResult
+from .transaction import DecodeState,RuntimeResult,typed_failure
 
 
 @dataclass(frozen=True)
@@ -80,40 +80,49 @@ class MarkovDrafter:
 
 
 def verify_draft(runtime,state,request,draft,*,prefetch_enabled=False):
-    require(type(draft) is Draft and draft.committed_base==state.digest and
-            draft.target_model==runtime.target.model_identity,Code.STALE,'draft committed base/model')
-    require(len(draft.tokens)<=128,Code.LIMIT,'draft block')
-    runtime._validate(state,request)
-    require(bool(state.neural.logits),detail='verification requires target logits')
-    states=[state]; target_ns=0
-    for token in draft.tokens:
-        integer(token,0,runtime.target.config.vocab-1)
-        begin=perf_counter_ns()
-        next_state,_=runtime.advance(states[-1],token,request,prefetch_enabled=prefetch_enabled)
-        target_ns+=perf_counter_ns()-begin
-        states.append(next_state)
-    overlay=SpeculativeOverlay(state.digest,tuple(states))
-    accepted=0
-    for i,token in enumerate(draft.tokens):
-        if token!=int(np.argmax(overlay.states[i].neural.logits)): break
-        accepted+=1
-    committed=overlay.states[accepted]
-    correction=int(np.argmax(committed.neural.logits)) if accepted<len(draft.tokens) or not draft.tokens else None
-    result=Verification(committed,accepted,correction,draft.digest,
-                         identity('deepspec.accepted-prefix',dict(base=state.digest,tokens=draft.tokens[:accepted],output=committed.digest)))
-    # Rejected suffix states, including KV/history/context/receipts and logical
-    # prefetch state, lose their only reference here. No in-place merge exists.
-    return result,dict(candidate_tokens=len(draft.tokens),accepted_prefix=accepted,
-                       acceptance_by_position=tuple(i<accepted for i in range(len(draft.tokens))),
-                       target_verifier_steps=len(draft.tokens),target_ns=target_ns)
+    try:
+        require(type(draft) is Draft and draft.committed_base==state.digest and
+                draft.target_model==runtime.target.model_identity,Code.STALE,'draft committed base/model')
+        require(len(draft.tokens)<=128,Code.LIMIT,'draft block')
+        runtime._validate(state,request)
+        require(bool(state.neural.logits),detail='verification requires target logits')
+        states=[state]; target_ns=0
+        for token in draft.tokens:
+            integer(token,0,runtime.target.config.vocab-1)
+            begin=perf_counter_ns()
+            next_state,_=runtime.advance(states[-1],token,request,prefetch_enabled=prefetch_enabled)
+            target_ns+=perf_counter_ns()-begin
+            states.append(next_state)
+        overlay=SpeculativeOverlay(state.digest,tuple(states))
+        accepted=0
+        for i,token in enumerate(draft.tokens):
+            if token!=int(np.argmax(overlay.states[i].neural.logits)): break
+            accepted+=1
+        committed=overlay.states[accepted]
+        correction=int(np.argmax(committed.neural.logits)) if accepted<len(draft.tokens) or not draft.tokens else None
+        result=Verification(committed,accepted,correction,draft.digest,
+                             identity('deepspec.accepted-prefix',dict(base=state.digest,tokens=draft.tokens[:accepted],output=committed.digest)))
+        # Rejected suffix states, including KV/history/context/receipts and logical
+        # prefetch state, lose their only reference here. No in-place merge exists.
+        return result,dict(candidate_tokens=len(draft.tokens),accepted_prefix=accepted,
+                           acceptance_by_position=tuple(i<accepted for i in range(len(draft.tokens))),
+                           target_verifier_steps=len(draft.tokens),target_ns=target_ns)
+    except InferenceError:
+        raise
+    except Exception as exc:
+        # A non-canonical (tampered) state/draft identity must fail closed as a
+        # typed identity error, never as an untyped canonicalization error.
+        raise typed_failure(exc) from exc
 
 
 def run_speculative(runtime,state,request,drafter,*,expected_state,block_size=4,prefetch_enabled=False):
-    require(state.digest==expected_state,Code.STALE,'speculative committed base')
+    # Caller preconditions (API misuse) raise; transaction failures return a
+    # typed failure receipt.
     require(request.mode=='GREEDY',detail='speculation applies to generation')
     integer(block_size,1,128)
     before=state; telemetry=[]; rounds=[]; remaining=request.count
     try:
+        require(state.digest==expected_state,Code.STALE,'speculative committed base')
         runtime._validate(state,request)
         while remaining:
             begin=perf_counter_ns()
@@ -134,6 +143,10 @@ def run_speculative(runtime,state,request,drafter,*,expected_state,block_size=4,
     except InferenceError as exc:
         receipt=runtime.receipt(request,before,before,draft=identity('deepspec.rounds',tuple(rounds)),failure=exc.code.value)
         return RuntimeResult(before,receipt,tuple(telemetry))
+    except Exception as exc:
+        # A non-canonical (tampered) identity must fail closed as a typed
+        # identity error, never as an untyped canonicalization error.
+        raise typed_failure(exc) from exc
     receipt=runtime.receipt(request,before,state,draft=identity('deepspec.rounds',tuple(rounds)),
                             accepted=state.neural.tokens[len(before.neural.tokens):])
     return RuntimeResult(state,receipt,tuple(telemetry))
