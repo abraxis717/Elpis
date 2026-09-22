@@ -97,11 +97,65 @@ def test_225_manifest_write_once_lifecycle_contract():
     assert data["file_count"] > 0
 
 
-def test_225_publication_fact_is_absent_before_external_closeout():
+def test_225_publication_fact_is_append_only_and_exact_after_closeout():
     assertions = json.loads(
         (ROOT / "PUBLICATION_ASSERTIONS.json").read_text()
     )["publication_assertions"]
-    assert not any(row.get("version") == VERSION for row in assertions)
+
+    rows = [row for row in assertions if row.get("version") == VERSION]
+    assert len(rows) == 1
+    row = rows[0]
+
+    assert row["release_tag"] == TAG
+    assert row["manifest_path"] == MANIFEST_REL
+    assert row["manifest_sha256"] == (
+        "82d630c37bbf7f8741f91142c5d8b0f9deee39d8f8d62dfe03852450a523772d"
+    )
+    assert row["peeled_commit"] == (
+        "37fdac9edf34d421093f61a1481a73f850d18610"
+    )
+    assert row["peeled_object_type"] == "commit"
+    assert row["tag_object"] == (
+        "4434f663dff5884898d4056ab4f8cf1579bf6a87"
+    )
+    assert row["tag_object_type"] == "tag"
+
+    assert row["github_release"] == {
+        "published_at": "2026-09-21T20:06:12Z",
+        "release_id": 393259406,
+        "repository": "abraxis717/Elpis",
+        "tag_name": TAG,
+    }
+
+    expected_runs = {
+        "pypi_publish": 35648963280,
+        "release_event_ci": 35648963275,
+        "tag_ci": 35648118816,
+        "tag_component_attribution": 35648117607,
+        "tag_platform_matrix": 35648118808,
+        "tag_reference_runtime": 35648118463,
+    }
+    assert {
+        name: witness["run_id"]
+        for name, witness in row["github_actions"].items()
+    } == expected_runs
+    assert all(
+        witness["conclusion"] == "success"
+        and witness["head_sha"]
+        == "37fdac9edf34d421093f61a1481a73f850d18610"
+        for witness in row["github_actions"].values()
+    )
+
+    files = {x["filename"]: x for x in row["pypi"]["files"]}
+    assert row["pypi"]["project"] == "elpisai"
+    assert row["pypi"]["version"] == VERSION
+    assert files["elpisai-2.2.25-py3-none-any.whl"]["sha256"] == (
+        "882017fa6913fb9c851f876446827b5eaf746b8252ba8b640754f5a775967820"
+    )
+    assert files["elpisai-2.2.25.tar.gz"]["sha256"] == (
+        "45ec3d11ce9d1c46975230bafd9941ef8fabb34a21a326dcf61cb1ca7148a1f6"
+    )
+    assert all(not x["yanked"] for x in files.values())
 
     legacy = json.loads(
         (ROOT / "PUBLISHED_RELEASES.json").read_text()
@@ -109,7 +163,10 @@ def test_225_publication_fact_is_absent_before_external_closeout():
     assert not any(row.get("version") == VERSION for row in legacy)
 
     failed = json.loads((ROOT / "FAILED_RELEASES.json").read_text())
-    records = failed.get("failed_releases", failed if isinstance(failed, list) else [])
+    records = failed.get(
+        "failed_releases",
+        failed if isinstance(failed, list) else [],
+    )
     assert not any(
         isinstance(row, dict) and row.get("version") == VERSION
         for row in records
