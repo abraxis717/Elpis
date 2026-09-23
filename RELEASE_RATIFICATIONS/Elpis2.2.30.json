@@ -1,0 +1,8 @@
+{
+  "manifest_sha256": "dad01d27de0e5acc478b7aa6d010ac1138b927dfc07c54cfea3a115ad04b92a6",
+  "publication_assertion_sha256": "e5001ce731dfdd2c8bbe4428082497fee08d6eb64542605f625c893cab579ebf",
+  "release_tag": "Elpis2.2.30",
+  "schema": "elpis.release-ratification.v1",
+  "sealed_commit": "912921b78f9766494e137f9f472b59fc4fc53b17",
+  "version": "2.2.30"
+}
