@@ -26,7 +26,7 @@ All native code (HACF R3, Semantic Structural Spine V1, elpis-header) is first-p
 
 ## Component licenses
 
-See `manifests/FILE_LICENSE_MAP.json` for historical component-level mapping. First-party Elpis code remains MIT unless otherwise noted. Third-party adapted reference-runtime files retain their upstream MIT notice.
+See `manifests/FILE_LICENSE_MAP.json` for historical component-level mapping. First-party Elpis code is Apache-2.0 unless otherwise noted. Third-party adapted/vendor files retain their upstream licenses and notices.
 
 ## SciPy
 

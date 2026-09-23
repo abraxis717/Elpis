@@ -1,13 +1,15 @@
 {
-  "schema": "elpis.public.licensereview.v1",
-  "review_date": "2026-08-04",
-  "top_level_license": "MIT",
-  "first_party_components": 17,
-  "all_components_first_party": true,
-  "incompatible_licenses_found": 0,
+  "canonical_repository": "https://github.com/abraxis717/Elpis",
   "components_forbidding_redistribution": 0,
+  "first_party_default_license": "Apache-2.0",
+  "incompatible_licenses_found": 0,
   "missing_notices": 0,
   "ownership_clarity": "AUTHORITATIVE",
-  "review_conclusion": "PASS - All components are first-party Elpis code under MIT License. No incompatible licenses detected.",
-  "reviewer": "automated_publication_pipeline"
+  "review_conclusion": "PASS - first-party Elpis code is Apache-2.0; repository attribution is carried by NOTICE/CITATION; third-party terms remain file-specific.",
+  "review_date": "2026-09-23",
+  "reviewer": "automated_publication_pipeline plus creator rights attestation",
+  "schema": "elpis.public.licensereview.v2",
+  "third_party_boundary": "Vendored/adapted material retains upstream licenses and notices; the first-party Apache-2.0 default does not overwrite those terms.",
+  "third_party_material_present": true,
+  "top_level_license": "Apache-2.0"
 }

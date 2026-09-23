@@ -896,3 +896,5 @@ Elpis2.0.0 has its own release manifest and verifier.
 - Pin the immutable release build path to setuptools==84.0.0, build==1.6.1, and twine==7.0.0.
 
 - Build installed-artifact qualification from a private `git archive HEAD` export so packaging backend debris cannot contaminate release authority.
+
+- Migrate first-party Elpis licensing from MIT to Apache-2.0 with the canonical repository as the attribution/provenance anchor, explicit research references, and preserved third-party licenses.

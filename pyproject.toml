@@ -4,7 +4,8 @@ version = "2.2.29"
 description = "Elpis structural-guidance primitive with an end-to-end validated-source runtime"
 readme = "README.md"
 requires-python = ">=3.11,<3.13"
-license = {text = "MIT"}
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
 dependencies = [
   "numpy>=1.26,<2",
   "scipy>=1.11,<2",

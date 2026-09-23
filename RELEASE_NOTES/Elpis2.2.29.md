@@ -76,3 +76,11 @@ No Elpis2.2.29 manifest, tag, GitHub Release, or PyPI publication is created by 
 - Build release qualification wheels from a private `git archive HEAD` export under release-private evidence rather than from the authority worktree.
 - Keep backend-generated `build/` and `*.egg-info` debris out of all repository qualification passes.
 - Preserve the same real wheel install/import and packaging-contract checks; only the build location changes.
+
+
+## Apache-2.0 repository-attribution migration
+
+- License first-party Elpis code under Apache-2.0 while preserving file-specific third-party terms.
+- Use the canonical mother repository as the project attribution/provenance anchor in `NOTICE` and `CITATION.cff`.
+- Add `RESEARCH_REFERENCES.md` for scholarly acknowledgement of research that informed or contextualized EDEN-ECS, without treating papers as source-code provenance.
+- Correct the current license map/review and the stale Samsung vendor namespace license header.

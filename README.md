@@ -756,8 +756,10 @@ Release qualification is intentionally staged: local qualification, release comm
 
 ## 15. Licensing
 
-Elpis source code is distributed under the [MIT License](LICENSE) unless an individual file or bundled third-party component states otherwise.
+First-party Elpis source code is distributed under the [Apache License 2.0](LICENSE) unless an individual file or bundled third-party component states otherwise. Use, modification, redistribution, and commercial use are permitted under those terms.
 
-Third-party model, code, and data obligations are separate from the repository's own MIT-licensed source. Consult [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md), `LICENSES/`, component-local notices, and model provenance records before redistributing bundled or downloaded third-party artifacts.
+The canonical attribution/provenance reference for Elpis is the mother repository: https://github.com/abraxis717/Elpis. Redistributions should preserve the applicable [`NOTICE`](NOTICE). Research, publications, technical reports, benchmarks, and derivative research should cite the repository using [`CITATION.cff`](CITATION.cff). Research papers that materially informed or contextualized Elpis/EDEN-ECS are listed in [`RESEARCH_REFERENCES.md`](RESEARCH_REFERENCES.md).
+
+Third-party model, code, and data obligations remain separate. Consult [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md), `LICENSES/`, component-local notices, and model provenance records before redistributing bundled or downloaded third-party artifacts.
 
 The license grants software-use rights; it does not expand the scientific claims, authority boundaries, qualification scope, or safety guarantees described here.

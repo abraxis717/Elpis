@@ -1,3 +1,21 @@
+Elpis
+
+Canonical source repository:
+https://github.com/abraxis717/Elpis
+
+First-party Elpis software is licensed under the Apache License, Version 2.0.
+
+When redistributing Elpis or derivative works, preserve this NOTICE together
+with the other notices required by the applicable licenses. The canonical Elpis
+repository above is the attribution and provenance reference for the project.
+
+For research, technical reports, benchmarks, and publications using Elpis,
+please cite the canonical repository using CITATION.cff.
+
+This NOTICE is informational and does not modify the Apache License.
+
+Third-party and donor notices follow.
+
 Elpis experimental inference infrastructure
 
 Associative addressing adapts DeepSeek V4.1 Engram (Copyright (c) 2023

@@ -1,6 +1,22 @@
 {
-  "schema": "elpis.public.file_licensemap.v1",
-  "default_license": "MIT",
   "default_copyright": "Elpis Contributors",
-  "exceptions": []
+  "default_license": "Apache-2.0",
+  "exceptions": [
+    {
+      "authority": "THIRD_PARTY_NOTICES.md and retained upstream notices",
+      "license": "UPSTREAM_FILE_SPECIFIC",
+      "path_prefix": "src/elpis_reference/vendor/"
+    },
+    {
+      "authority": "the individual retained license text",
+      "license": "FILE_SPECIFIC",
+      "path_prefix": "LICENSES/"
+    },
+    {
+      "authority": "the individual retained donor license text",
+      "license": "FILE_SPECIFIC",
+      "path_prefix": "components/InferenceInfrastructure/licenses/"
+    }
+  ],
+  "schema": "elpis.public.file_licensemap.v2"
 }
