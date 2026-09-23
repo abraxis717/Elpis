@@ -51,3 +51,11 @@ No Elpis2.2.29 manifest, tag, GitHub Release, or PyPI publication is created by 
 - Multi-page lease acquisition validates every native tier result and rolls back the current plus all prior leases on an invalid tier.
 - Ordinary deployment-byte SHA-256 is centralized in one helper and registered in a forward census; the historical Q0a v1 census remains byte-for-byte unchanged.
 - The production trust-boundary adversarial suite is part of the exact native/R3 executed-node authority.
+
+## Truthful staging telemetry and compatible streaming identity milestone R3
+
+- Classify file-provider `staging_high_water` and row `row_staging_upper_bound` as `analytical_bound`, and expert `staging_high_water` as `configured_reservation`; none claims a measured RSS/allocation peak.
+- Replace `raw_digest` whole-payload canonical JSON materialization with chunked streaming of the exact Canonical Identity v1 framing for `elpis.inference.raw-bytes.r0`.
+- Preserve digest identity across bytes, bytearray, memoryview and chunk boundaries; no `raw-bytes.r1`/V3 migration is performed.
+- Keep the non-contiguous memoryview compatibility path identity-preserving while production contiguous page buffers use bounded 64 KiB hex intermediates.
+- Add telemetry classification and streaming-identity regressions to the exact executed native/R3 authority.

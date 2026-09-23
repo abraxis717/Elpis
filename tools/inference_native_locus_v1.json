@@ -1,6 +1,6 @@
 {
   "locus": {
-    "count": 212,
+    "count": 227,
     "nodeids": [
       "tests/test_inference_file_assets_r0.py::test_ranges_cache_accounting_and_leases",
       "tests/test_inference_file_assets_r0.py::test_changed_truncated_corrupt_metadata",
@@ -54,6 +54,21 @@
       "tests/test_inference_asset_boundary.py::test_geometry_checked_before_admission_reads",
       "tests/test_inference_asset_boundary.py::test_invalid_native_tier_releases_current_and_prior_leases[1]",
       "tests/test_inference_asset_boundary.py::test_invalid_native_tier_releases_current_and_prior_leases[2]",
+      "tests/test_inference_raw_digest_streaming.py::test_streaming_raw_digest_is_exact_legacy_identity[0]",
+      "tests/test_inference_raw_digest_streaming.py::test_streaming_raw_digest_is_exact_legacy_identity[1]",
+      "tests/test_inference_raw_digest_streaming.py::test_streaming_raw_digest_is_exact_legacy_identity[2]",
+      "tests/test_inference_raw_digest_streaming.py::test_streaming_raw_digest_is_exact_legacy_identity[15]",
+      "tests/test_inference_raw_digest_streaming.py::test_streaming_raw_digest_is_exact_legacy_identity[16]",
+      "tests/test_inference_raw_digest_streaming.py::test_streaming_raw_digest_is_exact_legacy_identity[17]",
+      "tests/test_inference_raw_digest_streaming.py::test_streaming_raw_digest_is_exact_legacy_identity[65535]",
+      "tests/test_inference_raw_digest_streaming.py::test_streaming_raw_digest_is_exact_legacy_identity[65536]",
+      "tests/test_inference_raw_digest_streaming.py::test_streaming_raw_digest_is_exact_legacy_identity[65537]",
+      "tests/test_inference_raw_digest_streaming.py::test_streaming_raw_digest_is_exact_legacy_identity[200003]",
+      "tests/test_inference_raw_digest_streaming.py::test_streaming_raw_digest_preserves_nonbyte_contiguous_memoryview_identity",
+      "tests/test_inference_raw_digest_streaming.py::test_streaming_raw_digest_hexlify_is_chunk_bounded",
+      "tests/test_inference_staging_telemetry_classification.py::test_file_provider_staging_high_water_is_analytical_bound",
+      "tests/test_inference_staging_telemetry_classification.py::test_row_engine_staging_upper_bound_is_analytical_bound",
+      "tests/test_inference_staging_telemetry_classification.py::test_expert_bank_staging_high_water_is_configured_reservation",
       "tests/test_inference_rows_r0.py::test_batch_sorted_deduplicated_restored[1]",
       "tests/test_inference_rows_r0.py::test_batch_sorted_deduplicated_restored[3]",
       "tests/test_inference_rows_r0.py::test_wrong_row_bank_and_output_budget",
@@ -215,10 +230,12 @@
       "runtime/R3/tests/test_r3_speculative_exactness.py::test_speculative_prefill_mode_rejected",
       "runtime/R3/tests/test_r3_speculative_exactness.py::test_speculative_never_overproduces"
     ],
-    "nodeids_sha256": "ff522bc678d95670af1433f72f8310cd1146ef84a1b459ad3913ffd2afbfac20",
+    "nodeids_sha256": "efcd7d44854abbbfd4623afaefba02ceb6ddfdef3dd9faee443c8b1408e19421",
     "paths": [
       "tests/test_inference_file_assets_r0.py",
       "tests/test_inference_asset_boundary.py",
+      "tests/test_inference_raw_digest_streaming.py",
+      "tests/test_inference_staging_telemetry_classification.py",
       "tests/test_inference_rows_r0.py",
       "tests/test_inference_experts_r0.py",
       "tests/test_inference_neural_r0.py",
@@ -270,8 +287,10 @@
     "tests/test_inference_file_assets_r0.py": "2de8441d84df301860cfab5b170cbcad6844cd4dda4ae1ca4f7c4170c11b93b0",
     "tests/test_inference_neural_r0.py": "37021dd61bf330b77733ae31a5515ce0f384dea3aa6fe3bde3c5680265382559",
     "tests/test_inference_prefetch_r0.py": "dc6639149d124af90add3df2acb012937d09c16ec72778165816868049140b6b",
+    "tests/test_inference_raw_digest_streaming.py": "c92d0ea29261d369cfae6860ae9c4fbab10a3de029b680fe83c4778c5a3c4e76",
     "tests/test_inference_rows_r0.py": "9786141f38e502894c5560f5e51c2d6d5cbad544e63323ceedd84d8ced07d701",
     "tests/test_inference_runtime_r3.py": "b0c81c98079ec3841bdf21b4a2cc13a2b20adbcb3c2d7d75930f29c170ffa1fd",
-    "tests/test_inference_speculative_r0.py": "b686e040bd407e9a2fa4d72a266cc116750d522a9733d7284b39e3e9a70863c2"
+    "tests/test_inference_speculative_r0.py": "b686e040bd407e9a2fa4d72a266cc116750d522a9733d7284b39e3e9a70863c2",
+    "tests/test_inference_staging_telemetry_classification.py": "54e0ee3e440cfd8dc4407bda7bb0ce0173ccaf7bba43de53dcb11c2ea7a052ad"
   }
 }

@@ -17,6 +17,8 @@ PROVIDER = ("tests/test_inference_file_assets_r0.py",)
 LOCUS = (
     "tests/test_inference_file_assets_r0.py",
     "tests/test_inference_asset_boundary.py",
+    "tests/test_inference_raw_digest_streaming.py",
+    "tests/test_inference_staging_telemetry_classification.py",
     "tests/test_inference_rows_r0.py",
     "tests/test_inference_experts_r0.py",
     "tests/test_inference_neural_r0.py",

@@ -110,5 +110,6 @@ class RowEngine:
                                pread_bytes=physical,read_amplification=physical/semantic if semantic else 0,
                                lookup_ns=perf_counter_ns()-start,workers=self.workers,
                                row_staging_upper_bound=self.workers*(stride+bank.dimension*32),
+                               row_staging_upper_bound_kind='analytical_bound',
                                cache_hits=after['hits']-before['hits'],cache_misses=after['misses']-before['misses'])
         return output

@@ -150,5 +150,6 @@ class ExpertBank:
                 execution_ns+=perf_counter_ns()-begin
         self.last_metrics=dict(selected_experts=len(route)+len(shared),expert_bytes=byte_count,
                                materialization_ns=materialize_ns,execution_ns=execution_ns,
-                               staging_high_water=self.high_water,transfer_overlap_ns=None)
+                               staging_high_water=self.high_water,transfer_overlap_ns=None,
+                               staging_high_water_kind='configured_reservation')
         return result

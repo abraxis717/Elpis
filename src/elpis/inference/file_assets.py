@@ -6,6 +6,7 @@ not device-level I/O (which cannot be inferred from buffered reads).
 Every page is verified before native registration or exposure to inference.
 """
 from collections import OrderedDict
+import binascii
 import ctypes as C
 from dataclasses import dataclass
 import os
@@ -19,13 +20,28 @@ from .contracts import Code, InferenceError, digest_value, identity, integer, re
 from .raw_sha256 import raw_sha256
 
 
+_RAW_DIGEST_CHUNK = 64 * 1024
+_RAW_DIGEST_PREFIX = b'elpis.inference.raw-bytes.r0\x00{"__bytes__":"'
+_RAW_DIGEST_SUFFIX = b'"}'
+
+
 def raw_digest(data):
-    """Canonical byte-content identity; no direct digest sink."""
+    """Exact canonical raw-bytes identity with bounded contiguous intermediates."""
     require(
         isinstance(data, (bytes, bytearray, memoryview)),
         detail='raw byte content',
     )
-    return identity('raw-bytes', bytes(data))
+    view = memoryview(data)
+    if view.c_contiguous:
+        octets = view.cast('B')
+    else:
+        octets = memoryview(bytes(data))
+    digest = raw_sha256()
+    digest.update(_RAW_DIGEST_PREFIX)
+    for start in range(0, len(octets), _RAW_DIGEST_CHUNK):
+        digest.update(binascii.hexlify(octets[start:start+_RAW_DIGEST_CHUNK]))
+    digest.update(_RAW_DIGEST_SUFFIX)
+    return digest.hexdigest()
 
 
 def bounded_path(root, path):
@@ -211,7 +227,8 @@ class FMSFileAssets:
         self.warm_budget=warm_bytes; self.staging_budget=staging_bytes; self.storage_budget=storage_bytes
         self._lock=RLock(); self._assets={}; self._pages=OrderedDict(); self._pins={}; self._closed=False
         self.telemetry={'semantic_bytes':0,'pread_bytes':0,'reads':0,'hits':0,'misses':0,
-                        'read_ns':0,'integrity_ns':0,'staging_ns':0,'staging_high_water':0}
+                        'read_ns':0,'integrity_ns':0,'staging_ns':0,'staging_high_water':0,
+                        'staging_high_water_kind':'analytical_bound'}
 
     def _open(self): require(not self._closed,Code.CLOSED,'FMS file provider')
 

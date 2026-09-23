@@ -13,6 +13,8 @@
 - Require independently pinned asset/native deployment authority with descriptor-bound openat2 admission and sealed-memfd native loading.
 - Add a RAM-only native FMS constructor for inference and isolate synthetic self-authorization to explicit test fixtures.
 - Close multi-page native lease-tier validation and rollback, and add forward raw-byte SHA-256 census authority without rewriting the historical baseline.
+- Label staging telemetry as analytical bounds or configured reservations rather than measured allocation peaks.
+- Stream the existing raw-byte Canonical Identity v1 framing in bounded chunks without changing digest identity.
 
 ## Elpis2.2.28 — red-team corrective successor
 
