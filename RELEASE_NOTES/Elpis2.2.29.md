@@ -26,3 +26,16 @@ Separate milestones remain for the file/native trust boundary, numerical-profile
 This milestone also adds `tools/full_release.py`, the repository-owned one-shot release driver that owns sealing through terminal hosted closeout while delegating remote publication mutations to the crash-safe lower-level orchestrator.
 
 No Elpis2.2.29 manifest, tag, GitHub Release, or PyPI publication is created by this milestone.
+
+## Numerical profile, compaction parity, and executed-locus milestone R1
+
+"
+              "- Version numerical execution identity as `numerical-execution-profile.v2` and derive NumPy build configuration from structured `np.show_config(mode='dicts')` rather than process-global stdout formatting. YAML availability and `platform.processor()` no longer perturb identity; thread environment fields are explicitly labeled declared configuration.
+"
+              "- Enforce the producer's non-empty compaction policy/reason and summary object-ID non-reuse rules during verification.
+"
+              "- Execute provider and complete native/R3 qualification through one runner that records the exact node IDs pytest starts, compares ordered set and SHA-256 against committed authority, and independently requires zero failures, errors, and skips.
+"
+              "- Use the same exact-execution runner in hosted `inference-native-r0` and the repository-owned one-shot full-release qualification.
+"
+              "- The numerical-profile domain advances to v2; states carrying the 2.2.28 profile are therefore unsupported for bitwise replay under this successor rather than silently accepted.

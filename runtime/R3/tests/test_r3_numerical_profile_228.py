@@ -32,3 +32,32 @@ def test_fresh_runtime_rejects_mismatched_numerical_profile_before_replay(target
     assert result.receipt.terminal=="FAILED"
     assert result.receipt.failure=="UNSUPPORTED"
     assert forged.digest not in restarted._validated_states
+
+
+def test_numerical_profile_v2_is_yaml_stdout_and_processor_independent(monkeypatch,capsys):
+    import platform
+    import sys
+    import types
+    import warnings
+    from elpis.inference.neural import numerical_profile
+
+    def forbidden_processor():
+        raise AssertionError("platform.processor must not participate in numerical identity")
+
+    monkeypatch.setattr(platform,"processor",forbidden_processor)
+    monkeypatch.setitem(sys.modules,"yaml",None)
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        first=numerical_profile()
+    first_io=capsys.readouterr()
+    assert first_io.out=="" and first_io.err==""
+    assert not [w for w in caught if issubclass(w.category,UserWarning)]
+
+    stub=types.ModuleType("yaml")
+    stub.dump=lambda *args,**kwargs: "environment-dependent-format"
+    monkeypatch.setitem(sys.modules,"yaml",stub)
+    second=numerical_profile()
+    second_io=capsys.readouterr()
+
+    assert second==first
+    assert second_io.out=="" and second_io.err==""

@@ -7,6 +7,9 @@
 - Add direct adversarial regressions for mutated non-canonical speculative requests and forged state subclasses.
 - Predeclare the Elpis2.2.29 release manifest without materializing or sealing it.
 - Add `tools/full_release.py` as the single resumable operator path from clean committed successor through seal, publication assertion, ratification, final-main hosted qualification, and terminal closure.
+- Version numerical execution identity to a structured v2 profile independent of YAML/stdout formatting and `platform.processor()` subprocess behavior.
+- Make compaction verification enforce producer policy/reason and replacement-object identity rules.
+- Record and compare the exact pytest node IDs actually executed by native qualification rather than inferring exactness from JUnit totals.
 
 ## Elpis2.2.28 — red-team corrective successor
 

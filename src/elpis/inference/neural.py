@@ -6,8 +6,6 @@ UPSTREAM_REVISION_UNPINNED; see InferenceInfrastructure/PROVENANCE.md).
 Arithmetic is explicit CPU F32; there is no GPU determinism claim.
 """
 from dataclasses import dataclass, replace
-from contextlib import redirect_stdout
-from io import StringIO
 import os
 import platform
 from time import perf_counter_ns
@@ -19,20 +17,18 @@ from .global_context import GlobalCandidate,IndexConfig,IndexMode,IndexResult,se
 
 
 def numerical_profile():
-    buf=StringIO()
-    with redirect_stdout(buf):
-        np.__config__.show()
     return identity(
-        'numerical-execution-profile',
+        'numerical-execution-profile.v2',
         dict(
             numpy=np.__version__,
-            numpy_config=buf.getvalue(),
+            numpy_config=np.show_config(mode='dicts'),
             system=platform.system(),
             machine=platform.machine(),
-            processor=platform.processor(),
-            openblas_coretype=os.environ.get('OPENBLAS_CORETYPE'),
-            openblas_num_threads=os.environ.get('OPENBLAS_NUM_THREADS'),
-            omp_num_threads=os.environ.get('OMP_NUM_THREADS'),
+            declared_env=dict(
+                openblas_coretype=os.environ.get('OPENBLAS_CORETYPE'),
+                openblas_num_threads=os.environ.get('OPENBLAS_NUM_THREADS'),
+                omp_num_threads=os.environ.get('OMP_NUM_THREADS'),
+            ),
         ),
     )
 

@@ -151,7 +151,7 @@ def native_check(root: Path, private: Path, *, env: dict[str, str]) -> dict[str,
     proc = run(root, [sys.executable, "tools/verify_inference_native_locus.py", "--check"], env=env)
     chunks = [proc.stdout or ""]
     require(proc.returncode == 0, "NATIVE_LOCUS_AUTHORITY_NONPASS:" + chunks[-1][-4000:])
-    authority = json.loads(authority_path.read_text(encoding="utf-8"))
+    json.loads(authority_path.read_text(encoding="utf-8"))
 
     workspace = private / "native-workspace"
     build = workspace / "native-build"
@@ -176,7 +176,12 @@ def native_check(root: Path, private: Path, *, env: dict[str, str]) -> dict[str,
     nenv["TMPDIR"] = str(tmp)
     proc = run(
         root,
-        [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", *authority["locus"]["paths"]],
+        [
+            sys.executable, "tools/run_inference_native_locus.py",
+            "--section", "locus",
+            "--junitxml", str(workspace / "inference-native.xml"),
+            "--record", str(workspace / "locus-execution.json"),
+        ],
         env=nenv,
     )
     chunks.append(proc.stdout or "")

@@ -64,68 +64,10 @@ jobs:
           cmake --build "${ELPIS_INFERENCE_WORKSPACE}/native-build" --parallel
           test -f "${ELPIS_FMS_FILE_LIBRARY}"
 
-      - name: Prove provider-backed core exact cardinality
+      - name: Prove provider-backed core exact executed set
         run: |
-          python -m pytest \
-            -q -p no:cacheprovider \
-            --junitxml="${ELPIS_INFERENCE_WORKSPACE}/provider-sentinel.xml" \
-            tests/test_inference_file_assets_r0.py
+          python tools/run_inference_native_locus.py             --section provider             --junitxml="${ELPIS_INFERENCE_WORKSPACE}/provider-sentinel.xml"             --record="${ELPIS_INFERENCE_WORKSPACE}/provider-execution.json"
 
-          python - <<'PY'
-          import os
-          from pathlib import Path
-          import xml.etree.ElementTree as ET
-
-          report = Path(os.environ['ELPIS_INFERENCE_WORKSPACE']) / 'provider-sentinel.xml'
-          root = ET.parse(report).getroot()
-          suites = [root] if root.tag.endswith('testsuite') else list(root)
-          totals = {
-              key: sum(int(s.attrib.get(key, '0')) for s in suites)
-              for key in ('tests', 'failures', 'errors', 'skipped')
-          }
-          expected = {'tests': 7, 'failures': 0, 'errors': 0, 'skipped': 0}
-          print('NATIVE_PROVIDER_SENTINEL_JUNIT', totals)
-          if totals != expected:
-              raise SystemExit('NATIVE_PROVIDER_CORE_CARDINALITY_NONPASS:' + repr(totals))
-          print('NATIVE_PROVIDER_CORE_7_OF_7_PASS')
-          PY
-
-      - name: Run complete native-backed inference and R3 locus
+      - name: Run complete native-backed inference and R3 exact executed locus
         run: |
-          python -m pytest \
-            -q -p no:cacheprovider \
-            --junitxml="${ELPIS_INFERENCE_WORKSPACE}/inference-native.xml" \
-            tests/test_inference_file_assets_r0.py \
-            tests/test_inference_rows_r0.py \
-            tests/test_inference_experts_r0.py \
-            tests/test_inference_neural_r0.py \
-            tests/test_inference_prefetch_r0.py \
-            tests/test_inference_runtime_r3.py \
-            tests/test_inference_speculative_r0.py \
-            runtime/R3/tests/
-
-          python - <<'PY'
-          import json
-          import os
-          from pathlib import Path
-          import xml.etree.ElementTree as ET
-
-          report = Path(os.environ['ELPIS_INFERENCE_WORKSPACE']) / 'inference-native.xml'
-          root = ET.parse(report).getroot()
-          suites = [root] if root.tag.endswith('testsuite') else list(root)
-          totals = {
-              key: sum(int(s.attrib.get(key, '0')) for s in suites)
-              for key in ('tests', 'failures', 'errors', 'skipped')
-          }
-          authority = json.loads(Path('tools/inference_native_locus_v1.json').read_text())
-          expected = {
-              'tests': authority['locus']['count'],
-              'failures': 0,
-              'errors': 0,
-              'skipped': 0,
-          }
-          print('NATIVE_INFERENCE_JUNIT', totals)
-          if totals != expected:
-              raise SystemExit('NATIVE_INFERENCE_LOCUS_CARDINALITY_NONPASS:' + repr(totals))
-          print('NATIVE_INFERENCE_LOCUS_EXACT_SET_PASS', authority['locus']['nodeids_sha256'])
-          PY
+          python tools/run_inference_native_locus.py             --section locus             --junitxml="${ELPIS_INFERENCE_WORKSPACE}/inference-native.xml"             --record="${ELPIS_INFERENCE_WORKSPACE}/locus-execution.json"

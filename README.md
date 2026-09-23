@@ -16,7 +16,7 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 **Elpis2.2.29** is the postrelease corrective successor to closed Elpis2.2.28. Its first milestone closes canonical-request admission in Runtime R3 speculation and prevents `DecodeState` subclasses from bypassing replay validation through an overridden digest.
 
-Elpis2.2.28 remains immutable published historical evidence. Asset/native trust-boundary integration, numerical-profile correction, compaction parity, exact executed-node-set qualification, telemetry adoption, and the compatible streaming-digest optimization remain separate 2.2.29 milestones.
+Elpis2.2.28 remains immutable published historical evidence. Asset/native trust-boundary integration, telemetry adoption, compatible streaming-digest optimization, and remaining release-supply-chain hardening remain separate 2.2.29 milestones. Numerical-profile stability, compaction verifier parity, and exact executed-node-set qualification are closed in the current successor tree.
 
 See [`RELEASE_NOTES/Elpis2.2.29.md`](RELEASE_NOTES/Elpis2.2.29.md).
 ## Install and quick start

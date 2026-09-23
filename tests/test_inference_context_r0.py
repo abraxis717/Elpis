@@ -59,3 +59,39 @@ def test_compaction_verifier_binds_entire_output_snapshot():
     ):
         with pytest.raises(InferenceError):
             verify_compaction(s,mutated,replace(record,output_snapshot=mutated.digest))
+
+
+def test_compaction_verifier_enforces_producer_policy_reason_and_identity_rules():
+    s=populated()
+    summary=ContextItem('summary-parity','model',b'lossy',Lifetime.DYNAMIC)
+    out,record=compact_context(
+        s,0,2,summary,expected=s.digest,replacement_digest=summary.digest,
+        policy='p',reason='r'
+    )
+    verify_compaction(s,out,record)
+
+    for forged_record in (
+        replace(record,policy=''),
+        replace(record,reason=''),
+    ):
+        with pytest.raises(InferenceError):
+            verify_compaction(s,out,forged_record)
+
+    reused=ContextItem(s.visible[0].object_id,'model',b'forged',Lifetime.DYNAMIC)
+    forged_out=replace(
+        s,
+        generation=s.generation+1,
+        predecessor=s.digest,
+        visible=(reused,)+s.visible[2:],
+    )
+    forged_record=CompactionRecord(
+        s.digest,
+        tuple(i.digest for i in s.visible[:2]),
+        tuple(i.digest for i in s.visible[2:]),
+        reused.digest,
+        'p',
+        'r',
+        forged_out.digest,
+    )
+    with pytest.raises(InferenceError,match='overwrite canonical evidence'):
+        verify_compaction(s,forged_out,forged_record)

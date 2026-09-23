@@ -120,6 +120,7 @@ def compact_context(snapshot,start,stop,replacement,*,expected,replacement_diges
 def verify_compaction(before,after,record):
     require(type(before) is Snapshot and type(after) is Snapshot and
             type(record) is CompactionRecord,detail='compaction record types')
+    require(bool(record.policy) and bool(record.reason),detail='compaction policy/reason')
     require(record.input_snapshot==before.digest and
             record.output_snapshot==after.digest and
             after.predecessor==before.digest,Code.STALE,'compaction lineage')
@@ -136,6 +137,8 @@ def verify_compaction(before,after,record):
             Code.IDENTITY,'compaction output geometry')
     replacement=after.visible[start]
     require(replacement.digest==record.replacement,Code.IDENTITY,'compaction replacement')
+    require(replacement.object_id not in {i.object_id for i in before.canonical+before.visible},
+            Code.IDENTITY,'summary must not overwrite canonical evidence')
     expected=replace(
         before,generation=before.generation+1,predecessor=before.digest,
         visible=before.visible[:start]+(replacement,)+before.visible[stop:]

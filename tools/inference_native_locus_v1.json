@@ -1,6 +1,6 @@
 {
   "locus": {
-    "count": 166,
+    "count": 167,
     "nodeids": [
       "tests/test_inference_file_assets_r0.py::test_ranges_cache_accounting_and_leases",
       "tests/test_inference_file_assets_r0.py::test_changed_truncated_corrupt_metadata",
@@ -77,6 +77,7 @@
       "runtime/R3/tests/test_r3_failure_contract.py::test_replay_tampered_receipt_is_typed",
       "runtime/R3/tests/test_r3_numerical_profile_228.py::test_fresh_runtime_accepts_matching_numerical_profile",
       "runtime/R3/tests/test_r3_numerical_profile_228.py::test_fresh_runtime_rejects_mismatched_numerical_profile_before_replay",
+      "runtime/R3/tests/test_r3_numerical_profile_228.py::test_numerical_profile_v2_is_yaml_stdout_and_processor_independent",
       "runtime/R3/tests/test_r3_property.py::test_random_drafts_never_commit_rejected_token[11]",
       "runtime/R3/tests/test_r3_property.py::test_random_drafts_never_commit_rejected_token[29]",
       "runtime/R3/tests/test_r3_property.py::test_random_drafts_never_commit_rejected_token[47]",
@@ -169,7 +170,7 @@
       "runtime/R3/tests/test_r3_speculative_exactness.py::test_speculative_prefill_mode_rejected",
       "runtime/R3/tests/test_r3_speculative_exactness.py::test_speculative_never_overproduces"
     ],
-    "nodeids_sha256": "fd8a61f5b5cedcca83a1f64ed89d3eaf7e0a55f12a4ab80acb8829269f1141eb",
+    "nodeids_sha256": "d3b574599f243513c4dbb8cf4372c5d0cbc4404b9cd86a9697320fa397df25e3",
     "paths": [
       "tests/test_inference_file_assets_r0.py",
       "tests/test_inference_rows_r0.py",
@@ -207,7 +208,7 @@
     "runtime/R3/tests/test_r3_corrective_229_r0.py": "00533d04fef96127755986f001acb9b7c56515fc96d9f6be6daf3bffc0bd54d9",
     "runtime/R3/tests/test_r3_determinism.py": "63061ba77d80678292b2260cab4037e364cfb8d7cdb5b9b20d2122505c7755b0",
     "runtime/R3/tests/test_r3_failure_contract.py": "480f9cf5daf9ced30f97903e50c96feeb9f36410ab44e469723b5fb8602c3938",
-    "runtime/R3/tests/test_r3_numerical_profile_228.py": "650e7d544bf21c989e3a2e0ff6191ce6bf17844a7c433607ef4db795d93bb56a",
+    "runtime/R3/tests/test_r3_numerical_profile_228.py": "8c0be76330462bd618969ce9221ce8e5fa0e772106feddf7b08f7cab36a6862d",
     "runtime/R3/tests/test_r3_property.py": "48ff9cee5bbdf5c7f17305bd78c96defc24f068628d7f1b5de7c013617544339",
     "runtime/R3/tests/test_r3_provider_cleanup.py": "449a871627958760acf4c063b8f3650c3b82d336e37e44b6d38a7e02126c43ed",
     "runtime/R3/tests/test_r3_r1_adapter.py": "d685a82956eca54715b2c529efe1ac1edba6a21389e8e24b92b834b94862cf3f",
