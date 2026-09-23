@@ -1,3 +1,13 @@
+## Elpis2.2.29 — postrelease corrective successor
+
+- Preserve closed Elpis2.2.28 as immutable published evidence.
+- Require exact non-empty string request identifiers at construction and revalidate canonical request identity before speculative execution can advance state.
+- Remove success-path fallback request identities: committed receipts must carry the canonical request digest.
+- Reject `DecodeState` subclasses and substituted neural/context object types at the Runtime R3 validation boundary before replay-cache trust can be used.
+- Add direct adversarial regressions for mutated non-canonical speculative requests and forged state subclasses.
+- Predeclare the Elpis2.2.29 release manifest without materializing or sealing it.
+- Add `tools/full_release.py` as the single resumable operator path from clean committed successor through seal, publication assertion, ratification, final-main hosted qualification, and terminal closure.
+
 ## Elpis2.2.28 — red-team corrective successor
 
 - Preserve published Elpis2.2.27 as immutable historical release evidence.

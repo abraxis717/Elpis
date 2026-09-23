@@ -47,3 +47,9 @@ def test_native_locus_rejects_nodeid_or_source_digest_mutation():
     key = sorted(observed["sources"])[0]
     observed["sources"][key] = "0" * 64
     assert "NATIVE_LOCUS_TEST_SOURCE_DIGEST_MISMATCH" in tool.errors(payload, observed)
+
+
+def test_native_locus_collector_does_not_hide_active_interpreter_site_packages():
+    source = TOOL.read_text(encoding="utf-8")
+    assert 'env["PYTHONDONTWRITEBYTECODE"] = "1"' in source
+    assert "PYTHONNOUSERSITE" not in source

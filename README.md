@@ -2,7 +2,7 @@
 
 **A deterministic structural-reasoning architecture for bounded learned proposals, explicit authority, and falsifiable runtime composition.**
 
-**Release line: Elpis2.2.28**
+**Release line: Elpis2.2.29**
 
 Elpis is a systems-research project about a narrow question: can learned components contribute useful structural proposals while deterministic machinery retains ownership of representation, admissibility, authority, validation, and terminal action?
 
@@ -14,11 +14,11 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 ## Release Notes
 
-**Elpis2.2.28** is the red-team corrective successor to published Elpis2.2.27. Its first milestone makes hosted native inference qualification a required and durable release witness, binds the exact native pytest locus rather than trusting counts alone, and removes mutable CI action refs from the release-critical workflow surface.
+**Elpis2.2.29** is the postrelease corrective successor to closed Elpis2.2.28. Its first milestone closes canonical-request admission in Runtime R3 speculation and prevents `DecodeState` subclasses from bypassing replay validation through an overridden digest.
 
-The runtime-integrity findings from the Elpis2.2.27 red-team remain active successor work until separately qualified. Elpis2.2.27 stays immutable published historical evidence.
+Elpis2.2.28 remains immutable published historical evidence. Asset/native trust-boundary integration, numerical-profile correction, compaction parity, exact executed-node-set qualification, telemetry adoption, and the compatible streaming-digest optimization remain separate 2.2.29 milestones.
 
-See [`RELEASE_NOTES/Elpis2.2.28.md`](RELEASE_NOTES/Elpis2.2.28.md).
+See [`RELEASE_NOTES/Elpis2.2.29.md`](RELEASE_NOTES/Elpis2.2.29.md).
 ## Install and quick start
 
 The Python distribution project name is **`elpisai`**. The console command remains **`elpis`**, and the existing Python import-package names remain unchanged.

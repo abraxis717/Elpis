@@ -605,6 +605,10 @@
     "manifests/Elpis2.2.28.RELEASE_MANIFEST.json": {
       "release": "Elpis2.2.28",
       "rule": "FIRST_COMMITTED_BLOB_IMMUTABLE"
+    },
+    "manifests/Elpis2.2.29.RELEASE_MANIFEST.json": {
+      "release": "Elpis2.2.29",
+      "rule": "FIRST_COMMITTED_BLOB_IMMUTABLE"
     }
   }
 }

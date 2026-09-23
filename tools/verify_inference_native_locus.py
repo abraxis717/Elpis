@@ -54,7 +54,6 @@ def source_digests():
 def collect(paths):
     env = dict(os.environ)
     env["PYTHONDONTWRITEBYTECODE"] = "1"
-    env["PYTHONNOUSERSITE"] = "1"
     collector = r"""
 import json
 import pytest

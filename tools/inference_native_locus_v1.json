@@ -1,6 +1,6 @@
 {
   "locus": {
-    "count": 159,
+    "count": 166,
     "nodeids": [
       "tests/test_inference_file_assets_r0.py::test_ranges_cache_accounting_and_leases",
       "tests/test_inference_file_assets_r0.py::test_changed_truncated_corrupt_metadata",
@@ -53,6 +53,13 @@
       "runtime/R3/tests/test_r3_corrective_226.py::test_fresh_runtime_revalidates_untampered_history_and_continues",
       "runtime/R3/tests/test_r3_corrective_226.py::test_same_runtime_uses_validated_state_cache_for_normal_continuation",
       "runtime/R3/tests/test_r3_corrective_226.py::test_noncanonical_malformed_latent_failure_receipt_is_deterministic",
+      "runtime/R3/tests/test_r3_corrective_229_r0.py::test_request_id_is_exact_nonempty_string[nan]",
+      "runtime/R3/tests/test_r3_corrective_229_r0.py::test_request_id_is_exact_nonempty_string[request_id1]",
+      "runtime/R3/tests/test_r3_corrective_229_r0.py::test_request_id_is_exact_nonempty_string[7]",
+      "runtime/R3/tests/test_r3_corrective_229_r0.py::test_speculative_noncanonical_request_never_commits_or_caches[nan]",
+      "runtime/R3/tests/test_r3_corrective_229_r0.py::test_speculative_noncanonical_request_never_commits_or_caches[request_id1]",
+      "runtime/R3/tests/test_r3_corrective_229_r0.py::test_speculative_noncanonical_request_never_commits_or_caches[request_id2]",
+      "runtime/R3/tests/test_r3_corrective_229_r0.py::test_runtime_rejects_decodestate_subclass_before_cache_trust",
       "runtime/R3/tests/test_r3_determinism.py::test_repeated_prefill_identical",
       "runtime/R3/tests/test_r3_determinism.py::test_repeated_greedy_identical",
       "runtime/R3/tests/test_r3_determinism.py::test_independent_runtimes_same_snapshot_identical",
@@ -162,7 +169,7 @@
       "runtime/R3/tests/test_r3_speculative_exactness.py::test_speculative_prefill_mode_rejected",
       "runtime/R3/tests/test_r3_speculative_exactness.py::test_speculative_never_overproduces"
     ],
-    "nodeids_sha256": "52c5d51863758aecb61698eea4dd65e44ece500989bd83c9620baf68f42bc908",
+    "nodeids_sha256": "fd8a61f5b5cedcca83a1f64ed89d3eaf7e0a55f12a4ab80acb8829269f1141eb",
     "paths": [
       "tests/test_inference_file_assets_r0.py",
       "tests/test_inference_rows_r0.py",
@@ -197,6 +204,7 @@
     "runtime/R3/tests/helpers.py": "bf6cfcf678efe1dfc42827a65365b86ef1e7a36743ed2c0a122b15b0c15a14d5",
     "runtime/R3/tests/test_r3_concurrency.py": "c33c3c53c6219aabe3fc0fb218f8d0ee088c25e04f7b33533fe8f638dfd69d84",
     "runtime/R3/tests/test_r3_corrective_226.py": "a4f4e6780fe11667d3cee5fb24cdff0931811da806d7eb509ed6c5b3d4458274",
+    "runtime/R3/tests/test_r3_corrective_229_r0.py": "00533d04fef96127755986f001acb9b7c56515fc96d9f6be6daf3bffc0bd54d9",
     "runtime/R3/tests/test_r3_determinism.py": "63061ba77d80678292b2260cab4037e364cfb8d7cdb5b9b20d2122505c7755b0",
     "runtime/R3/tests/test_r3_failure_contract.py": "480f9cf5daf9ced30f97903e50c96feeb9f36410ab44e469723b5fb8602c3938",
     "runtime/R3/tests/test_r3_numerical_profile_228.py": "650e7d544bf21c989e3a2e0ff6191ce6bf17844a7c433607ef4db795d93bb56a",

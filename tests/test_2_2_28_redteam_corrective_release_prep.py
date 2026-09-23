@@ -11,45 +11,24 @@ TAG = "Elpis2.2.28"
 MANIFEST_REL = "manifests/Elpis2.2.28.RELEASE_MANIFEST.json"
 
 
-def test_228_active_successor_identity_is_atomic_and_manifest_lifecycle():
-    assert (ROOT / "VERSION").read_text().strip() == VERSION
-    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text())
-    assert pyproject["project"]["name"] == "elpisai"
-    assert pyproject["project"]["version"] == VERSION
-    assert f'version: "{VERSION}"' in (ROOT / "CITATION.cff").read_text()
-    readme = (ROOT / "README.md").read_text()
-    assert f"**Release line: Elpis{VERSION}**" in readme
-    assert f"RELEASE_NOTES/Elpis{VERSION}.md" in readme
-    assert (ROOT / f"RELEASE_NOTES/Elpis{VERSION}.md").is_file()
-    assert (ROOT / "CHANGELOG.md").read_text().startswith(f"## Elpis{VERSION}")
+def test_228_closed_release_identity_is_historical_and_immutable():
+    manifest = ROOT / MANIFEST_REL
+    assert manifest.is_file()
+    assert __import__("hashlib").sha256(manifest.read_bytes()).hexdigest() == (
+        "54840ffdc6fb114b251b12672ce560bf1a237a711d7262bd4a1011e79bc6bcc8"
+    )
     ns = runpy.run_path(str(ROOT / "tools/verify_public_release.py"))
-    assert ns["RELEASE_VERSION"] == VERSION
     assert ns["RELEASE_IDENTITIES"][VERSION] == {
         "primitive_closure_commit": "482d4064321392108b87124cd47343d9c748f5bc",
         "base_release_commit": "c911af22e01ee35c441d65e8dbcad18694bdcb2a",
     }
-    manifest = ROOT / MANIFEST_REL
-    if not manifest.exists():
-        return
-    data = json.loads(manifest.read_text())
-    assert data["schema"] == "elpis.release-manifest.v3"
-    assert data["package_name"] == "elpisai"
-    assert data["version"] == VERSION
-    assert data["release_name"] == TAG
-    assert data["release_tag"] == TAG
-    assert data["publication_policy"] == "elpis.publication-membership.v2"
-    assert data["tree_digest_algorithm"] == "elpis.publication-tree.sha256.v1"
-    assert data["full_elpis_runtime_admission"] is True
-    assert data["execution_authorized"] is False
-    assert data["generated_source_executed"] is False
-    assert data["experiments_shipped"] is False
-    assert data["output_authority_granted"] == 0
-    assert data["request_guidance_gate_default"] is False
-    assert data["validation_authority_propagated"] is False
-    assert isinstance(data["publication_tree_sha256"], str)
-    assert len(data["publication_tree_sha256"]) == 64
-    assert isinstance(data["file_count"], int) and data["file_count"] > 0
-
+    assertions = json.loads(
+        (ROOT / "PUBLICATION_ASSERTIONS.json").read_text()
+    )["publication_assertions"]
+    rows = [row for row in assertions if row.get("version") == VERSION]
+    assert len(rows) == 1
+    assert rows[0]["peeled_commit"] == "9ffc041371fcaa837cdf1217f7f88276bc6c4bef"
+    assert rows[0]["tag_object"] == "341efae743651a61eb846e94ec607c39c7935185"
 def test_228_manifest_is_predeclared_write_once_only():
     immutable = json.loads(
         (ROOT / "tools/immutable_evidence_baseline_v1.json").read_text()

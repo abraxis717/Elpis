@@ -53,7 +53,9 @@ class InferenceRequest:
     latents: tuple[LatentInput,...]=()
 
     def __post_init__(self):
-        require(bool(self.request_id) and self.mode in ('PREFILL','GREEDY'))
+        require(type(self.request_id) is str and bool(self.request_id),Code.INVALID,'request id')
+        require(type(self.context_snapshot) is str,Code.INVALID,'request context snapshot')
+        require(type(self.mode) is str and self.mode in ('PREFILL','GREEDY'),Code.INVALID,'request mode')
         require(type(self.tokens) is tuple and type(self.proposals) is tuple and type(self.latents) is tuple)
         require(all(type(p) is AddressProposal for p in self.proposals),
                 Code.INVALID,'proposal packet type')
@@ -183,8 +185,23 @@ class RuntimeR3:
         self._remember_validated(state.digest)
 
     def _validate(self,state,request):
+        require(type(state) is DecodeState and type(state.neural) is NeuralState and
+                type(state.context) is Snapshot,Code.INVALID,'runtime state type')
+        require(type(request) is InferenceRequest,Code.INVALID,'runtime request type')
+        require(type(request.request_id) is str and bool(request.request_id),
+                Code.INVALID,'request id')
+        require(type(request.context_snapshot) is str,Code.INVALID,'request context snapshot')
+        require(type(request.mode) is str and request.mode in ('PREFILL','GREEDY'),
+                Code.INVALID,'request mode')
+        require(type(request.tokens) is tuple and type(request.proposals) is tuple and
+                type(request.latents) is tuple,Code.INVALID,'request collection type')
+        integer(request.count)
+        require((request.mode=='PREFILL' and request.count==0) or
+                (request.mode=='GREEDY' and not request.tokens),
+                Code.INVALID,'request mode payload')
         self._validate_request_latents(request.latents)
         self._validate_request_proposals(request.proposals,state.context.digest)
+        request.digest
         require(state.neural.context_snapshot==state.context.digest==request.context_snapshot,
                 Code.STALE,'runtime context snapshot')
         require(state.neural.model==self.target.model_identity,Code.IDENTITY,'runtime model')
@@ -274,13 +291,12 @@ class RuntimeR3:
     def receipt(self,request,before,after,*,draft=None,accepted=(),failure=None,
                 request_identity=None):
         steps=after.receipts[len(before.receipts):]
-        if request_identity is None:
-            try:
-                request_digest=request.digest
-            except Exception:
-                request_digest=self._failure_request_identity(request)
-        else:
+        if request_identity is not None:
             request_digest=request_identity
+        elif failure is None:
+            request_digest=request.digest
+        else:
+            request_digest=self._failure_request_identity(request)
         return RuntimeReceipt(
             request_digest,'elpis.runtime.r3.r1',self.target.model_identity,
             self.target.config.tokenizer,before.digest,before.context.digest,
