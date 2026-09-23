@@ -38,6 +38,37 @@ class CensusError(RuntimeError):
     pass
 
 
+AST_FORMAT = json.loads(Path(__file__).with_name("digest_ast_format_v1.json").read_text())["nodes"]
+
+
+def canonical_ast(node: Any) -> str:
+    """Elpis-owned v1 serialization, byte compatible with the historical census.
+
+    Field order and optional-None omission are frozen data, not CPython's
+    evolving ast.dump defaults. New syntax fails closed until format review.
+    Location attributes never participate in identity.
+    """
+    if isinstance(node, ast.AST):
+        name = type(node).__name__
+        if name not in AST_FORMAT:
+            raise CensusError("AST_FORMAT_NODE_UNSUPPORTED:" + name)
+        spec = AST_FORMAT[name]
+        if set(node._fields) - set(spec["fields"]):
+            raise CensusError("AST_FORMAT_FIELDS_UNSUPPORTED:" + name)
+        fields = []
+        for field in spec["fields"]:
+            value = getattr(node, field, None)
+            if value is None and field in spec["omit_none"]:
+                continue
+            fields.append(field + "=" + canonical_ast(value))
+        return name + "(" + ", ".join(fields) + ")"
+    if isinstance(node, list):
+        return "[" + ", ".join(canonical_ast(value) for value in node) + "]"
+    if node is None or node is Ellipsis or type(node) in {str, bytes, int, float, complex, bool}:
+        return repr(node)
+    raise CensusError("AST_FORMAT_VALUE_UNSUPPORTED")
+
+
 def _git(root: Path, *args: str) -> bytes:
     p = subprocess.run(
         ["git", "-C", str(root), *args],
@@ -209,11 +240,7 @@ class SinkVisitor(ast.NodeVisitor):
     def visit_Call(self, node: ast.Call) -> Any:
         if _is_sha_call(node, self.hashlib_aliases, self.sha_aliases):
             qualname = ".".join(self.scope) if self.scope else "<module>"
-            normalized = ast.dump(
-                node,
-                annotate_fields=True,
-                include_attributes=False,
-            )
+            normalized = canonical_ast(node)
             fingerprint = hashlib.sha256(
                 normalized.encode("utf-8")
             ).hexdigest()

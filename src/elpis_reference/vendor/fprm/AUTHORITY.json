@@ -4,7 +4,8 @@
     "sha256": "6daec5f499d115beb14e23f3a9cf56d1166b99c1ccd36b185a19ea5dfec9a137",
     "size": 54637557,
     "upstream_filename": "sudoku/step_78120",
-    "upstream_repo": "fixed-point-reasoners/fprm"
+    "upstream_repo": "fixed-point-reasoners/fprm",
+    "upstream_revision": "6e871275e9b8f95036c6003fd6366f3811565ac6"
   },
   "config_sha256": "9d92242321769b8fcde8efb4408d1c35864f443ad926fddd8fef27f2f8c9b8d7",
   "elpis_runtime": {

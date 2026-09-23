@@ -1,0 +1,416 @@
+{
+  "nodes": {
+    "Add": {
+      "fields": [],
+      "omit_none": []
+    },
+    "And": {
+      "fields": [],
+      "omit_none": []
+    },
+    "Attribute": {
+      "fields": [
+        "value",
+        "attr",
+        "ctx"
+      ],
+      "omit_none": []
+    },
+    "AugLoad": {
+      "fields": [],
+      "omit_none": []
+    },
+    "AugStore": {
+      "fields": [],
+      "omit_none": []
+    },
+    "Await": {
+      "fields": [
+        "value"
+      ],
+      "omit_none": []
+    },
+    "BinOp": {
+      "fields": [
+        "left",
+        "op",
+        "right"
+      ],
+      "omit_none": []
+    },
+    "BitAnd": {
+      "fields": [],
+      "omit_none": []
+    },
+    "BitOr": {
+      "fields": [],
+      "omit_none": []
+    },
+    "BitXor": {
+      "fields": [],
+      "omit_none": []
+    },
+    "BoolOp": {
+      "fields": [
+        "op",
+        "values"
+      ],
+      "omit_none": []
+    },
+    "Call": {
+      "fields": [
+        "func",
+        "args",
+        "keywords"
+      ],
+      "omit_none": []
+    },
+    "Compare": {
+      "fields": [
+        "left",
+        "ops",
+        "comparators"
+      ],
+      "omit_none": []
+    },
+    "Constant": {
+      "fields": [
+        "value",
+        "kind"
+      ],
+      "omit_none": [
+        "kind"
+      ]
+    },
+    "Del": {
+      "fields": [],
+      "omit_none": []
+    },
+    "Dict": {
+      "fields": [
+        "keys",
+        "values"
+      ],
+      "omit_none": []
+    },
+    "DictComp": {
+      "fields": [
+        "key",
+        "value",
+        "generators"
+      ],
+      "omit_none": []
+    },
+    "Div": {
+      "fields": [],
+      "omit_none": []
+    },
+    "Eq": {
+      "fields": [],
+      "omit_none": []
+    },
+    "FloorDiv": {
+      "fields": [],
+      "omit_none": []
+    },
+    "FormattedValue": {
+      "fields": [
+        "value",
+        "conversion",
+        "format_spec"
+      ],
+      "omit_none": [
+        "format_spec"
+      ]
+    },
+    "GeneratorExp": {
+      "fields": [
+        "elt",
+        "generators"
+      ],
+      "omit_none": []
+    },
+    "Gt": {
+      "fields": [],
+      "omit_none": []
+    },
+    "GtE": {
+      "fields": [],
+      "omit_none": []
+    },
+    "IfExp": {
+      "fields": [
+        "test",
+        "body",
+        "orelse"
+      ],
+      "omit_none": []
+    },
+    "In": {
+      "fields": [],
+      "omit_none": []
+    },
+    "Invert": {
+      "fields": [],
+      "omit_none": []
+    },
+    "Is": {
+      "fields": [],
+      "omit_none": []
+    },
+    "IsNot": {
+      "fields": [],
+      "omit_none": []
+    },
+    "JoinedStr": {
+      "fields": [
+        "values"
+      ],
+      "omit_none": []
+    },
+    "LShift": {
+      "fields": [],
+      "omit_none": []
+    },
+    "Lambda": {
+      "fields": [
+        "args",
+        "body"
+      ],
+      "omit_none": []
+    },
+    "List": {
+      "fields": [
+        "elts",
+        "ctx"
+      ],
+      "omit_none": []
+    },
+    "ListComp": {
+      "fields": [
+        "elt",
+        "generators"
+      ],
+      "omit_none": []
+    },
+    "Load": {
+      "fields": [],
+      "omit_none": []
+    },
+    "Lt": {
+      "fields": [],
+      "omit_none": []
+    },
+    "LtE": {
+      "fields": [],
+      "omit_none": []
+    },
+    "MatMult": {
+      "fields": [],
+      "omit_none": []
+    },
+    "Mod": {
+      "fields": [],
+      "omit_none": []
+    },
+    "Mult": {
+      "fields": [],
+      "omit_none": []
+    },
+    "Name": {
+      "fields": [
+        "id",
+        "ctx"
+      ],
+      "omit_none": []
+    },
+    "NamedExpr": {
+      "fields": [
+        "target",
+        "value"
+      ],
+      "omit_none": []
+    },
+    "Not": {
+      "fields": [],
+      "omit_none": []
+    },
+    "NotEq": {
+      "fields": [],
+      "omit_none": []
+    },
+    "NotIn": {
+      "fields": [],
+      "omit_none": []
+    },
+    "Or": {
+      "fields": [],
+      "omit_none": []
+    },
+    "Param": {
+      "fields": [],
+      "omit_none": []
+    },
+    "Pow": {
+      "fields": [],
+      "omit_none": []
+    },
+    "RShift": {
+      "fields": [],
+      "omit_none": []
+    },
+    "Set": {
+      "fields": [
+        "elts"
+      ],
+      "omit_none": []
+    },
+    "SetComp": {
+      "fields": [
+        "elt",
+        "generators"
+      ],
+      "omit_none": []
+    },
+    "Slice": {
+      "fields": [
+        "lower",
+        "upper",
+        "step"
+      ],
+      "omit_none": [
+        "lower",
+        "upper",
+        "step"
+      ]
+    },
+    "Starred": {
+      "fields": [
+        "value",
+        "ctx"
+      ],
+      "omit_none": []
+    },
+    "Store": {
+      "fields": [],
+      "omit_none": []
+    },
+    "Sub": {
+      "fields": [],
+      "omit_none": []
+    },
+    "Subscript": {
+      "fields": [
+        "value",
+        "slice",
+        "ctx"
+      ],
+      "omit_none": []
+    },
+    "Tuple": {
+      "fields": [
+        "elts",
+        "ctx"
+      ],
+      "omit_none": []
+    },
+    "UAdd": {
+      "fields": [],
+      "omit_none": []
+    },
+    "USub": {
+      "fields": [],
+      "omit_none": []
+    },
+    "UnaryOp": {
+      "fields": [
+        "op",
+        "operand"
+      ],
+      "omit_none": []
+    },
+    "Yield": {
+      "fields": [
+        "value"
+      ],
+      "omit_none": [
+        "value"
+      ]
+    },
+    "YieldFrom": {
+      "fields": [
+        "value"
+      ],
+      "omit_none": []
+    },
+    "arg": {
+      "fields": [
+        "arg",
+        "annotation",
+        "type_comment"
+      ],
+      "omit_none": [
+        "annotation",
+        "type_comment"
+      ]
+    },
+    "arguments": {
+      "fields": [
+        "posonlyargs",
+        "args",
+        "vararg",
+        "kwonlyargs",
+        "kw_defaults",
+        "kwarg",
+        "defaults"
+      ],
+      "omit_none": [
+        "vararg",
+        "kwarg"
+      ]
+    },
+    "boolop": {
+      "fields": [],
+      "omit_none": []
+    },
+    "cmpop": {
+      "fields": [],
+      "omit_none": []
+    },
+    "comprehension": {
+      "fields": [
+        "target",
+        "iter",
+        "ifs",
+        "is_async"
+      ],
+      "omit_none": []
+    },
+    "expr": {
+      "fields": [],
+      "omit_none": []
+    },
+    "expr_context": {
+      "fields": [],
+      "omit_none": []
+    },
+    "keyword": {
+      "fields": [
+        "arg",
+        "value"
+      ],
+      "omit_none": [
+        "arg"
+      ]
+    },
+    "operator": {
+      "fields": [],
+      "omit_none": []
+    },
+    "unaryop": {
+      "fields": [],
+      "omit_none": []
+    }
+  },
+  "schema": "elpis.digest-ast-format.v1"
+}

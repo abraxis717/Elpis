@@ -12,6 +12,7 @@ from elpis.optional_dependencies import require_torch
 
 
 MODEL_REPO = "fixed-point-reasoners/fprm"
+MODEL_REVISION = "6e871275e9b8f95036c6003fd6366f3811565ac6"
 
 # Canonical Elpis runtime name. Do not rename this to the upstream filename.
 MODEL_FILENAME = "FPRM.Samsung_TRM"
@@ -415,6 +416,7 @@ def fetch_model(
     raw = Path(
         hf_hub_download(
             repo_id=MODEL_REPO,
+            revision=MODEL_REVISION,
             filename=UPSTREAM_MODEL_FILENAME,
             cache_dir=str(hf_cache),
         )
