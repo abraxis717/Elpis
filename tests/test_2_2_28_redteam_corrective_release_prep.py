@@ -88,8 +88,67 @@ def test_228_native_is_required_by_orchestrator_and_publication_authority():
     )
 
 
-def test_228_publication_fact_is_absent_before_external_closeout():
-    assertions = json.loads(
-        (ROOT / "PUBLICATION_ASSERTIONS.json").read_text()
-    )["publication_assertions"]
-    assert not any(row.get("version") == VERSION for row in assertions)
+def test_228_publication_fact_is_append_only_and_exact_after_closeout():
+    assertions = json.loads((ROOT / "PUBLICATION_ASSERTIONS.json").read_text())["publication_assertions"]
+    rows = [row for row in assertions if row.get("version") == VERSION]
+    assert len(rows) == 1
+    expected = {'github_actions': {'pypi_publish': {'conclusion': 'success',
+                                     'event': 'release',
+                                     'head_sha': '9ffc041371fcaa837cdf1217f7f88276bc6c4bef',
+                                     'run_id': 35777050145,
+                                     'workflow': 'pypi-publish'},
+                    'release_event_ci': {'conclusion': 'success',
+                                         'event': 'release',
+                                         'head_sha': '9ffc041371fcaa837cdf1217f7f88276bc6c4bef',
+                                         'run_id': 35777050048,
+                                         'workflow': 'CI'},
+                    'tag_ci': {'conclusion': 'success',
+                               'event': 'push',
+                               'head_sha': '9ffc041371fcaa837cdf1217f7f88276bc6c4bef',
+                               'run_id': 35776230055,
+                               'workflow': 'CI'},
+                    'tag_component_attribution': {'conclusion': 'success',
+                                                  'event': 'push',
+                                                  'head_sha': '9ffc041371fcaa837cdf1217f7f88276bc6c4bef',
+                                                  'run_id': 35776229993,
+                                                  'workflow': 'Component attribution'},
+                    'tag_inference_native': {'conclusion': 'success',
+                                             'event': 'push',
+                                             'head_sha': '9ffc041371fcaa837cdf1217f7f88276bc6c4bef',
+                                             'run_id': 35776229995,
+                                             'workflow': 'inference-native-r0'},
+                    'tag_platform_matrix': {'conclusion': 'success',
+                                            'event': 'push',
+                                            'head_sha': '9ffc041371fcaa837cdf1217f7f88276bc6c4bef',
+                                            'run_id': 35776229983,
+                                            'workflow': 'platform-matrix'},
+                    'tag_reference_runtime': {'conclusion': 'success',
+                                              'event': 'push',
+                                              'head_sha': '9ffc041371fcaa837cdf1217f7f88276bc6c4bef',
+                                              'run_id': 35776230020,
+                                              'workflow': 'reference-runtime'}},
+ 'github_release': {'published_at': '2026-09-22T19:56:51Z',
+                    'release_id': 394074477,
+                    'repository': 'abraxis717/Elpis',
+                    'tag_name': 'Elpis2.2.28'},
+ 'manifest_path': 'manifests/Elpis2.2.28.RELEASE_MANIFEST.json',
+ 'manifest_sha256': '54840ffdc6fb114b251b12672ce560bf1a237a711d7262bd4a1011e79bc6bcc8',
+ 'peeled_commit': '9ffc041371fcaa837cdf1217f7f88276bc6c4bef',
+ 'peeled_object_type': 'commit',
+ 'pypi': {'files': [{'filename': 'elpisai-2.2.28-py3-none-any.whl',
+                     'packagetype': 'bdist_wheel',
+                     'sha256': '218bcb451bc18c2a7a91e732b7f5bc7fc1bd8803ad25d5b70d50ad3b89ace781',
+                     'upload_time_iso_8601': '2026-09-22T19:57:49.919353Z',
+                     'yanked': False},
+                    {'filename': 'elpisai-2.2.28.tar.gz',
+                     'packagetype': 'sdist',
+                     'sha256': '8fe4e20647316a709270301e8972d108c6906e1813ef4ee531bf7cb52e5ca724',
+                     'upload_time_iso_8601': '2026-09-22T19:57:51.993340Z',
+                     'yanked': False}],
+          'project': 'elpisai',
+          'version': '2.2.28'},
+ 'release_tag': 'Elpis2.2.28',
+ 'tag_object': '341efae743651a61eb846e94ec607c39c7935185',
+ 'tag_object_type': 'tag',
+ 'version': '2.2.28'}
+    assert rows[0] == expected
