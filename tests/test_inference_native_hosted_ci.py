@@ -1,99 +1,113 @@
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-WORKFLOW = ROOT / '.github/workflows/inference-native-r0.yml'
+WORKFLOW = ROOT / ".github/workflows/inference-native-r0.yml"
+RUNNER = ROOT / "tools/run_inference_native_locus.py"
 
-REQUIRED_TESTS = (
-    'tests/test_inference_file_assets_r0.py',
-    'tests/test_inference_rows_r0.py',
-    'tests/test_inference_experts_r0.py',
-    'tests/test_inference_neural_r0.py',
-    'tests/test_inference_prefetch_r0.py',
-    'tests/test_inference_runtime_r3.py',
-    'tests/test_inference_speculative_r0.py',
-    'runtime/R3/tests/',
+WORKFLOW_MARKERS = (
+    "native/hacf/file_assets_r0",
+    "ELPIS_FMS_FILE_LIBRARY",
+    "ELPIS_INFERENCE_WORKSPACE",
+    "TMPDIR",
+    "libelpis_fms_file_assets_r0.so",
+    "provider-sentinel.xml",
+    "inference-native.xml",
+    "provider-execution.json",
+    "locus-execution.json",
+    "tools/verify_inference_native_locus.py --check",
+    "python tools/run_inference_native_locus.py",
+    "--section provider",
+    "--section locus",
+    "scipy==1.17.1",
+    "RUNNER_TEMP",
+    "GITHUB_ENV",
 )
 
-PROVIDER_EXPECTED = (
-    "expected = {'tests': 7, 'failures': 0, 'errors': 0, 'skipped': 0}"
+RUNNER_MARKERS = (
+    "ExecutionRecorder",
+    "pytest_runtest_logstart",
+    'authority["nodeids"]',
+    'authority["nodeids_sha256"]',
+    "NATIVE_EXECUTED_NODE_SET_MISMATCH",
+    "NATIVE_EXECUTED_NODE_SHA256_MISMATCH",
+    "NATIVE_EXECUTION_JUNIT_NONPASS",
+    "PASS_NATIVE_EXECUTED_EXACT_SET",
+    '"failures": 0',
+    '"errors": 0',
+    '"skipped": 0',
 )
 
 
-def _contract_errors(text: str) -> list[str]:
+def _workflow_errors(text: str) -> list[str]:
     errors = []
-    required = (
-        'native/hacf/file_assets_r0',
-        'ELPIS_FMS_FILE_LIBRARY',
-        'ELPIS_INFERENCE_WORKSPACE',
-        'TMPDIR',
-        'libelpis_fms_file_assets_r0.so',
-        'provider-sentinel.xml',
-        PROVIDER_EXPECTED,
-        'NATIVE_PROVIDER_CORE_CARDINALITY_NONPASS',
-        'NATIVE_PROVIDER_CORE_7_OF_7_PASS',
-        '--junitxml=',
-        'inference-native.xml',
-        "authority['locus']['count']",
-        'NATIVE_INFERENCE_LOCUS_CARDINALITY_NONPASS',
-        'NATIVE_INFERENCE_LOCUS_EXACT_SET_PASS',
-        'tools/verify_inference_native_locus.py --check',
-        'scipy==1.17.1',
-        '-p no:cacheprovider',
-        "PYTHONDONTWRITEBYTECODE: '1'",
-        'RUNNER_TEMP',
-        'GITHUB_ENV',
-    ) + REQUIRED_TESTS
-    for marker in required:
+    for marker in WORKFLOW_MARKERS:
         if marker not in text:
-            errors.append('MISSING:' + marker)
-    if '${{ runner.temp }}' in text:
-        errors.append('FORBIDDEN_JOB_LEVEL_RUNNER_CONTEXT')
+            errors.append("MISSING_WORKFLOW:" + marker)
+    if text.count("python tools/run_inference_native_locus.py") != 2:
+        errors.append("RUNNER_INVOCATION_CARDINALITY")
+    if "${{ runner.temp }}" in text:
+        errors.append("FORBIDDEN_JOB_LEVEL_RUNNER_CONTEXT")
     return errors
 
 
+def _runner_errors(text: str) -> list[str]:
+    return [
+        "MISSING_RUNNER:" + marker
+        for marker in RUNNER_MARKERS
+        if marker not in text
+    ]
+
+
 def test_native_inference_workflow_contract_is_explicit_and_complete():
-    text = WORKFLOW.read_text(encoding='utf-8')
-    assert _contract_errors(text) == []
+    assert _workflow_errors(WORKFLOW.read_text(encoding="utf-8")) == []
+    assert _runner_errors(RUNNER.read_text(encoding="utf-8")) == []
 
 
 def test_native_inference_workflow_detects_removed_provider_authority():
-    text = WORKFLOW.read_text(encoding='utf-8')
-    mutated = text.replace('ELPIS_FMS_FILE_LIBRARY', 'REMOVED_FMS_FILE_LIBRARY')
-    assert 'MISSING:ELPIS_FMS_FILE_LIBRARY' in _contract_errors(mutated)
+    text = WORKFLOW.read_text(encoding="utf-8")
+    mutated = text.replace("ELPIS_FMS_FILE_LIBRARY", "REMOVED_FMS_FILE_LIBRARY")
+    assert "MISSING_WORKFLOW:ELPIS_FMS_FILE_LIBRARY" in _workflow_errors(mutated)
 
 
-def test_native_inference_workflow_detects_provider_cardinality_guard_removal():
-    text = WORKFLOW.read_text(encoding='utf-8')
+def test_native_inference_workflow_detects_exact_runner_removal():
+    text = WORKFLOW.read_text(encoding="utf-8")
     mutated = text.replace(
-        'NATIVE_PROVIDER_CORE_CARDINALITY_NONPASS',
-        'REMOVED_PROVIDER_CARDINALITY_GUARD',
+        "python tools/run_inference_native_locus.py",
+        "python REMOVED_EXACT_RUNNER.py",
+        1,
     )
-    assert 'MISSING:NATIVE_PROVIDER_CORE_CARDINALITY_NONPASS' in _contract_errors(mutated)
+    assert "RUNNER_INVOCATION_CARDINALITY" in _workflow_errors(mutated)
 
 
-def test_native_inference_workflow_detects_provider_exact_count_removal():
-    text = WORKFLOW.read_text(encoding='utf-8')
-    mutated = text.replace(PROVIDER_EXPECTED, 'expected = {}')
-    assert 'MISSING:' + PROVIDER_EXPECTED in _contract_errors(mutated)
-
-
-def test_native_inference_workflow_detects_exact_locus_authority_removal():
-    text = WORKFLOW.read_text(encoding='utf-8')
+def test_native_execution_runner_detects_set_guard_removal():
+    text = RUNNER.read_text(encoding="utf-8")
     mutated = text.replace(
-        'tools/verify_inference_native_locus.py --check',
-        'REMOVED_EXACT_LOCUS_AUTHORITY',
+        "NATIVE_EXECUTED_NODE_SET_MISMATCH",
+        "REMOVED_NODE_SET_GUARD",
     )
     assert (
-        'MISSING:tools/verify_inference_native_locus.py --check'
-        in _contract_errors(mutated)
+        "MISSING_RUNNER:NATIVE_EXECUTED_NODE_SET_MISMATCH"
+        in _runner_errors(mutated)
+    )
+
+
+def test_native_execution_runner_detects_sha_guard_removal():
+    text = RUNNER.read_text(encoding="utf-8")
+    mutated = text.replace(
+        "NATIVE_EXECUTED_NODE_SHA256_MISMATCH",
+        "REMOVED_NODE_SHA_GUARD",
+    )
+    assert (
+        "MISSING_RUNNER:NATIVE_EXECUTED_NODE_SHA256_MISMATCH"
+        in _runner_errors(mutated)
     )
 
 
 def test_native_inference_workflow_rejects_job_level_runner_context():
-    text = WORKFLOW.read_text(encoding='utf-8')
+    text = WORKFLOW.read_text(encoding="utf-8")
     mutated = text.replace(
         '"${RUNNER_TEMP}/elpis-inference-native"',
         '"${{ runner.temp }}/elpis-inference-native"',
         1,
     )
-    assert 'FORBIDDEN_JOB_LEVEL_RUNNER_CONTEXT' in _contract_errors(mutated)
+    assert "FORBIDDEN_JOB_LEVEL_RUNNER_CONTEXT" in _workflow_errors(mutated)
