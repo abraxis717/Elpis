@@ -334,17 +334,32 @@ def installed_artifact_check(
     workspace = private / "installed-artifact"
     if workspace.exists():
         shutil.rmtree(workspace)
+    source = workspace / "source"
     dist = workspace / "dist"
     target = workspace / "site"
+    source.mkdir(parents=True, exist_ok=True)
     dist.mkdir(parents=True, exist_ok=True)
     target.mkdir(parents=True, exist_ok=True)
     chunks: list[str] = []
+
+    archive = workspace / "source.tar"
+    archive_argv = [
+        "git", "archive", "--format=tar", f"--output={archive}", "HEAD",
+    ]
+    proc = run(root, archive_argv, env=env)
+    chunks.append(proc.stdout or "")
+    require(
+        proc.returncode == 0,
+        "ARTIFACT_SOURCE_EXPORT_NONPASS:" + (proc.stdout or "")[-5000:],
+    )
+    shutil.unpack_archive(str(archive), str(source))
+    archive.unlink()
 
     build_argv = [
         sys.executable, "-m", "pip", "wheel", ".", "--no-deps",
         "--wheel-dir", str(dist),
     ]
-    proc = run(root, build_argv, env=env)
+    proc = run(source, build_argv, env=env)
     chunks.append(proc.stdout or "")
     require(proc.returncode == 0, "ARTIFACT_WHEEL_BUILD_NONPASS:" + (proc.stdout or "")[-5000:])
     wheels = sorted(dist.glob(f"elpisai-{version}-*.whl"))

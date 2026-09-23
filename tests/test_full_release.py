@@ -144,3 +144,15 @@ def test_lower_release_entrypoints_have_deterministic_direct_script_fallbacks():
         check=False,
     )
     assert proc.returncode == 0, proc.stderr
+
+
+def test_installed_artifact_build_is_exported_from_git_tree():
+    source = TOOL.read_text(encoding="utf-8")
+    block = source[
+        source.index("def installed_artifact_check"):
+        source.index("def qualification_checks")
+    ]
+    assert '"git", "archive", "--format=tar"' in block
+    assert "shutil.unpack_archive" in block
+    assert "proc = run(source, build_argv, env=env)" in block
+    assert "proc = run(root, build_argv, env=env)" not in block

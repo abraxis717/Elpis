@@ -894,3 +894,5 @@ Elpis2.0.0 has its own release manifest and verifier.
 
 - Harden the one-shot full-release lifecycle with pre-seal/exact-sealed qualification, real installed-wheel qualification, outer crash journaling/locking, fixed-remote CAS closeout, and paginated hosted-run observation.
 - Pin the immutable release build path to setuptools==84.0.0, build==1.6.1, and twine==7.0.0.
+
+- Build installed-artifact qualification from a private `git archive HEAD` export so packaging backend debris cannot contaminate release authority.

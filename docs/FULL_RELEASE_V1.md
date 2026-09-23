@@ -25,7 +25,8 @@ The first command is a zero-effect plan. `--execute` owns the complete lifecycle
 
 The pre-seal and exact sealed qualification suites both cover root tests, release
 lifecycle tests, negative mutation tests, a real wheel build/install/import
-qualification, and exact native/R3 executed-node qualification. The lower release
+qualification built from a private `git archive HEAD` export rather than the
+authority worktree, and exact native/R3 executed-node qualification. The lower release
 orchestrator receives only the exact sealed qualification report.
 
 State, logs, intent, qualification reports, the hash-chained outer mutation

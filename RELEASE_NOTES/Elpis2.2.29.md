@@ -69,3 +69,10 @@ No Elpis2.2.29 manifest, tag, GitHub Release, or PyPI publication is created by 
 - Reconcile exact repository/remote reality after crashes around seal, publication-assertion, ratification, and final-main mutations rather than blindly replaying them.
 - Use the canonical repository URL and CAS lease for terminal main publication, and reuse the lower boundary's bounded paginated workflow census for closeout.
 - Pin the release build backend to setuptools 84.0.0 and PyPI build/check tooling to build 1.6.1 and twine 7.0.0.
+
+
+## Hermetic installed-artifact qualification corrective R5
+
+- Build release qualification wheels from a private `git archive HEAD` export under release-private evidence rather than from the authority worktree.
+- Keep backend-generated `build/` and `*.egg-info` debris out of all repository qualification passes.
+- Preserve the same real wheel install/import and packaging-contract checks; only the build location changes.
