@@ -1,3 +1,8 @@
+## Elpis2.2.31 — release authority corrective successor
+
+- Bind release verification to physical checkout content and separate development checks.
+- Strengthen release origin, environment and recovery contracts.
+
 ## Elpis2.2.30 — lifecycle-contract corrective successor
 
 - Preserve untagged Elpis2.2.29 seal `f4022927b40e720acdca9775d7de123a511add99` and manifest `19b8e7aeb1589f2ec230290db41ad70171cb3c8430fa619dc8b900e990eab885` as immutable failed exact-qualification evidence.
