@@ -10,6 +10,9 @@
 - Version numerical execution identity to a structured v2 profile independent of YAML/stdout formatting and `platform.processor()` subprocess behavior.
 - Make compaction verification enforce producer policy/reason and replacement-object identity rules.
 - Record and compare the exact pytest node IDs actually executed by native qualification rather than inferring exactness from JUnit totals.
+- Require independently pinned asset/native deployment authority with descriptor-bound openat2 admission and sealed-memfd native loading.
+- Add a RAM-only native FMS constructor for inference and isolate synthetic self-authorization to explicit test fixtures.
+- Close multi-page native lease-tier validation and rollback, and add forward raw-byte SHA-256 census authority without rewriting the historical baseline.
 
 ## Elpis2.2.28 — red-team corrective successor
 

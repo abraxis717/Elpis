@@ -39,7 +39,8 @@ def workspace_root():
 
 @pytest.fixture
 def provider(fms_library, workspace_root, tmp_path):
-    from elpis.inference.file_assets import FMSFileAssets, inspect_asset
+    from elpis.inference.file_assets import inspect_asset
+    from elpis.inference.synthetic_file_assets import SyntheticFileAssets as FMSFileAssets
 
     f = FMSFileAssets(
         root=workspace_root,

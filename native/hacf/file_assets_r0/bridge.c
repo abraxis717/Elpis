@@ -6,13 +6,8 @@
 #include "elpis/fms_pal_posix.h"
 #include <string.h>
 
-int elpis_fms_file_create(const char *scratch, uint64_t warm_bytes,
-                          uint32_t max_pages, int absent_policy, fms_ctx **out) {
-    if (!out || !scratch || !warm_bytes || !max_pages ||
-        (absent_policy != FMS_FOLD_DOWN && absent_policy != FMS_REJECT))
-        return FMS_E_INVAL;
-    *out = NULL;
-    fms_pal *pal = fms_pal_posix_create(scratch);
+static int create_pages(fms_pal *pal, uint64_t warm_bytes,
+                        uint32_t max_pages, int absent_policy, fms_ctx **out) {
     if (!pal) return FMS_E_IO;
     fms_config cfg;
     memset(&cfg, 0, sizeof cfg);
@@ -26,6 +21,24 @@ int elpis_fms_file_create(const char *scratch, uint64_t warm_bytes,
     *out = fms_create(&cfg, pal);
     if (!*out) { pal->destroy(pal->self); return FMS_E_NOMEM; }
     return FMS_OK;
+}
+
+int elpis_fms_file_create(const char *scratch, uint64_t warm_bytes,
+                          uint32_t max_pages, int absent_policy, fms_ctx **out) {
+    if (!out || !scratch || !warm_bytes || !max_pages ||
+        (absent_policy != FMS_FOLD_DOWN && absent_policy != FMS_REJECT))
+        return FMS_E_INVAL;
+    *out = NULL;
+    return create_pages(fms_pal_posix_create(scratch), warm_bytes, max_pages, absent_policy, out);
+}
+
+int elpis_fms_file_create_memory(uint64_t warm_bytes, uint32_t max_pages,
+                                int absent_policy, fms_ctx **out) {
+    if (!out || !warm_bytes || !max_pages ||
+        (absent_policy != FMS_FOLD_DOWN && absent_policy != FMS_REJECT))
+        return FMS_E_INVAL;
+    *out = NULL;
+    return create_pages(fms_pal_posix_create_ram_only(), warm_bytes, max_pages, absent_policy, out);
 }
 
 int elpis_fms_file_stats(fms_ctx *ctx, uint64_t *out) {

@@ -6,7 +6,6 @@ not device-level I/O (which cannot be inferred from buffered reads).
 Every page is verified before native registration or exposure to inference.
 """
 from collections import OrderedDict
-from contextlib import contextmanager
 import ctypes as C
 from dataclasses import dataclass
 import os
@@ -14,7 +13,10 @@ from pathlib import Path
 import stat
 from threading import RLock
 from time import perf_counter_ns
+from .asset_authority import PinnedAuthority
+from .asset_boundary import RootCapability, load_native, read_exact, stamp as _stamp
 from .contracts import Code, InferenceError, digest_value, identity, integer, require
+from .raw_sha256 import raw_sha256
 
 
 def raw_digest(data):
@@ -27,6 +29,7 @@ def raw_digest(data):
 
 
 def bounded_path(root, path):
+    """Legacy synthetic-fixture convenience; NOT a race-resistant boundary."""
     root, path = Path(root), Path(path)
     require(root.is_absolute() and '..' not in root.parts, detail='workspace root')
     path = path if path.is_absolute() else root / path
@@ -63,41 +66,45 @@ class AssetManifest:
         return identity('file-asset.manifest', self)
 
 
-def inspect_asset(root, path, page_size):
-    """Offline intake: streaming page identities, never full buffering."""
-    path = bounded_path(root, path)
+def _inspect_fd(fd, page_size, *, expected_size=None):
+    """Observe one opened object. Returns metadata and ordinary raw SHA-256."""
     integer(page_size, 1, 16 * 1024 * 1024)
-    pages, size = [], 0
+    before = os.fstat(fd)
+    require(stat.S_ISREG(before.st_mode), detail='regular asset required')
+    require(expected_size is None or before.st_size == expected_size,
+            Code.INTEGRITY, 'asset geometry')
+    pages, digest = [], raw_sha256()
+    for offset in range(0, before.st_size, page_size):
+        data = read_exact(fd, min(page_size, before.st_size-offset), offset)
+        digest.update(data)
+        pages.append(raw_digest(data))
+    require(_stamp(before) == _stamp(os.fstat(fd)), Code.INTEGRITY, 'asset changed during intake')
+    pages = tuple(pages)
+    content = identity('file-asset.content-map',
+                       dict(size=before.st_size, page_size=page_size, pages=pages))
+    return AssetManifest(before.st_size, page_size, content, pages), digest.hexdigest(), _stamp(before)
+
+
+def inspect_asset(root, path, page_size):
+    """Untrusted observation only; never an independent authority or admission."""
     try:
-        with path.open('rb') as f:
-            before = os.fstat(f.fileno())
-            require(stat.S_ISREG(before.st_mode), detail='regular asset required')
-            while data := f.read(page_size):
-                pages.append(raw_digest(data))
-                size += len(data)
-            after = os.fstat(f.fileno())
-            require(_stamp(before) == _stamp(after), Code.INTEGRITY, 'asset changed during intake')
+        with RootCapability(root) as boundary:
+            fd = boundary.open_file(path)
+            try:
+                return _inspect_fd(fd, page_size)[0]
+            finally:
+                os.close(fd)
     except OSError as exc:
         raise InferenceError(Code.IO, 'asset intake') from exc
-    pages = tuple(pages)
-    content = identity(
-        'file-asset.content-map',
-        dict(size=size, page_size=page_size, pages=pages),
-    )
-    return AssetManifest(size, page_size, content, pages)
-
-
-def _stamp(s):
-    return s.st_dev, s.st_ino, s.st_size, s.st_mtime_ns, s.st_ctime_ns
 
 
 class _NativePages:
-    def __init__(self, library, scratch, warm_bytes, max_pages, absent_policy):
-        self.lib = C.CDLL(str(library))
+    def __init__(self, library, warm_bytes, max_pages, absent_policy):
+        self.lib = library
         lib = self.lib
         vp, u64 = C.c_void_p, C.c_uint64
         signatures = {
-            'elpis_fms_file_create': ([C.c_char_p,u64,C.c_uint32,C.c_int,C.POINTER(vp)],C.c_int),
+            'elpis_fms_file_create_memory': ([u64,C.c_uint32,C.c_int,C.POINTER(vp)],C.c_int),
             'fms_register': ([vp,C.c_uint32,u64,C.c_int,C.c_float,vp,C.POINTER(u64)],C.c_int),
             'fms_unregister': ([vp,u64],C.c_int),
             'fms_lease_acquire': ([vp,u64,C.c_int,C.c_uint,C.POINTER(vp)],C.c_int),
@@ -107,9 +114,13 @@ class _NativePages:
             'fms_destroy': ([vp],None),
         }
         for name,(args,result) in signatures.items():
-            f=getattr(lib,name); f.argtypes=args; f.restype=result
+            try:
+                f=getattr(lib,name)
+            except AttributeError as exc:
+                raise InferenceError(Code.UNSUPPORTED, 'native file-provider ABI') from exc
+            f.argtypes=args; f.restype=result
         self.ctx=vp()
-        self.check(lib.elpis_fms_file_create(os.fsencode(scratch),warm_bytes,max_pages,absent_policy,C.byref(self.ctx)))
+        self.check(lib.elpis_fms_file_create_memory(warm_bytes,max_pages,absent_policy,C.byref(self.ctx)))
 
     @staticmethod
     def check(rc):
@@ -175,18 +186,28 @@ class RangeLease:
 class FMSFileAssets:
     """Additive external COLD catalog + bounded native FMS page materialization.
 
-    No writable replicas. Registration is metadata-only. Eviction unregisters
+    No writable replicas. Admission streams and verifies all bytes once. Eviction unregisters
     verified native pages; externally owned immutable storage is never deleted.
     A serialized I/O critical section prioritizes clear accounting in R0.
     """
-    def __init__(self,*,root,library,scratch,warm_bytes=65536,staging_bytes=65536,
+    def __init__(self,*,root,library,authority=None,library_id=None,scratch=None,
+                 warm_bytes=65536,staging_bytes=65536,
                  storage_bytes=1<<40,max_pages=1024,hot_absent_policy='FOLD_DOWN'):
+        self._check_authority(authority)
+        require(type(library_id) is str and library_id in authority.libraries, Code.IDENTITY, 'authorized native identifier required')
+        self.authority = authority
         self.root=Path(root)
-        library=bounded_path(root,library); scratch=bounded_path(root,scratch)
         integer(warm_bytes,1); integer(staging_bytes,1); integer(storage_bytes,1); integer(max_pages,1,(1<<32)-1)
         require(hot_absent_policy in ('FOLD_DOWN','REJECT'))
-        scratch.mkdir(parents=True,exist_ok=True)
-        self._native=_NativePages(library,scratch,warm_bytes,max_pages,int(hot_absent_policy=='REJECT'))
+        # scratch is a deprecated compatibility argument. The RAM-only native
+        # provider never creates, traverses or opens it (no writable COLD tier).
+        self._boundary = RootCapability(root)
+        try:
+            lib = load_native(self._boundary, library, authority.libraries[library_id])
+            self._native=_NativePages(lib,warm_bytes,max_pages,int(hot_absent_policy=='REJECT'))
+        except BaseException:
+            self._boundary.close()
+            raise
         self.warm_budget=warm_bytes; self.staging_budget=staging_bytes; self.storage_budget=storage_bytes
         self._lock=RLock(); self._assets={}; self._pages=OrderedDict(); self._pins={}; self._closed=False
         self.telemetry={'semantic_bytes':0,'pread_bytes':0,'reads':0,'hits':0,'misses':0,
@@ -194,27 +215,44 @@ class FMSFileAssets:
 
     def _open(self): require(not self._closed,Code.CLOSED,'FMS file provider')
 
-    def register(self,path,manifest,*,expected_manifest):
+    @staticmethod
+    def _check_authority(authority):
+        require(type(authority) is PinnedAuthority and authority.provenance == 'deployment',
+                Code.IDENTITY, 'independently pinned deployment authority required')
+
+    def _authorized_identity(self, asset_id, path, manifest):
+        require(type(asset_id) is str and asset_id in self.authority.assets, Code.IDENTITY, 'authorized asset identifier required')
+        return self.authority.assets[asset_id]
+
+    def register(self,path,manifest,*,asset_id=None,expected_manifest=None):
         with self._lock:
             self._open()
-            require(type(manifest) is AssetManifest and manifest.digest==expected_manifest,Code.IDENTITY,'page-map root')
+            require(type(manifest) is AssetManifest, Code.IDENTITY, 'asset observation required')
+            trusted = self._authorized_identity(asset_id, path, manifest)
+            require(manifest.digest == trusted.manifest_digest and
+                    manifest.size == trusted.size and manifest.page_size == trusted.page_size,
+                    Code.IDENTITY, 'independent asset identity')
+            require(expected_manifest is None or manifest.digest == expected_manifest,
+                    Code.IDENTITY, 'page-map root')
             require(manifest.page_size <= min(self.staging_budget//4,self.warm_budget),Code.LIMIT,'page staging (four-copy upper bound)')
-            if manifest.digest in self._assets: return manifest.digest
-            require(sum(v[1].size for v in self._assets.values())+manifest.size<=self.storage_budget,Code.LIMIT,'external COLD budget')
-            path=bounded_path(self.root,path)
+            if manifest.digest not in self._assets:
+                require(sum(v[1].size for v in self._assets.values())+manifest.size<=self.storage_budget,Code.LIMIT,'external COLD budget')
+            fd = self._boundary.open_file(path)
             try:
-                fd=os.open(path,os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW)
-            except FileNotFoundError as exc:
-                raise InferenceError(Code.MISSING,'backing asset') from exc
+                observed, sha256, stamp = _inspect_fd(fd, trusted.page_size, expected_size=trusted.size)
+                require(sha256 == trusted.sha256 and observed == manifest,
+                        Code.INTEGRITY, 'asset content against independent authority')
+                # Even duplicate registration must validate the presented path.
+                if manifest.digest in self._assets:
+                    os.close(fd)
+                    return manifest.digest
             except OSError as exc:
-                raise InferenceError(Code.IO,'open asset') from exc
-            try:
-                s=os.fstat(fd)
-                require(stat.S_ISREG(s.st_mode) and s.st_size==manifest.size,Code.INTEGRITY,'asset geometry')
+                os.close(fd)
+                raise InferenceError(Code.IO, 'asset admission read') from exc
             except BaseException:
                 os.close(fd)
                 raise
-            self._assets[manifest.digest]=(fd,manifest,_stamp(s))
+            self._assets[manifest.digest]=(fd,manifest,stamp)
             return manifest.digest
 
     def _load(self,asset,page):
@@ -271,20 +309,26 @@ class FMSFileAssets:
             first,last=offset//m.page_size,(offset+length-1)//m.page_size
             require((last-first+1)*m.page_size<=self.warm_budget,Code.LIMIT,'range exceeds native budget')
             self.telemetry['semantic_bytes']+=length
-            parts=[]; actual=1
+            parts=[]; actual_tiers=[]
             try:
                 for page in range(first,last+1):
                     key=(asset,page); oid=self._load(asset,page)
-                    lease,ptr,actual=self._native.acquire(oid,0 if tier=='HOT' else 1)
+                    lease,ptr,page_actual=self._native.acquire(oid,0 if tier=='HOT' else 1)
+                    try:
+                        require(page_actual in (0,1),Code.INTEGRITY,'native lease tier')
+                    except BaseException:
+                        self._native.release(lease)
+                        raise
                     self._pins[key]+=1
                     start=max(offset,page*m.page_size)-page*m.page_size
                     end=min(offset+length,(page+1)*m.page_size)-page*m.page_size
                     parts.append((key,lease,ptr,start,end-start))
+                    actual_tiers.append(page_actual)
             except BaseException:
                 for key,lease,_,_,_ in parts:
                     self._native.release(lease); self._pins[key]-=1
                 raise
-            require(actual in (0,1),Code.INTEGRITY,'native lease tier')
+            actual=max(actual_tiers)
             return RangeLease(self,parts,offset,length,('HOT','WARM')[actual])
 
     def evict(self,asset=None):
@@ -306,7 +350,7 @@ class FMSFileAssets:
             self._open()
             self.evict()
             for fd,_,_ in self._assets.values(): os.close(fd)
-            self._assets.clear(); self._native.close(); self._closed=True
+            self._assets.clear(); self._native.close(); self._boundary.close(); self._closed=True
 
     def __enter__(self): return self
     def __exit__(self,*exc): self.close()

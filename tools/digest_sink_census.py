@@ -13,6 +13,8 @@ from typing import Any
 
 SCHEMA = "elpis.direct-sha256-sink-census.v1"
 BASELINE_COMMIT = "b7606061417db38a1f36a0db5a565cfe3bf2906e"
+FORWARD_SCHEMA = "elpis.direct-sha256-sink-forward.v1"
+FORWARD_REGISTRY_NAME = "direct_sha256_sink_forward_v1.json"
 
 PRODUCTION_ROOTS = (
     "src",
@@ -372,8 +374,40 @@ def load_baseline(path: Path) -> dict[str, Any]:
     return data
 
 
+def load_forward(path: Path) -> dict[str, Any]:
+    if not path.is_file():
+        return {
+            "schema": FORWARD_SCHEMA,
+            "baseline_commit": BASELINE_COMMIT,
+            "sinks": [],
+        }
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if data.get("schema") != FORWARD_SCHEMA:
+        raise CensusError("FORWARD_CENSUS_SCHEMA_INVALID")
+    if data.get("baseline_commit") != BASELINE_COMMIT:
+        raise CensusError("FORWARD_CENSUS_BASELINE_INVALID")
+    sinks = data.get("sinks")
+    if not isinstance(sinks, list):
+        raise CensusError("FORWARD_CENSUS_SINKS_INVALID")
+    seen = set()
+    for entry in sinks:
+        key = identity(entry)
+        if key in seen:
+            raise CensusError(f"FORWARD_CENSUS_DUPLICATE:{key}")
+        seen.add(key)
+        if entry.get("category") != "RAW_BYTES_DIGEST":
+            raise CensusError(f"FORWARD_CENSUS_CATEGORY_INVALID:{key}")
+        justification = entry.get("justification")
+        if not isinstance(justification, str) or not justification.strip():
+            raise CensusError(
+                f"FORWARD_CENSUS_JUSTIFICATION_MISSING:{key}"
+            )
+    return data
+
+
 def verify(root: Path, baseline_path: Path) -> dict[str, Any]:
     baseline = load_baseline(baseline_path)
+    forward = load_forward(root / "tools" / FORWARD_REGISTRY_NAME)
     baseline_actual = {
         identity(s): s
         for s in scan(root, BASELINE_COMMIT)
@@ -382,14 +416,25 @@ def verify(root: Path, baseline_path: Path) -> dict[str, Any]:
         identity(s): s
         for s in scan(root, None)
     }
-    registered = {
+    baseline_registered = {
         identity(s): s
         for s in baseline["sinks"]
     }
+    forward_registered = {
+        identity(s): s
+        for s in forward["sinks"]
+    }
+    overlap = set(baseline_registered).intersection(forward_registered)
+    if overlap:
+        raise CensusError(
+            "FORWARD_CENSUS_OVERLAPS_BASELINE:" + repr(sorted(overlap))
+        )
+    registered = dict(baseline_registered)
+    registered.update(forward_registered)
 
     errors: list[str] = []
 
-    for key, entry in registered.items():
+    for key, entry in baseline_registered.items():
         category = entry["category"]
         if category in {
             "HISTORICAL_DIRECT_SHA256",
@@ -426,7 +471,7 @@ def verify(root: Path, baseline_path: Path) -> dict[str, Any]:
             ):
                 errors.append(f"R2_EQUIVALENT_MISBOUND:{key}")
 
-    for key, entry in registered.items():
+    for key, entry in baseline_registered.items():
         if key in current_actual:
             continue
         if entry["category"] in {
@@ -434,6 +479,10 @@ def verify(root: Path, baseline_path: Path) -> dict[str, Any]:
             "R2_ZERO_DEP_CANONICAL_IDENTITY_V1_EQUIVALENT",
         }:
             errors.append(f"REQUIRED_AUTHORITY_SINK_MISSING:{key}")
+
+    for key in forward_registered:
+        if key not in current_actual:
+            errors.append(f"FORWARD_CENSUS_SINK_MISSING:{key}")
 
     categories: dict[str, int] = {}
     for key in current_actual:
@@ -445,6 +494,8 @@ def verify(root: Path, baseline_path: Path) -> dict[str, Any]:
         "schema": SCHEMA,
         "baseline_commit": BASELINE_COMMIT,
         "registered_sink_count": len(registered),
+        "baseline_registered_sink_count": len(baseline_registered),
+        "forward_registered_sink_count": len(forward_registered),
         "baseline_actual_sink_count": len(baseline_actual),
         "current_sink_count": len(current_actual),
         "categories": dict(sorted(categories.items())),

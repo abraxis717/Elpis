@@ -241,3 +241,22 @@ fms_pal *fms_pal_posix_create(const char *cold_root) {
 }
 
 const char *fms_pal_posix_token_path(const fms_cold_token *t) { return t ? t->path : NULL; }
+
+/* File-backed inference owns external COLD descriptors in Python. Its native
+ * page cache needs RAM only: no scratch directory and no native path handling. */
+fms_pal *fms_pal_posix_create_ram_only(void) {
+    posix_bundle *b = (posix_bundle *)calloc(1, sizeof *b);
+    if (!b) return NULL;
+    b->state.dirfd = -1;
+    if (pthread_mutex_init(&b->state.mu, NULL) != 0) { free(b); return NULL; }
+    fms_pal *p = &b->pal;
+    p->self = &b->state;
+    p->abi = FMS_ABI_VERSION;
+    p->destroy = bundle_destroy;
+    p->now_ns = p_now;
+    p->hot_profile = p_hot_profile;
+    p->ram_alloc = p_ram_alloc;
+    p->ram_free = p_ram_free;
+    p->bandwidth = p_bandwidth;
+    return p;
+}

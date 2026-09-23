@@ -39,3 +39,15 @@ No Elpis2.2.29 manifest, tag, GitHub Release, or PyPI publication is created by 
               "- Use the same exact-execution runner in hosted `inference-native-r0` and the repository-owned one-shot full-release qualification.
 "
               "- The numerical-profile domain advances to v2; states carrying the 2.2.28 profile are therefore unsupported for bitwise replay under this successor rather than silently accepted.
+
+
+## Pinned asset and native trust-boundary milestone R2
+
+- Production file-backed inference requires an independently pinned deployment catalog; inspection alone grants no authority.
+- Linux strong mode opens assets relative to a retained root capability with `openat2(RESOLVE_BENEATH|RESOLVE_NO_SYMLINKS)` and retains the verified descriptor.
+- Native provider bytes are copied to a sealed memfd, ordinary SHA-256 checked against independent authority, and loaded only from that sealed descriptor.
+- The native page cache gains an additive RAM-only constructor; no scratch-path COLD capability is used by the production inference provider.
+- Synthetic fixture self-authorization is moved to an explicitly named test-only provider.
+- Multi-page lease acquisition validates every native tier result and rolls back the current plus all prior leases on an invalid tier.
+- Ordinary deployment-byte SHA-256 is centralized in one helper and registered in a forward census; the historical Q0a v1 census remains byte-for-byte unchanged.
+- The production trust-boundary adversarial suite is part of the exact native/R3 executed-node authority.

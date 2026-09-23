@@ -14,6 +14,9 @@ extern "C" {
  * fms_create(); if the context is never created, call pal->destroy(pal->self). */
 fms_pal *fms_pal_posix_create(const char *cold_root);
 
+/* RAM-only page cache: performs no filesystem operations, no COLD capability. */
+fms_pal *fms_pal_posix_create_ram_only(void);
+
 /* Token accessors. The token layout is private to this PAL; these are the only
  * ways to read it. token_path is test-only and is never called by the core. */
 int         fms_pal_posix_token_digest(const fms_cold_token *t, uint8_t out[32]);

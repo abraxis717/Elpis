@@ -16,6 +16,7 @@ SCHEMA = "elpis.inference-native-locus.v1"
 PROVIDER = ("tests/test_inference_file_assets_r0.py",)
 LOCUS = (
     "tests/test_inference_file_assets_r0.py",
+    "tests/test_inference_asset_boundary.py",
     "tests/test_inference_rows_r0.py",
     "tests/test_inference_experts_r0.py",
     "tests/test_inference_neural_r0.py",

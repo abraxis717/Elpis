@@ -73,3 +73,16 @@ def test_historical_direct_sha256_entries_are_bound_to_q0a_commit():
         assert regenerated == data
     finally:
         tmp.unlink(missing_ok=True)
+
+
+def test_forward_direct_sha256_registry_is_explicit_nonhistorical_raw_bytes():
+    forward = ROOT / "tools" / "direct_sha256_sink_forward_v1.json"
+    data = json.loads(forward.read_text(encoding="utf-8"))
+    assert data["schema"] == "elpis.direct-sha256-sink-forward.v1"
+    assert data["baseline_commit"] == "b7606061417db38a1f36a0db5a565cfe3bf2906e"
+    assert len(data["sinks"]) == 1
+    entry = data["sinks"][0]
+    assert entry["path"] == "src/elpis/inference/raw_sha256.py"
+    assert entry["qualname"] == "raw_sha256"
+    assert entry["category"] == "RAW_BYTES_DIGEST"
+    assert entry["structured_markers"] == []

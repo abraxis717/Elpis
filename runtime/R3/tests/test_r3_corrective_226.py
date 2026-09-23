@@ -8,7 +8,7 @@ import tempfile
 import pytest
 
 from elpis.inference.context import initial_snapshot
-from elpis.inference.file_assets import FMSFileAssets
+from elpis.inference.synthetic_file_assets import SyntheticFileAssets as FMSFileAssets
 from elpis.inference.fixtures import make_fixture
 from elpis.inference.neural import LatentInput
 from elpis_runtime_r3 import RuntimeR3, InferenceRequest

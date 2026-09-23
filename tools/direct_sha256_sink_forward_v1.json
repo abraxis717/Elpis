@@ -1,0 +1,18 @@
+{
+  "baseline_commit": "b7606061417db38a1f36a0db5a565cfe3bf2906e",
+  "schema": "elpis.direct-sha256-sink-forward.v1",
+  "sinks": [
+    {
+      "call": "hashlib.sha256(bytes(data))",
+      "category": "RAW_BYTES_DIGEST",
+      "fingerprint": "8138944ee80eab00ba6e727ce19262dbead0134a74adf675a52c721907f6e835",
+      "justification": "Elpis2.2.29 forward authority: ordinary SHA-256 over deployment raw bytes only; structured/canonical identities remain elpis.canonical_identity",
+      "lineno": 12,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "src/elpis/inference/raw_sha256.py",
+      "qualname": "raw_sha256",
+      "structured_markers": []
+    }
+  ]
+}

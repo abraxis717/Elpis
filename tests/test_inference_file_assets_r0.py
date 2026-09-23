@@ -3,7 +3,8 @@ from dataclasses import replace
 import os
 from pathlib import Path
 import pytest
-from elpis.inference.file_assets import FMSFileAssets, inspect_asset
+from elpis.inference.file_assets import inspect_asset
+from elpis.inference.synthetic_file_assets import SyntheticFileAssets as FMSFileAssets
 from elpis.inference.contracts import InferenceError
 
 
@@ -54,8 +55,8 @@ def test_changed_truncated_corrupt_metadata(provider):
 def test_wrong_page_map_cannot_expose_bytes(provider,tmp_path):
     f,path,m,a=provider
     bad=replace(m,pages=('0'*64,)+m.pages[1:])
-    other=f.register(path,bad,expected_manifest=bad.digest)
-    with pytest.raises(InferenceError,match='INTEGRITY'): f.acquire(other,0,1)
+    with pytest.raises(InferenceError,match='INTEGRITY'):
+        f.register(path,bad,expected_manifest=bad.digest)
     assert f.stats()['pinned']==0 and f.stats()['pages']==0
 
 

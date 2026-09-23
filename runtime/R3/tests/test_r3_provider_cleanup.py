@@ -22,7 +22,8 @@ from elpis_runtime_r3 import InferenceRequest, RuntimeR3
 from elpis_runtime_r3.speculative import run_speculative
 from elpis.inference.contracts import Code, InferenceError
 from elpis.inference.context import initial_snapshot
-from elpis.inference.file_assets import FMSFileAssets, inspect_asset
+from elpis.inference.file_assets import inspect_asset
+from elpis.inference.synthetic_file_assets import SyntheticFileAssets as FMSFileAssets
 
 from .helpers import build_runtime, greedy, make_drafter, prefill
 
