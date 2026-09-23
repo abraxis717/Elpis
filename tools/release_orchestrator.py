@@ -21,6 +21,7 @@ except (ModuleNotFoundError, ImportError):
     import publication_assertions_v2 as publication
 
 SCHEMA = 'elpis.release-orchestrator.intent.v1'
+SIGNED_SCHEMA = 'elpis.release-orchestrator.intent.v2'
 JOURNAL_SCHEMA = 'elpis.release-orchestrator.journal.v1'
 RECEIPT_SCHEMA = 'elpis.release-orchestrator.receipt.v1'
 STATES = (
@@ -74,17 +75,22 @@ def digest(value: Any) -> str:
 
 
 def validate_intent(value: dict) -> dict:
+    signed = isinstance(value, dict) and value.get('schema') == SIGNED_SCHEMA
     require(isinstance(value, dict) and set(value) == {
         'schema', 'repository', 'version', 'candidate_sha', 'manifest_sha256',
         'main_before', 'tagger', 'qualification_sha256', 'notes_sha256',
-    }, 'INTENT_FIELDS_INVALID')
-    require(value['schema'] == SCHEMA, 'INTENT_SCHEMA_INVALID')
+    } | ({'signed_tag_object', 'allowed_signers_sha256'} if signed else set()), 'INTENT_FIELDS_INVALID')
+    require(value['schema'] in {SCHEMA, SIGNED_SCHEMA}, 'INTENT_SCHEMA_INVALID')
     require(value['repository'] == 'abraxis717/Elpis', 'REPOSITORY_MISMATCH')
     version = value['version']
     require(isinstance(version, str) and re.fullmatch(r'\d+\.\d+\.\d+', version)
             is not None, 'VERSION_INVALID')
     require(tuple(map(int, version.split('.'))) > (2, 2, 25),
             'HISTORICAL_RELEASE_IMMUTABLE:through-2.2.25')
+    require(tuple(map(int, version.split('.'))) < (2, 2, 31) or signed, 'SIGNED_INTENT_REQUIRED')
+    if signed:
+        require(bool(publication.HEX_RE.fullmatch(value['signed_tag_object'])), 'SIGNED_TAG_OBJECT_INVALID')
+        require(bool(publication.SHA256_RE.fullmatch(value['allowed_signers_sha256'])), 'SIGNERS_DIGEST_INVALID')
     for field in ('candidate_sha', 'main_before'):
         require(isinstance(value[field], str) and bool(publication.HEX_RE.fullmatch(value[field])),
                 f'OBJECT_ID_INVALID:{field}')
@@ -102,14 +108,18 @@ def tag_name(intent: dict) -> str:
 
 
 def tag_bytes(intent: dict) -> bytes:
+    require(intent.get('schema') != SIGNED_SCHEMA, 'SIGNED_TAG_BYTES_MUST_BE_OBSERVED')
     return (f"object {intent['candidate_sha']}\ntype commit\ntag {tag_name(intent)}\n"
             f"tagger {intent['tagger']}\n\n{tag_name(intent)}\n").encode()
 
 
 def tag_identity(intent: dict) -> dict:
-    raw = tag_bytes(intent)
-    algorithm = hashlib.sha1 if len(intent['candidate_sha']) == 40 else hashlib.sha256
-    oid = algorithm(f'tag {len(raw)}\0'.encode() + raw).hexdigest()
+    if intent.get('schema') == SIGNED_SCHEMA:
+        oid = intent['signed_tag_object']
+    else:
+        raw = tag_bytes(intent)
+        algorithm = hashlib.sha1 if len(intent['candidate_sha']) == 40 else hashlib.sha256
+        oid = algorithm(f'tag {len(raw)}\0'.encode() + raw).hexdigest()
     return {'tag_object': oid, 'tag_object_type': 'tag',
             'peeled_commit': intent['candidate_sha'], 'peeled_object_type': 'commit'}
 
@@ -235,8 +245,15 @@ class Journal:
                 require(active is None and event['state'] in MUTATIONS, 'JOURNAL_INTENT_ORDER_INVALID')
                 active = event
             elif kind == 'returned':
-                require(active is not None and active['kind'] == 'intent', 'JOURNAL_RETURN_ORDER_INVALID')
+                require(active is not None and active['kind'] in {'intent', 'dispatch'}, 'JOURNAL_RETURN_ORDER_INVALID')
                 active = event
+            elif kind == 'dispatch':
+                require(active is not None and active['kind'] == 'intent', 'JOURNAL_DISPATCH_ORDER_INVALID')
+                active = event
+            elif kind == 'reconciliation':
+                require(active is not None and active['kind'] in {'dispatch', 'returned', 'intent'},
+                        'JOURNAL_RECONCILIATION_ORDER_INVALID')
+                # Observation never erases the durable possibility of a side effect.
             elif kind == 'complete':
                 evidence[event['state']] = event['data']
                 active = None
@@ -343,10 +360,21 @@ class Orchestrator:
             observed = self.boundary.observe(state, self.intent, evidence)
             if observed is None:
                 if active is not None:
-                    raise ReleaseError(f'AMBIGUOUS_MUTATION_OUTCOME:{state}:{active["kind"]}')
+                    # Legacy journals lack a dispatch marker. Their intent is
+                    # ambiguous; only new intents explicitly promise no dispatch.
+                    undispatched = (active['kind'] == 'intent' and
+                                    active['data'].get('dispatch_protocol') == 1)
+                    if not undispatched:
+                        reconcile = getattr(self.boundary, 'reconcile', None)
+                        result = reconcile(state, self.intent, evidence) if reconcile else {
+                            'outcome': 'ABSENT_UNPROVEN', 'witnesses': {}}
+                        self.journal.write(state, 'reconciliation', result)
+                        raise ReleaseError(f'AMBIGUOUS_MUTATION_OUTCOME:{state}:{active["kind"]}:' + result['outcome'])
                 if state not in MUTATIONS:
                     raise Waiting(f'WAITING_FOR_OBSERVATION:{state}')
-                self.journal.write(state, 'intent', {'intent_sha256': digest(self.intent)})
+                if active is None:
+                    self.journal.write(state, 'intent', {'intent_sha256': digest(self.intent), 'dispatch_protocol': 1})
+                self.journal.write(state, 'dispatch', {'intent_sha256': digest(self.intent)})
                 returned = self.boundary.mutate(state, self.intent, evidence)
                 # FIRST operation after success: durable acknowledgment, BEFORE verification.
                 self.journal.write(state, 'returned', returned)

@@ -138,6 +138,12 @@ class LiveBoundary:
                 'tag_name': row['tag_name'], 'published_at': row['published_at']}
 
     def preflight(self, intent, evidence):
+        if intent.get('schema') == machine.SIGNED_SCHEMA:
+            self.verify_origin(intent)
+            import importlib
+            environment = importlib.import_module('tools.qualification_environment' if __package__ else 'qualification_environment')
+            require(json.loads(self.qualification.read_bytes()).get('environment') == environment.authority(self.root),
+                    'QUALIFICATION_ENVIRONMENT_CHANGED')
         require(self.git('rev-parse', '--show-toplevel') == str(self.root), 'REPOSITORY_ROOT_MISMATCH')
         require(self.git('rev-parse', '--is-shallow-repository') == 'false', 'REPOSITORY_HISTORY_INCOMPLETE')
         require(self.git('rev-parse', 'HEAD') == intent['candidate_sha'], 'LOCAL_HEAD_MISMATCH')
@@ -223,8 +229,9 @@ class LiveBoundary:
             raw = self.qualification.read_bytes()
             require(hashlib.sha256(raw).hexdigest() == intent['qualification_sha256'], 'QUALIFICATION_DIGEST_MISMATCH')
             report = json.loads(raw)
-            require(set(report) == {'schema', 'candidate_sha', 'manifest_sha256', 'checks'}, 'QUALIFICATION_FIELDS_INVALID')
-            require(report['schema'] == 'elpis.release-orchestrator.qualification.v1', 'QUALIFICATION_SCHEMA_INVALID')
+            signed = intent.get('schema') == machine.SIGNED_SCHEMA
+            require(set(report) == {'schema', 'candidate_sha', 'manifest_sha256', 'checks'} | ({'environment'} if signed else set()), 'QUALIFICATION_FIELDS_INVALID')
+            require(report['schema'] == 'elpis.release-orchestrator.qualification.' + ('v2' if signed else 'v1'), 'QUALIFICATION_SCHEMA_INVALID')
             require(report['candidate_sha'] == intent['candidate_sha'] and
                     report['manifest_sha256'] == intent['manifest_sha256'], 'QUALIFICATION_CANDIDATE_MISMATCH')
             require(set(report['checks']) == {'root_tests', 'release_lifecycle', 'negative_mutations',
@@ -242,7 +249,7 @@ class LiveBoundary:
             manifest = json.loads(raw)
             require(manifest['version'] == intent['version'] and manifest['release_tag'] == machine.tag_name(intent)
                     and manifest['schema'] == 'elpis.release-manifest.v3', 'MANIFEST_IDENTITY_MISMATCH')
-            self.command([sys.executable, 'tools/verify_public_release.py'])
+            self.command([sys.executable, 'tools/verify_public_release.py', '--candidate'])
             self.command([sys.executable, 'tools/verify_public_release.py', '--verify-candidate-repository-identity'])
             return {'candidate_sha': intent['candidate_sha'], 'manifest_sha256': hashlib.sha256(raw).hexdigest()}
         if state == 'MAIN_PUSHED':
@@ -283,6 +290,41 @@ class LiveBoundary:
                     'receipt_sha256': evidence['PUBLICATION_RECEIPT_READY']['receipt_sha256']}
         raise machine.ReleaseError('UNKNOWN_STATE:' + state)
 
+    def verify_origin(self, intent):
+        # Import without consulting modules from the archived release.
+        import importlib
+        module = importlib.import_module('tools.release_origin' if __package__ else 'release_origin')
+        path = os.environ.get('ELPIS_ALLOWED_SIGNERS')
+        proof = module.verify_tag(self.root, intent['signed_tag_object'], intent['candidate_sha'],
+                                  machine.tag_name(intent), Path(path) if path else None)
+        require(proof['allowed_signers_sha256'] == intent['allowed_signers_sha256'], 'SIGNER_AUTHORITY_CHANGED')
+        return proof
+
+    def reconcile(self, state, intent, evidence):
+        """Absence is not evidence of never having published.
+
+        Collect external witnesses before a forensic stop. GitHub's present-day
+        APIs cannot prove that a deleted tag/run/release never existed. No 500
+        or empty query is converted into authorization to replay publication.
+        """
+        witnesses = {'remote_refs': self.remote_refs(intent)}
+        if state == 'ANNOTATED_TAG_CREATED':
+            tag = machine.tag_name(intent)
+            witnesses['release'] = self.api(f"repos/{intent['repository']}/releases/tags/{tag}")
+            witnesses['pypi'] = self.runner.http_json(f"https://pypi.org/pypi/elpisai/{intent['version']}/json")
+            runs = []
+            for page in range(1, 12):
+                result = self.api(f"repos/{intent['repository']}/actions/runs?branch={tag}&per_page=100&page={page}")
+                require(result is not None and result['total_count'] <= 1000, 'RECONCILIATION_CENSUS_INCOMPLETE')
+                runs.extend(result['workflow_runs'])
+                if len(runs) >= result['total_count']:
+                    break
+                require(len(result['workflow_runs']) == 100, 'RECONCILIATION_CENSUS_INCOMPLETE')
+            witnesses['actions'] = runs
+            if runs or witnesses['release'] or witnesses['pypi']:
+                return {'outcome': 'PREVIOUS_SIDE_EFFECT', 'witnesses': witnesses}
+        return {'outcome': 'ABSENT_UNPROVEN', 'witnesses': witnesses}
+
     def mutate(self, state, intent, evidence):
         require(self.execute, 'REMOTE_MUTATION_DISABLED')
         if state == 'MAIN_PUSHED':
@@ -293,7 +335,11 @@ class LiveBoundary:
                      self.remote_url(intent), intent['candidate_sha'] + ':refs/heads/main')
             return {'main_sha': intent['candidate_sha']}
         if state == 'ANNOTATED_TAG_LOCAL_CREATED':
-            oid = self.git('mktag', data=machine.tag_bytes(intent))
+            if intent.get('schema') == machine.SIGNED_SCHEMA:
+                self.verify_origin(intent)
+                oid = intent['signed_tag_object']
+            else:
+                oid = self.git('mktag', data=machine.tag_bytes(intent))
             require(oid == machine.tag_identity(intent)['tag_object'], 'GENERATED_TAG_OBJECT_MISMATCH')
             self.git('update-ref', 'refs/tags/' + machine.tag_name(intent), oid, '0' * len(oid))
             return machine.tag_identity(intent)

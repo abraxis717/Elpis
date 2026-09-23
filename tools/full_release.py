@@ -81,10 +81,16 @@ def run(root: Path, argv: list[str], *, env: dict[str, str] | None = None) -> su
     )
 
 
-def git(root: Path, *args: str) -> str:
+def git_raw(root: Path, *args: str) -> str:
+    """Git machine output, including significant leading spaces and NULs."""
     proc = run(root, ["git", *args])
     require(proc.returncode == 0, "GIT_NONPASS:" + " ".join(args) + ":" + (proc.stdout or "")[-3000:])
-    return (proc.stdout or "").strip()
+    return proc.stdout or ""
+
+
+def git(root: Path, *args: str) -> str:
+    """Line-oriented Git text: remove final newline only, never status columns."""
+    return git_raw(root, *args).removesuffix("\n")
 
 
 def sha256_bytes(raw: bytes) -> str:
@@ -433,6 +439,12 @@ def qualification_checks(root: Path, private: Path, *, version: str) -> dict[str
     }
 
 
+def environment_authority(root: Path) -> dict:
+    import importlib
+    module = importlib.import_module('tools.qualification_environment' if __package__ else 'qualification_environment')
+    return module.authority(root)
+
+
 def preseal_qualification(
     root: Path, private: Path, development_sha: str, version: str
 ) -> Path:
@@ -442,6 +454,7 @@ def preseal_qualification(
     clean_status(root)
     report = {
         "schema": "elpis.full-release.preseal-qualification.v1",
+        "environment": environment_authority(root),
         "development_sha": development_sha,
         "version": version,
         "checks": checks,
@@ -462,6 +475,8 @@ def qualification(root: Path, private: Path, candidate: str, manifest_sha: str) 
         "manifest_sha256": manifest_sha,
         "checks": checks,
     }
+    if tuple(map(int, current_version(root).split('.'))) >= (2, 2, 31):
+        report.update(schema="elpis.release-orchestrator.qualification.v2", environment=environment_authority(root))
     path = private / "qualification.json"
     atomic_json(path, report)
     return path
@@ -492,6 +507,44 @@ def commit_paths(root: Path, commit: str) -> list[str]:
     return [line for line in out.splitlines() if line]
 
 
+def validate_resume_head(root: Path, state: dict, journal: OuterJournal) -> None:
+    """Accept only the exact journaled chain; an arbitrary descendant is unsafe.
+
+    A commit may reach disk before returned/complete or before the state file.
+    Recovery must have an intent, exact parent and exact path scope. The owning
+    closeout step then validates payloads and durably completes that operation.
+    """
+    expected = state["candidate_sha"]
+    head = git(root, "rev-parse", "HEAD")
+    for stage, path in (
+        ("assertion_commit", "PUBLICATION_ASSERTIONS.json"),
+        ("ratification_commit", f"RELEASE_RATIFICATIONS/Elpis{state['version']}.json"),
+    ):
+        events = [e for e in journal.data["events"] if e["stage"] == stage]
+        stored = state.get(stage)
+        if not events:
+            require(not stored, "RESUME_COMMIT_WITHOUT_JOURNAL:" + stage)
+            break
+        require(state.get("orchestrator_closed") is True, "RESUME_CLOSEOUT_BEFORE_ORCHESTRATOR")
+        completed = next((e["data"].get("commit") for e in reversed(events) if e["kind"] == "complete"), None)
+        if stored:
+            require(stored == completed, "RESUME_STATE_JOURNAL_CONFLICT:" + stage)
+        observed = completed or stored
+        if observed is None and head != expected:
+            observed = head
+        if observed is None:
+            break
+        parents = git(root, "rev-list", "--parents", "-n", "1", observed).split()
+        require(parents == [observed, expected], "RESUME_PARENT_MISMATCH:" + stage)
+        require(commit_paths(root, observed) == [path], "RESUME_SCOPE_MISMATCH:" + stage)
+        returned = next((e["data"].get("commit") for e in reversed(events) if e["kind"] == "returned"), None)
+        require(returned is None or returned == observed, "RESUME_RETURNED_CONFLICT:" + stage)
+        expected = observed
+    require(head == expected, "LOCAL_HEAD_NOT_JOURNALED_RELEASE_STATE")
+    if state.get("final_main"):
+        require(state["final_main"] == expected, "RESUME_FINAL_MAIN_CONFLICT")
+
+
 def ensure_sealed(
     root: Path,
     state: dict[str, Any],
@@ -513,7 +566,7 @@ def ensure_sealed(
         )
         require(raw.returncode == 0, "SEALED_MANIFEST_NOT_IN_CANDIDATE")
         require(sha256_bytes(raw.stdout) == state["manifest_sha256"], "SEALED_MANIFEST_STATE_MISMATCH")
-        require(git(root, "rev-parse", "HEAD") == state["candidate_sha"], "LOCAL_HEAD_NOT_SEALED_CANDIDATE")
+        validate_resume_head(root, state, journal)
         return state
 
     head = git(root, "rev-parse", "HEAD")
@@ -611,6 +664,15 @@ def ensure_intent(root: Path, private: Path, state: dict[str, Any], state_path: 
         "qualification_sha256": sha256_bytes(qualification_path.read_bytes()),
         "notes_sha256": sha256_bytes(notes.read_bytes()),
     }
+    if tuple(map(int, state["version"].split('.'))) >= (2, 2, 31):
+        import importlib
+        origin = importlib.import_module('tools.release_origin' if __package__ else 'release_origin')
+        oid = os.environ.get("ELPIS_SIGNED_TAG_OBJECT", "")
+        trust = os.environ.get("ELPIS_ALLOWED_SIGNERS")
+        require(bool(oid), "SIGNED_TAG_OBJECT_REQUIRED_AFTER_QUALIFICATION")
+        proof = origin.verify_tag(root, oid, state["candidate_sha"], f"Elpis{state['version']}", Path(trust) if trust else None)
+        intent.update(schema=orchestrator.SIGNED_SCHEMA, signed_tag_object=oid,
+                      allowed_signers_sha256=proof["allowed_signers_sha256"])
     intent_path = private / "intent.json"
     atomic_json(intent_path, intent)
     state["qualification_path"] = str(qualification_path)
@@ -838,6 +900,9 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     try:
+        # Bind the interpreter and complete locked dependency graph before any
+        # local release mutation or external observation/publication.
+        environment = environment_authority(root)
         require(args.wait_seconds > 0, "WAIT_SECONDS_INVALID")
         require(1 <= args.poll_seconds <= 60, "POLL_SECONDS_INVALID")
         version = current_version(root)
@@ -855,11 +920,13 @@ def main(argv: list[str] | None = None) -> int:
                     state.get("schema") == SCHEMA and state.get("version") == version,
                     "FULL_RELEASE_STATE_CONFLICT",
                 )
+                require(state.get("environment") == environment, "FULL_RELEASE_ENVIRONMENT_CHANGED")
             else:
                 clean_status(root)
                 state = {
                     "schema": SCHEMA,
                     "version": version,
+                    "environment": environment,
                     "development_sha": git(root, "rev-parse", "HEAD"),
                     "main_before": remote_main(root),
                     "created_at": dt.datetime.now(dt.timezone.utc).isoformat(),

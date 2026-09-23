@@ -152,10 +152,50 @@ def test_remote_success_lost_response_reconciled_once(tmp_path, state):
     b.crash = state
     with pytest.raises(Crash):
         run(i, b, p)
-    assert m.Journal(p, i).replay()[1]['kind'] == 'intent'
+    assert m.Journal(p, i).replay()[1]['kind'] == 'dispatch'
     b.crash = None
     run(i, b, p)
     assert mutations(b).count(state) == 1
+
+
+@pytest.mark.parametrize('state', sorted(m.MUTATIONS))
+@pytest.mark.parametrize('kind', ['intent', 'dispatch'])
+def test_restart_before_dispatch_is_safe_but_dispatched_absence_is_not(tmp_path, monkeypatch, state, kind):
+    i, b, p = setup(tmp_path)
+    original = m.Journal.write
+    def interrupted(journal, s, k, data):
+        original(journal, s, k, data)
+        if (s, k) == (state, kind):
+            raise Crash('durable boundary')
+    monkeypatch.setattr(m.Journal, 'write', interrupted)
+    with pytest.raises(Crash):
+        run(i, b, p)
+    monkeypatch.setattr(m.Journal, 'write', original)
+    if kind == 'intent':
+        run(i, b, p)
+        assert mutations(b).count(state) == 1
+    else:
+        with pytest.raises(m.ReleaseError, match='ABSENT_UNPROVEN'):
+            run(i, b, p)
+        assert mutations(b).count(state) == 0
+        assert m.Journal(p, i).data['events'][-1]['kind'] == 'reconciliation'
+
+
+def test_signed_intent_binds_observed_object_and_signer_authority(tmp_path):
+    i = dict(intent(), schema=m.SIGNED_SCHEMA, version='2.2.31',
+             signed_tag_object='1' * 40, allowed_signers_sha256='2' * 64)
+    assert m.tag_identity(m.validate_intent(i))['tag_object'] == '1' * 40
+    with pytest.raises(m.ReleaseError, match='MUST_BE_OBSERVED'):
+        m.tag_bytes(i)
+    path = tmp_path / 'journal.json'
+    journal = m.Journal(path, i)
+    journal.write('LOCAL_QUALIFIED', 'complete', {})
+    with pytest.raises(m.ReleaseError, match='JOURNAL_INTENT_CONFLICT'):
+        m.Journal(path, dict(i, signed_tag_object='3' * 40))
+    with pytest.raises(m.ReleaseError, match='JOURNAL_INTENT_CONFLICT'):
+        m.Journal(path, dict(i, allowed_signers_sha256='3' * 64))
+    with pytest.raises(m.ReleaseError, match='SIGNED_INTENT_REQUIRED'):
+        m.validate_intent(dict(intent(), version='2.2.31'))
 
 
 @pytest.mark.parametrize('state,kind', [(s, k) for s in m.STATES for k in ('returned', 'complete')
