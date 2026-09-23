@@ -44,3 +44,20 @@ blind replay.
 `release_orchestrator.py` remains authoritative for the main/tag/Release/PyPI
 publication sequence and remains available for recovery/forensics. Ordinary
 releases use only `full_release.py --execute`.
+
+
+## Current-version lifecycle-neutral test contract
+
+The permanent root suite for the active release version must not contain a
+version-specific `*_prep.py` test. The one-shot release driver runs repository
+qualification across multiple lifecycle states, including before and after the
+write-once manifest exists and again after publication closeout.
+
+Current-version release tests therefore must be lifecycle-neutral: they may
+validate identity, write-once authority, and the manifest when present, but
+must not require the manifest, tag, publication assertion, or publication
+artifacts to be absent merely because the test was authored during successor
+preparation.
+
+`tests/test_current_release_lifecycle_neutrality.py` enforces this rule and is
+part of `tools/full_release.py` lifecycle qualification.

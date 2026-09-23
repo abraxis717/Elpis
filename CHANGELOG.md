@@ -1,3 +1,10 @@
+## Elpis2.2.30 — lifecycle-contract corrective successor
+
+- Preserve untagged Elpis2.2.29 seal `f4022927b40e720acdca9775d7de123a511add99` and manifest `19b8e7aeb1589f2ec230290db41ad70171cb3c8430fa619dc8b900e990eab885` as immutable failed exact-qualification evidence.
+- Replace the stale preparation-only current-version test with lifecycle-neutral successor and historical-failure contracts.
+- Forbid current-version `*_prep.py` tests in the permanent root suite and bind that guard into one-shot release lifecycle qualification.
+- Predeclare the Elpis2.2.30 write-once release-manifest authority while preserving the Apache-2.0 repository-attribution state and all qualified engineering changes.
+
 ## Elpis2.2.29 — postrelease corrective successor
 
 - Preserve closed Elpis2.2.28 as immutable published evidence.

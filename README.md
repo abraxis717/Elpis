@@ -2,7 +2,7 @@
 
 **A deterministic structural-reasoning architecture for bounded learned proposals, explicit authority, and falsifiable runtime composition.**
 
-**Release line: Elpis2.2.29**
+**Release line: Elpis2.2.30**
 
 Elpis is a systems-research project about a narrow question: can learned components contribute useful structural proposals while deterministic machinery retains ownership of representation, admissibility, authority, validation, and terminal action?
 
@@ -14,11 +14,13 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 ## Release Notes
 
-**Elpis2.2.29** is the postrelease corrective successor to closed Elpis2.2.28. Its first milestone closes canonical-request admission in Runtime R3 speculation and prevents `DecodeState` subclasses from bypassing replay validation through an overridden digest.
+**Elpis2.2.30** is the lifecycle-contract corrective successor to the untagged, unpublished Elpis2.2.29 sealed candidate.
 
-Elpis2.2.28 remains immutable published historical evidence. Release-supply-chain hardening and the one-shot terminal release lifecycle are closed in the current 2.2.29 successor tree. The pinned asset/native trust boundary, truthful staging telemetry, compatible streaming raw-byte identity, numerical-profile stability, compaction verifier parity, and exact executed-node-set qualification are also closed.
+Elpis2.2.29 remains immutable local sealed evidence at commit `f4022927b40e720acdca9775d7de123a511add99` with manifest SHA-256 `19b8e7aeb1589f2ec230290db41ad70171cb3c8430fa619dc8b900e990eab885`. Its exact sealed qualification stopped because a version-specific preparation test required the release manifest to be absent after the manifest had already been committed. No Elpis2.2.29 tag, GitHub Release, PyPI artifact, publication assertion, or public-main mutation was created.
 
-See [`RELEASE_NOTES/Elpis2.2.29.md`](RELEASE_NOTES/Elpis2.2.29.md).
+Elpis2.2.30 replaces preparation-only current-version testing with lifecycle-neutral release contracts and adds a permanent guard that forbids current-version `*_prep.py` tests under the one-shot release lifecycle.
+
+See [`RELEASE_NOTES/Elpis2.2.30.md`](RELEASE_NOTES/Elpis2.2.30.md).
 ## Install and quick start
 
 The Python distribution project name is **`elpisai`**. The console command remains **`elpis`**, and the existing Python import-package names remain unchanged.

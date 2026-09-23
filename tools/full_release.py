@@ -50,6 +50,7 @@ LIFECYCLE_TESTS = (
     "tests/test_release_immutability_gate_integration.py",
     "tests/test_compact_release_manifest_v3.py",
     "tests/test_current_release_hygiene.py",
+    "tests/test_current_release_lifecycle_neutrality.py",
     "tests/test_tag_disposition_closure.py",
 )
 INSTALLED_ARTIFACT_TESTS = (
