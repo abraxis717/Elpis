@@ -94,11 +94,12 @@ def physical_files(root: Path) -> set[str]:
         raise error
 
     for directory, dirs, files in os.walk(root, followlinks=False, onerror=scan_error):
-        dirs[:] = [name for name in dirs if name != ".git"]
+        if Path(directory) == root:
+            dirs[:] = [name for name in dirs if name != ".git"]
         for name in dirs + files:
             path = Path(directory) / name
             rel = path.relative_to(root).as_posix()
-            if ".git" in PurePosixPath(rel).parts:
+            if rel == ".git":
                 continue
             normalized_path(rel)
             parts = PurePosixPath(rel).parts

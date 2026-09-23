@@ -4,9 +4,11 @@
 from __future__ import annotations
 
 import ast
+import argparse
 import hashlib
 import io
 import json
+import os
 import re
 import runpy
 import subprocess
@@ -16,6 +18,8 @@ import tempfile
 import tomllib
 from pathlib import Path
 
+
+sys.dont_write_bytecode = True
 
 REPO = Path(__file__).resolve().parent.parent
 
@@ -366,6 +370,10 @@ RELEASE_IDENTITIES = {
         "primitive_closure_commit": "482d4064321392108b87124cd47343d9c748f5bc",
         "base_release_commit": "c911af22e01ee35c441d65e8dbcad18694bdcb2a",
     },
+    "2.2.31": {
+        "primitive_closure_commit": "482d4064321392108b87124cd47343d9c748f5bc",
+        "base_release_commit": "c911af22e01ee35c441d65e8dbcad18694bdcb2a",
+    },
 }
 RELEASE_MANIFEST_REL = Path(f"manifests/Elpis{RELEASE_VERSION}.RELEASE_MANIFEST.json")
 DISTRIBUTION_MANIFEST_REL = Path(f"manifests/Elpis{RELEASE_VERSION}.DISTRIBUTION_MANIFEST.json")
@@ -626,14 +634,40 @@ def _published_current_record():
 
 
 def _verify_v3_release_snapshot(compact, data):
+    try:
+        from tools import release_snapshot as snapshot
+        from tools import publication_assertions_v2 as publication
+    except ImportError:
+        import release_snapshot as snapshot
+        import publication_assertions_v2 as publication
     published = _published_current_record()
 
     if published is None or not (REPO / ".git").exists():
-        return compact["verify_record"](
+        errors = compact["verify_record"](
             REPO,
             MANIFEST_REL.as_posix(),
             data,
         )
+        if (REPO / ".git").exists():
+            # The compact manifest historically describes tracked membership.
+            # Snapshot presentation adds the stricter physical contract.
+            proc = _git_repository_command(["ls-tree", "-rz", "--name-only", "HEAD"])
+            if proc.returncode:
+                return errors + ["GIT_AUTHORITY_UNAVAILABLE"]
+            expected = set(proc.stdout.split("\0")) - {""}
+            try:
+                actual = compact["physical_files"](REPO)
+                difference = (actual ^ expected) - {MANIFEST_REL.as_posix()}
+                if difference:
+                    errors.append("SNAPSHOT_MEMBERSHIP_MISMATCH:" + repr(sorted(difference)))
+                for rel in compact["publication_registry_exclusions"](data["publication_policy"]):
+                    if rel in expected:
+                        raw = subprocess.run(["git", "--no-replace-objects", "-C", str(REPO), "show", "HEAD:" + rel], capture_output=True)
+                        if raw.returncode or compact["_payload"](REPO, rel) != (b"F", raw.stdout):
+                            errors.append("SNAPSHOT_AUTHORITY_CHANGED:" + rel)
+            except (OSError, ValueError, RuntimeError) as exc:
+                errors.append("SNAPSHOT_PHYSICAL_INVALID:" + str(exc))
+        return errors
 
     if published.get("manifest_path") != MANIFEST_REL.as_posix():
         return ["PUBLISHED_MANIFEST_PATH_MISMATCH"]
@@ -648,6 +682,16 @@ def _verify_v3_release_snapshot(compact, data):
     peeled = published.get("peeled_commit")
     if not isinstance(peeled, str) or not re.fullmatch(r"[0-9a-f]{40,64}", peeled):
         return ["PUBLISHED_PEELED_COMMIT_INVALID"]
+
+    authority_errors = publication.validation_errors(REPO)
+    if authority_errors:
+        return authority_errors
+    tag_ref = "refs/tags/" + published["release_tag"]
+    if (_git_resolve_commit(tag_ref) != peeled
+            or _git_resolve_tag_object(tag_ref) != published.get("tag_object")):
+        return ["GIT_AUTHORITY_UNAVAILABLE"]
+    if not _git_is_ancestor(peeled, "HEAD"):
+        return ["SNAPSHOT_HEAD_NOT_DESCENDANT"]
 
     proc = subprocess.run(
         ["git", "-C", str(REPO), "archive", "--format=tar", peeled],
@@ -667,7 +711,7 @@ def _verify_v3_release_snapshot(compact, data):
             fileobj=io.BytesIO(proc.stdout),
             mode="r:",
         ) as archive:
-            archive.extractall(sealed_root)
+            snapshot.extract_git_archive(archive, sealed_root)
 
         sealed_manifest = sealed_root / MANIFEST_REL
         if not sealed_manifest.is_file():
@@ -676,11 +720,16 @@ def _verify_v3_release_snapshot(compact, data):
         if hashlib.sha256(sealed_manifest.read_bytes()).hexdigest() != manifest_sha:
             return ["PUBLISHED_SEAL_MANIFEST_SHA256_MISMATCH"]
 
-        return compact["verify_record"](
+        errors = compact["verify_record"](
             sealed_root,
             MANIFEST_REL.as_posix(),
             data,
         )
+        if _git_resolve_commit("HEAD") == peeled:
+            errors += snapshot.compare_physical(REPO, sealed_root)
+        else:
+            errors += snapshot.postpublication_errors(REPO, sealed_root, published)
+        return errors
 
 
 def check_manifest():
@@ -1552,6 +1601,17 @@ def check_repository_immutability() -> tuple[bool, list[str]]:
     return True, []
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--development", action="store_true")
+    parser.add_argument("--candidate", action="store_true")
+    parser.add_argument("--allowed-signers", type=Path, default=os.environ.get("ELPIS_ALLOWED_SIGNERS"))
+    parser.add_argument("--require-origin", action="store_true")
+    for flag in ("print-manifest", "emit-allowlist", "verify-candidate-repository-identity", "verify-repository-identity"):
+        parser.add_argument("--" + flag, action="store_true")
+    args = parser.parse_args()
+    if (args.development and args.candidate) or (args.development and args.require_origin):
+        parser.error("development checks do not verify release origin")
+    development = "--development" in sys.argv
     if "--print-manifest" in sys.argv:
         print(MANIFEST_REL.as_posix())
         return 0
@@ -1591,7 +1651,7 @@ def main() -> int:
             print(f"  -> {error}")
         return 0 if ok else 1
     checks = (
-        ("Elpis2 manifest", check_manifest),
+        *((("Elpis2 manifest", check_manifest),) if not development else ()),
         ("Package identity", check_package),
         ("Repository identity", check_repository_identity),
         ("Declared-text version", check_declared_text_version),
@@ -1602,6 +1662,19 @@ def main() -> int:
     )
 
     passed = True
+
+    if not development and not args.candidate and (args.require_origin or args.allowed_signers or tuple(map(int, RELEASE_VERSION.split('.'))) >= (2, 2, 31)):
+        try:
+            try:
+                from tools.release_origin import verify_tag
+            except ImportError:
+                from release_origin import verify_tag
+            tag = "Elpis" + RELEASE_VERSION
+            verify_tag(REPO, _git_resolve_tag_object("refs/tags/" + tag) or "",
+                       _git_resolve_commit("refs/tags/" + tag) or "", tag, args.allowed_signers)
+        except (OSError, ValueError) as exc:
+            print("[FAIL] Release origin: " + str(exc))
+            passed = False
 
     for name, fn in checks:
         if name == "Repository identity" and not (REPO / ".git").exists():
@@ -1619,6 +1692,12 @@ def main() -> int:
             print(f"  -> {error}")
 
     if passed:
+        if development:
+            print(f"PASS: Elpis{RELEASE_VERSION} development checks; no release-snapshot or origin claim")
+            return 0
+        if args.candidate:
+            print(f"PASS: Elpis{RELEASE_VERSION} candidate snapshot verified; no publication claim")
+            return 0
         print(
             f"PASS: Elpis{RELEASE_VERSION} public release verified"
         )

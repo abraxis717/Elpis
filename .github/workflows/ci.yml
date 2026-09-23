@@ -11,9 +11,12 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+
 jobs:
   verify:
-    name: Public release verifier
+    name: Checkout verification (development or release snapshot)
     runs-on: ubuntu-latest
     env:
       PYTHONDONTWRITEBYTECODE: '1'
@@ -36,9 +39,13 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.11'
-      - run: pip install pytest==9.0.2
-      - name: Verify lifecycle-aware public release
-        run: python tools/verify_public_release.py
+      - run: python -m pip install --require-hashes --only-binary=:all: -r qualification/locks/test-tools-py311-py312.lock
+      - name: Verify development checkout
+        if: github.event_name != 'release' && !startsWith(github.ref, 'refs/tags/')
+        run: python tools/verify_public_release.py --development
+      - name: Verify exact candidate payload
+        if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/')
+        run: python tools/verify_public_release.py --candidate
       - name: Verify immutable repository evidence and identities
         run: python tools/verify_immutable_evidence.py
       - name: Verify candidate repository identity on main push
@@ -59,6 +66,31 @@ jobs:
           tests/test_release_orchestrator_io.py
           tests/test_release_orchestrator_mutations.py
 
+  release-integrity:
+    name: Signed physical release snapshot
+    if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    environment: release-verification
+    permissions:
+      contents: read
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.release.tag_name || github.ref }}
+          fetch-depth: 0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.11'
+      - name: Verify external signer authority and physical snapshot
+        env:
+          RELEASE_ALLOWED_SIGNERS: ${{ secrets.RELEASE_ALLOWED_SIGNERS }}
+        run: |
+          test -n "$RELEASE_ALLOWED_SIGNERS"
+          printf '%s\n' "$RELEASE_ALLOWED_SIGNERS" > "$RUNNER_TEMP/elpis-allowed-signers"
+          python tools/verify_public_release.py --require-origin --allowed-signers "$RUNNER_TEMP/elpis-allowed-signers"
+
   release-guards:
     name: Release and authority negative branches
     runs-on: ubuntu-latest
@@ -72,7 +104,7 @@ jobs:
         with:
           python-version: '3.11'
       - run: python tools/run_mutation_suite_ci.py
-      - run: python -m pip install pytest
+      - run: python -m pip install --require-hashes --only-binary=:all: -r qualification/locks/test-tools-py311-py312.lock
       - run: python -m pytest -p no:cacheprovider tests/test_runtime_guard_mutations.py tests/test_release_sealer_guards.py tests/test_seal_release_mutations.py
       - run: python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
       - run: python -m pip install .
@@ -311,7 +343,7 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.11'
-      - run: pip install pytest==9.0.2
+      - run: python -m pip install --require-hashes --only-binary=:all: -r qualification/locks/test-tools-py311-py312.lock
       - name: Run secret scanner
         run: python tools/ci_secret_scan.py .
       - name: Run secret scanner tests
@@ -710,7 +742,7 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.11'
-      - run: python -m pip install pytest==9.0.2
+      - run: python -m pip install --require-hashes --only-binary=:all: -r qualification/locks/test-tools-py311-py312.lock
       - name: Run ECS kernel tests
         run: PYTHONPATH=ECS/runtime python -m pytest -q -p no:cacheprovider ECS/tests
       - name: Run ECS deterministic qualification

@@ -15,10 +15,12 @@ permissions: {}
 jobs:
   build:
     name: build tagged distributions
+    environment: release-verification
     runs-on: ubuntu-latest
     permissions:
       contents: read
     env:
+      PYTHONDONTWRITEBYTECODE: '1'
       RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
     steps:
       - name: Check out immutable release tag
@@ -58,6 +60,14 @@ jobs:
           set -euo pipefail
           python tools/verify_public_release.py --verify-repository-identity
 
+      - name: Verify release origin and physical payload
+        env:
+          RELEASE_ALLOWED_SIGNERS: ${{ secrets.RELEASE_ALLOWED_SIGNERS }}
+        run: |
+          test -n "$RELEASE_ALLOWED_SIGNERS"
+          printf '%s\n' "$RELEASE_ALLOWED_SIGNERS" > "$RUNNER_TEMP/elpis-allowed-signers"
+          python tools/verify_public_release.py --require-origin --allowed-signers "$RUNNER_TEMP/elpis-allowed-signers"
+
       - name: Export immutable release tree
         shell: bash
         run: |
@@ -75,7 +85,7 @@ jobs:
         run: |
           set -euo pipefail
           cd "${RUNNER_TEMP}/elpis-release-tree"
-          python tools/verify_public_release.py
+          python tools/verify_public_release.py --candidate
 
       - name: Build distributions from immutable export
         shell: bash

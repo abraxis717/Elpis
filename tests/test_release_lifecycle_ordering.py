@@ -49,25 +49,12 @@ def test_main_push_verification_does_not_require_future_tag() -> None:
     )
     assert guard_at != -1
 
-    # Reference-runtime verifies the immutable tag tree when VERSION's
-    # release tag exists, but must verify the current candidate when that
-    # future tag does not yet exist. This preserves push -> hosted CI -> tag.
+    # Development source is checked in place and cannot borrow a historical
+    # tag's green result. Tag events still verify exact physical payload.
     assert strict not in reference
-    tag_probe = (
-        'if git rev-parse --verify --quiet "${release_tag}^{}" '
-        '>/dev/null; then'
-    )
-    candidate = (
-        "python tools/verify_public_release.py "
-        "--verify-candidate-repository-identity"
-    )
-    assert tag_probe in reference
-    assert 'git worktree add --detach "${release_dir}" "${release_tag}^{}"' in reference
-    assert candidate in reference
-    probe_at = reference.index(tag_probe)
-    else_at = reference.index("          else\n", probe_at)
-    candidate_at = reference.index(candidate, else_at)
-    assert probe_at < else_at < candidate_at
+    assert "python tools/verify_public_release.py --development" in reference
+    assert "git worktree add" not in reference
+    assert "python tools/verify_public_release.py --candidate" in reference
 
 
 def test_ci_explicitly_proves_candidate_identity_on_main_push() -> None:
@@ -173,6 +160,7 @@ def test_every_repository_verifier_workflow_job_fetches_full_git_history() -> No
             )
 
     assert sorted(proof_jobs) == [
+        ("ci.yml", "release-integrity"),
         ("ci.yml", "verify"),
         ("pypi-publish.yaml", "build"),
         ("reference-runtime.yml", "reference-runtime-smoke"),
