@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+import tomllib
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOWS = ROOT / ".github/workflows"
@@ -45,3 +46,13 @@ def test_native_numerical_stack_is_directly_pinned():
     assert "pytest==9.0.2" in text
     assert "numpy==1.26.4" in text
     assert "scipy==1.17.1" in text
+
+
+def test_release_build_toolchain_is_exactly_pinned():
+    text = (WORKFLOWS / "pypi-publish.yaml").read_text(encoding="utf-8")
+    assert "build==1.6.1" in text
+    assert "twine==7.0.0" in text
+    assert "pip install --upgrade build twine" not in text
+
+    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    assert pyproject["build-system"]["requires"] == ["setuptools==84.0.0"]

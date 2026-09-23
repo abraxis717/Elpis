@@ -59,3 +59,13 @@ No Elpis2.2.29 manifest, tag, GitHub Release, or PyPI publication is created by 
 - Preserve digest identity across bytes, bytearray, memoryview and chunk boundaries; no `raw-bytes.r1`/V3 migration is performed.
 - Keep the non-contiguous memoryview compatibility path identity-preserving while production contiguous page buffers use bounded 64 KiB hex intermediates.
 - Add telemetry classification and streaming-identity regressions to the exact executed native/R3 authority.
+
+
+## One-shot terminal release and supply-chain hardening milestone R4
+
+- Qualify the committed development successor before sealing and re-run the complete suite against the exact sealed commit.
+- Replace the source-tree-only installed-artifact check with a real wheel build, isolated target install, installed-path/version smoke, and packaging contract tests.
+- Serialize the entire outer release lifecycle with a common-Git-dir lock and hash-chained mutation journal.
+- Reconcile exact repository/remote reality after crashes around seal, publication-assertion, ratification, and final-main mutations rather than blindly replaying them.
+- Use the canonical repository URL and CAS lease for terminal main publication, and reuse the lower boundary's bounded paginated workflow census for closeout.
+- Pin the release build backend to setuptools 84.0.0 and PyPI build/check tooling to build 1.6.1 and twine 7.0.0.

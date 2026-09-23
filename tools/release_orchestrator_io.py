@@ -12,7 +12,7 @@ from pathlib import Path
 
 try:
     from tools import release_orchestrator as machine
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
     import release_orchestrator as machine
 
 require = machine.require

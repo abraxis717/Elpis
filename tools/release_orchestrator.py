@@ -17,7 +17,7 @@ from typing import Any, Protocol
 
 try:
     from tools import publication_assertions_v2 as publication
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
     import publication_assertions_v2 as publication
 
 SCHEMA = 'elpis.release-orchestrator.intent.v1'
@@ -382,7 +382,7 @@ def main(argv: list[str] | None = None) -> int:
         require(args.qualification is not None, 'QUALIFICATION_REPORT_REQUIRED')
         try:
             from tools.release_orchestrator_io import LiveBoundary
-        except ModuleNotFoundError:
+        except (ModuleNotFoundError, ImportError):
             from release_orchestrator_io import LiveBoundary
         boundary = LiveBoundary(args.root.resolve(), args.qualification.resolve(), execute=True)
         private = boundary.private_directory()
