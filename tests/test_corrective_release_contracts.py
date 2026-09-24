@@ -165,7 +165,7 @@ def test_origin_malformed_signers(tmp_path, data):
         origin.verify_tag(root, "a" * 40, "b" * 40, "Elpis2.2.31", path)
 
 
-@pytest.mark.parametrize("attack", ["unsigned", "target", "name", "modified-signature", "invalid-signer", "pgp-confusion", "valid-boundary"])
+@pytest.mark.parametrize("attack", ["unsigned", "target", "name", "modified-signature", "invalid-signer", "pgp-confusion", "pgp-message-confusion", "x509-confusion", "valid-boundary"])
 def test_origin_verifier_process_contract(tmp_path, monkeypatch, attack):
     # Synthetic PUBLIC key bytes and injected Git results test argument binding;
     # this is explicitly not a cryptographic positive-control fixture.
@@ -179,9 +179,14 @@ def test_origin_verifier_process_contract(tmp_path, monkeypatch, attack):
     tag = "Elpis2.2.31"
     payload = f"object {target if attack != 'target' else 'c' * 40}\ntype commit\ntag {tag if attack != 'name' else 'Other'}\ntagger Test <test@example.invalid> 1 +0000\n\nmessage\n".encode()
     if attack != "unsigned":
-        payload += b"-----BEGIN SSH SIGNATURE-----\ninvalid-test-only\n-----END SSH SIGNATURE-----\n"
-    if attack == "pgp-confusion":
-        payload += b"-----BEGIN PGP SIGNATURE-----\n"
+        encoded = base64.b64encode(b"SSHSIG\x00invalid-test-only")
+        if attack == "pgp-confusion":
+            encoded = b"-----BEGIN PGP SIGNATURE-----"
+        elif attack == "pgp-message-confusion":
+            encoded = b"-----BEGIN PGP MESSAGE-----"
+        elif attack == "x509-confusion":
+            encoded = b"-----BEGIN SIGNED MESSAGE-----"
+        payload += b"-----BEGIN SSH SIGNATURE-----\n" + encoded + b"\n-----END SSH SIGNATURE-----\n"
     def run(argv, **kwargs):
         calls.append(argv)
         if "verify-tag" in argv:

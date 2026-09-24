@@ -50,7 +50,9 @@ The trusted operator must provision an allowed-signers file outside the checkout
 and outside repository control. The current profile accepts explicit principals
 and Ed25519 public keys, one `principal ssh-ed25519 base64-public-key` per line.
 It rejects empty data, wildcard principals, unsupported key types and options.
-Git verifies the exact object, direct commit target and embedded tag name using
+Strict base64 SSH armor and its SSHSIG magic prevent alternate signature markers
+from selecting a repository-configured OpenPGP/X509 verifier. Existing revocation
+configuration is not cleared. Git verifies the exact object, direct commit target and embedded tag name using
 `git verify-tag`, the external file, and the SSH verifier explicitly selected by
 the tool. No private key is generated, stored or required by verification.
 

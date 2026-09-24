@@ -55,13 +55,24 @@ def verify_tag(root: Path, oid: str, target: str, tag: str, allowed_signers: Pat
             or not payload.endswith(b"-----END SSH SIGNATURE-----\n")
             or b"-----BEGIN PGP SIGNATURE-----" in payload):
         raise ValueError("ORIGIN_SSH_SIGNATURE_REQUIRED")
+    # Git selects the verifier from the last recognized BEGIN marker, rather
+    # than gpg.format. Strict SSH armor prevents an embedded OpenPGP/X509 marker
+    # from routing verification to a repository-configured alternative program.
+    armor = payload.split(b"-----BEGIN SSH SIGNATURE-----\n", 1)[1]
+    encoded = armor.removesuffix(b"-----END SSH SIGNATURE-----\n").replace(b"\n", b"")
+    try:
+        signature = base64.b64decode(encoded, validate=True)
+    except ValueError as exc:
+        raise ValueError("ORIGIN_SSH_ARMOR_INVALID") from exc
+    if not signature.startswith(b"SSHSIG"):
+        raise ValueError("ORIGIN_SSH_ARMOR_INVALID")
     program = shutil.which("ssh-keygen")
     if not program:
         raise ValueError("ORIGIN_SSH_KEYGEN_UNAVAILABLE")
     git("-c", "gpg.format=ssh", "-c", "gpg.ssh.program=" + program,
         "-c", "gpg.minTrustLevel=fully",
         "-c", "gpg.ssh.allowedSignersFile=" + str(authority),
-        "-c", "gpg.ssh.revocationFile=", "verify-tag", oid)
+        "verify-tag", oid)
     if authority.read_bytes() != raw:
         raise ValueError("ORIGIN_TRUST_ROOT_CHANGED")
     return {"tag_object": oid, "allowed_signers_sha256": hashlib.sha256(raw).hexdigest(),
