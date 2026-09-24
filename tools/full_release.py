@@ -84,7 +84,7 @@ def run(root: Path, argv: list[str], *, env: dict[str, str] | None = None) -> su
 
 def git_raw(root: Path, *args: str) -> str:
     """Git machine output, including significant leading spaces and NULs."""
-    proc = run(root, ["git", *args])
+    proc = run(root, ["git", "--no-replace-objects", *args], env=base_env())
     require(proc.returncode == 0, "GIT_NONPASS:" + " ".join(args) + ":" + (proc.stdout or "")[-3000:])
     return proc.stdout or ""
 
@@ -262,7 +262,63 @@ def remote_url() -> str:
     return f"https://github.com/{REPOSITORY}.git"
 
 
+
+def require_no_local_url_rewrite(root: Path) -> None:
+    proc = run(
+        root,
+        [
+            "git", "--no-replace-objects",
+            "config", "--local", "--get-regexp",
+            r"^url\..*\.(insteadOf|pushInsteadOf)$",
+        ],
+        env=base_env(),
+    )
+    require(
+        proc.returncode in {0, 1},
+        "LOCAL_GIT_CONFIG_OBSERVATION_FAILED",
+    )
+    require(
+        proc.returncode == 1 or not (proc.stdout or "").strip(),
+        "LOCAL_GIT_URL_REWRITE_FORBIDDEN",
+    )
+
+
+def committed_path_bytes(root: Path, commit: str, path: str) -> bytes:
+    proc = subprocess.run(
+        [
+            "git", "--no-replace-objects",
+            "-c", "core.hooksPath=/dev/null",
+            "-C", str(root),
+            "show", f"{commit}:{path}",
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env=base_env(),
+        check=False,
+    )
+    require(
+        proc.returncode == 0,
+        "COMMITTED_AUTHORITY_UNAVAILABLE:"
+        + path
+        + ":"
+        + proc.stderr.decode("utf-8", "replace")[-1000:],
+    )
+    return proc.stdout
+
+
+def authority_commit(root: Path, message: str):
+    return run(
+        root,
+        [
+            "git", "--no-replace-objects",
+            "-c", "core.hooksPath=/dev/null",
+            "commit", "-m", message,
+        ],
+        env=base_env(),
+    )
+
 def remote_main(root: Path) -> str:
+    require_no_local_url_rewrite(root)
     out = git(root, "ls-remote", remote_url(), "refs/heads/main")
     rows = [line.split() for line in out.splitlines() if line.strip()]
     require(len(rows) == 1, "REMOTE_MAIN_CARDINALITY")
@@ -270,9 +326,8 @@ def remote_main(root: Path) -> str:
 
 
 def base_env() -> dict[str, str]:
-    env = dict(os.environ)
+    env = orchestrator_io.sealed_subprocess_env()
     env.pop("PYTHONPATH", None)
-    env["PYTHONDONTWRITEBYTECODE"] = "1"
     return env
 
 
@@ -366,23 +421,67 @@ def installed_artifact_check(
         snapshot.extract_git_archive(stream, source)
     archive.unlink()
 
+    source_date_epoch = git(
+        root,
+        "show",
+        "-s",
+        "--format=%ct",
+        "HEAD",
+    )
+    require(
+        source_date_epoch.isdigit(),
+        "ARTIFACT_SOURCE_DATE_EPOCH_INVALID",
+    )
+
+    build_env = dict(env)
+    build_env["SOURCE_DATE_EPOCH"] = source_date_epoch
+
     build_argv = [
-        sys.executable, "-m", "pip", "wheel", ".", "--no-deps",
-        "--no-build-isolation",
-        "--wheel-dir", str(dist),
+        sys.executable,
+        "-m",
+        "build",
+        "--no-isolation",
+        "--outdir",
+        str(dist),
     ]
-    proc = run(source, build_argv, env=env)
+    proc = run(source, build_argv, env=build_env)
     chunks.append(proc.stdout or "")
-    require(proc.returncode == 0, "ARTIFACT_WHEEL_BUILD_NONPASS:" + (proc.stdout or "")[-5000:])
+    require(
+        proc.returncode == 0,
+        "ARTIFACT_DISTRIBUTION_BUILD_NONPASS:"
+        + (proc.stdout or "")[-5000:],
+    )
+
     wheels = sorted(dist.glob(f"elpisai-{version}-*.whl"))
+    sdists = sorted(dist.glob(f"elpisai-{version}.tar.gz"))
+
     require(len(wheels) == 1, "ARTIFACT_WHEEL_CARDINALITY")
+    require(len(sdists) == 1, "ARTIFACT_SDIST_CARDINALITY")
+
     wheel = wheels[0]
+    sdist = sdists[0]
+
+    artifacts = sorted(
+        [
+            {
+                "filename": wheel.name,
+                "packagetype": "bdist_wheel",
+                "sha256": sha256_bytes(wheel.read_bytes()),
+            },
+            {
+                "filename": sdist.name,
+                "packagetype": "sdist",
+                "sha256": sha256_bytes(sdist.read_bytes()),
+            },
+        ],
+        key=lambda item: item["filename"],
+    )
 
     install_argv = [
         sys.executable, "-m", "pip", "install", "--no-deps",
         "--target", str(target), str(wheel),
     ]
-    proc = run(root, install_argv, env=env)
+    proc = run(root, install_argv, env=build_env)
     chunks.append(proc.stdout or "")
     require(proc.returncode == 0, "ARTIFACT_WHEEL_INSTALL_NONPASS:" + (proc.stdout or "")[-5000:])
 
@@ -412,9 +511,13 @@ def installed_artifact_check(
     raw = "".join(chunks).encode()
     (private / "installed_artifact.log").write_bytes(raw)
     return {
-        "argv": ["BUILD_INSTALL_WHEEL_AND_CONTRACT_TESTS", *INSTALLED_ARTIFACT_TESTS],
+        "argv": [
+            "BUILD_SDIST_WHEEL_INSTALL_AND_CONTRACT_TESTS",
+            *INSTALLED_ARTIFACT_TESTS,
+        ],
         "exit_code": 0,
         "output_sha256": sha256_bytes(raw),
+        "artifacts": artifacts,
     }
 
 
@@ -531,12 +634,27 @@ def validate_resume_head(root: Path, state: dict, journal: OuterJournal) -> None
             require(not stored, "RESUME_COMMIT_WITHOUT_JOURNAL:" + stage)
             break
         require(state.get("orchestrator_closed") is True, "RESUME_CLOSEOUT_BEFORE_ORCHESTRATOR")
-        require(events[0]["kind"] == "intent" and events[0]["data"] == {"parent": expected, "path": path},
-                "RESUME_INTENT_CONFLICT:" + stage)
+        intent_event = events[0]
+        require(intent_event["kind"] == "intent", "RESUME_INTENT_MISSING:" + stage)
+        intent_data = intent_event["data"]
+        require(
+            isinstance(intent_data, dict)
+            and set(intent_data) == {"parent", "path", "sha256"}
+            and intent_data["parent"] == expected
+            and intent_data["path"] == path
+            and bool(publication.SHA256_RE.fullmatch(intent_data["sha256"])),
+            "RESUME_INTENT_CONFLICT:" + stage,
+        )
         completed = next((e["data"].get("commit") for e in reversed(events) if e["kind"] == "complete"), None)
         if stored:
             require(stored == completed, "RESUME_STATE_JOURNAL_CONFLICT:" + stage)
         observed = completed or stored
+        if observed is not None:
+            require(
+                sha256_bytes(committed_path_bytes(root, observed, path))
+                == intent_data["sha256"],
+                "RESUME_COMMITTED_AUTHORITY_BYTES_NONPASS:" + stage,
+            )
         if observed is None and head != expected:
             observed = head
         if observed is None:
@@ -723,6 +841,21 @@ def ensure_closeout_commits(
                 or (active is not None and active["stage"] == "assertion_commit"),
                 "ASSERTION_COMMIT_EXISTS_WITHOUT_JOURNAL_INTENT",
             )
+            intent_events = [
+                e for e in journal.data["events"]
+                if e["stage"] == "assertion_commit" and e["kind"] == "intent"
+            ]
+            require(len(intent_events) == 1, "ASSERTION_RECOVERY_INTENT_CARDINALITY")
+            expected_sha256 = intent_events[0]["data"].get("sha256")
+            require(
+                bool(publication.SHA256_RE.fullmatch(expected_sha256 or ""))
+                and sha256_bytes(
+                    committed_path_bytes(
+                        root, head, "PUBLICATION_ASSERTIONS.json"
+                    )
+                ) == expected_sha256,
+                "ASSERTION_RECOVERY_BYTES_NONPASS",
+            )
             journal.complete("assertion_commit", {"commit": head})
             state["assertion_commit"] = head
             atomic_json(state_path, state)
@@ -735,14 +868,32 @@ def ensure_closeout_commits(
                 ),
                 "ASSERTION_COMMIT_SCOPE_NONPASS:" + status,
             )
-            journal.begin("assertion_commit", {"parent": candidate, "path": "PUBLICATION_ASSERTIONS.json"})
+            assertion_path = root / "PUBLICATION_ASSERTIONS.json"
+            expected_assertion_raw = assertion_path.read_bytes()
+            expected_assertion_sha256 = sha256_bytes(expected_assertion_raw)
+            journal.begin(
+                "assertion_commit",
+                {
+                    "parent": candidate,
+                    "path": "PUBLICATION_ASSERTIONS.json",
+                    "sha256": expected_assertion_sha256,
+                },
+            )
             git(root, "add", "PUBLICATION_ASSERTIONS.json")
-            proc = run(root, ["git", "commit", "-m", f"release: record Elpis{state['version']} publication assertion"])
+            proc = authority_commit(
+                root,
+                f"release: record Elpis{state['version']} publication assertion",
+            )
             require(proc.returncode == 0, "ASSERTION_COMMIT_NONPASS:" + (proc.stdout or "")[-3000:])
             commit = git(root, "rev-parse", "HEAD")
             journal.returned("assertion_commit", {"commit": commit})
             require(git(root, "rev-parse", f"{commit}^") == candidate, "ASSERTION_COMMIT_PARENT_NONPASS")
             require(commit_paths(root, commit) == ["PUBLICATION_ASSERTIONS.json"], "ASSERTION_COMMIT_SCOPE_POSTCHECK_NONPASS")
+            require(
+                committed_path_bytes(root, commit, "PUBLICATION_ASSERTIONS.json")
+                == expected_assertion_raw,
+                "ASSERTION_COMMIT_BYTES_NONPASS",
+            )
             journal.complete("assertion_commit", {"commit": commit})
             state["assertion_commit"] = commit
             atomic_json(state_path, state)
@@ -755,11 +906,12 @@ def ensure_closeout_commits(
         if head != assertion_commit:
             require(git(root, "rev-parse", f"{head}^") == assertion_commit, "RATIFICATION_RECOVERY_PARENT_NONPASS")
             require(commit_paths(root, head) == [path.relative_to(root).as_posix()], "RATIFICATION_RECOVERY_SCOPE_NONPASS")
-            raw = subprocess.run(
-                ["git", "show", f"{head}:{path.relative_to(root).as_posix()}"],
-                cwd=root, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            require(
+                committed_path_bytes(
+                    root, head, path.relative_to(root).as_posix()
+                ) == expected_raw,
+                "RATIFICATION_RECOVERY_BYTES_NONPASS",
             )
-            require(raw.returncode == 0 and raw.stdout == expected_raw, "RATIFICATION_RECOVERY_BYTES_NONPASS")
             active = journal.active()
             require(
                 journal.completed("ratification_commit")
@@ -778,21 +930,39 @@ def ensure_closeout_commits(
                     "RATIFICATION_EXISTS_WITHOUT_JOURNAL_INTENT",
                 )
                 require(path.read_bytes() == expected_raw, "RATIFICATION_EXISTING_BYTES_NONPASS")
+                active = journal.active()
+                require(
+                    active["data"].get("sha256") == sha256_bytes(expected_raw),
+                    "RATIFICATION_INTENT_BYTES_NONPASS",
+                )
             else:
                 require(not status, "WORKTREE_NOT_CLEAN_BEFORE_RATIFICATION:" + status)
                 journal.begin(
                     "ratification_commit",
-                    {"parent": assertion_commit, "path": path.relative_to(root).as_posix()},
+                    {
+                        "parent": assertion_commit,
+                        "path": path.relative_to(root).as_posix(),
+                        "sha256": sha256_bytes(expected_raw),
+                    },
                 )
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_bytes(expected_raw)
             git(root, "add", path.relative_to(root).as_posix())
-            proc = run(root, ["git", "commit", "-m", f"release: ratify Elpis{state['version']} postpublication closeout"])
+            proc = authority_commit(
+                root,
+                f"release: ratify Elpis{state['version']} postpublication closeout",
+            )
             require(proc.returncode == 0, "RATIFICATION_COMMIT_NONPASS:" + (proc.stdout or "")[-3000:])
             commit = git(root, "rev-parse", "HEAD")
             journal.returned("ratification_commit", {"commit": commit})
             require(git(root, "rev-parse", f"{commit}^") == assertion_commit, "RATIFICATION_COMMIT_PARENT_NONPASS")
             require(commit_paths(root, commit) == [path.relative_to(root).as_posix()], "RATIFICATION_COMMIT_SCOPE_POSTCHECK_NONPASS")
+            require(
+                committed_path_bytes(
+                    root, commit, path.relative_to(root).as_posix()
+                ) == expected_raw,
+                "RATIFICATION_COMMIT_BYTES_NONPASS",
+            )
             journal.complete("ratification_commit", {"commit": commit})
             state["ratification_commit"] = commit
             atomic_json(state_path, state)
@@ -841,17 +1011,28 @@ def ensure_final_push(
 
     journal.begin("final_main_push", {"expected_remote": candidate, "target": head})
     if remote == candidate:
+        require_no_local_url_rewrite(root)
         require(
-            run(root, ["git", "merge-base", "--is-ancestor", candidate, head]).returncode == 0,
+            run(
+                root,
+                [
+                    "git", "--no-replace-objects",
+                    "merge-base", "--is-ancestor", candidate, head,
+                ],
+                env=base_env(),
+            ).returncode == 0,
             "RATIFICATION_NOT_DESCENDANT_OF_SEAL",
         )
         proc = run(
             root,
             [
-                "git", "push", "--porcelain", "--no-follow-tags",
+                "git", "--no-replace-objects",
+                "-c", "core.hooksPath=/dev/null",
+                "push", "--porcelain", "--no-follow-tags",
                 f"--force-with-lease=refs/heads/main:{candidate}",
                 remote_url(), f"{head}:refs/heads/main",
             ],
+            env=base_env(),
         )
         require(proc.returncode == 0, "FINAL_MAIN_PUSH_NONPASS:" + (proc.stdout or "")[-3000:])
         journal.returned("final_main_push", {"push_returncode": 0, "target": head})

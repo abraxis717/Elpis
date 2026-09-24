@@ -38,7 +38,9 @@ def test_full_release_terminal_state_is_git_private():
 def test_full_release_uses_real_installed_wheel_qualification():
     source = TOOL.read_text(encoding="utf-8")
     assert "installed_artifact_check" in source
-    assert '"wheel", ".", "--no-deps"' in source
+    assert '"build",' in source
+    assert '"--no-isolation",' in source
+    assert '"artifacts": artifacts' in source
     assert '"pip", "install", "--no-deps"' in source
     assert "INSTALLED_ARTIFACT_IMPORT_PASS" in source
     for key in ("root_tests", "release_lifecycle", "negative_mutations", "installed_artifact", "native"):
@@ -154,6 +156,7 @@ def test_installed_artifact_build_is_exported_from_git_tree():
     ]
     assert '"git", "archive", "--format=tar"' in block
     assert "snapshot.extract_git_archive" in block
-    assert '"--no-build-isolation"' in block
-    assert "proc = run(source, build_argv, env=env)" in block
+    assert '"--no-isolation"' in block
+    assert '"SOURCE_DATE_EPOCH"' in block
+    assert "proc = run(source, build_argv, env=build_env)" in block
     assert "proc = run(root, build_argv, env=env)" not in block

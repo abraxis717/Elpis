@@ -67,7 +67,7 @@ def test_build_input_is_immutable_git_archive_not_mutable_checkout():
 
     assert text.count("python -m build") == 1
     assert (
-        'python -m build --outdir '
+        'python -m build --no-isolation --outdir '
         '"${RUNNER_TEMP}/python-package-distributions"'
     ) in text
 

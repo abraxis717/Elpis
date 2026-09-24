@@ -121,9 +121,23 @@ def _pretty_bytes(value: Any) -> bytes:
     return (json.dumps(value, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
 
 
+def _reject_duplicate_object_pairs(pairs):
+    value = {}
+    for key, item in pairs:
+        if key in value:
+            raise PublicationAuthorityError(f"DUPLICATE_JSON_KEY:{key}")
+        value[key] = item
+    return value
+
+
 def _load_json_bytes(data: bytes, *, label: str) -> Any:
     try:
-        return json.loads(data.decode("utf-8"))
+        return json.loads(
+            data.decode("utf-8"),
+            object_pairs_hook=_reject_duplicate_object_pairs,
+        )
+    except PublicationAuthorityError:
+        raise
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise PublicationAuthorityError(f"INVALID_JSON:{label}:{exc}") from exc
 
@@ -385,7 +399,8 @@ def load_registry(root: Path, *, allow_missing: bool = False) -> dict[str, Any]:
         if allow_missing:
             return empty_registry(root)
         raise PublicationAuthorityError(f"PUBLICATION_ASSERTIONS_MISSING:{REGISTRY_NAME}")
-    payload = _load_json_bytes(_read_bytes(path), label=REGISTRY_NAME)
+    raw = _read_bytes(path)
+    payload = _load_json_bytes(raw, label=REGISTRY_NAME)
     if not isinstance(payload, dict):
         raise PublicationAuthorityError("PUBLICATION_ASSERTIONS_NOT_OBJECT")
     return payload

@@ -1609,22 +1609,48 @@ def main() -> int:
     for flag in ("print-manifest", "emit-allowlist", "verify-candidate-repository-identity", "verify-repository-identity"):
         parser.add_argument("--" + flag, action="store_true")
     args = parser.parse_args()
-    if ((args.development and args.candidate)
-            or (args.require_origin and (args.development or args.candidate
-                or args.verify_candidate_repository_identity or args.verify_repository_identity
-                or args.print_manifest or args.emit_allowlist))):
-        parser.error("development checks do not verify release origin")
-    development = "--development" in sys.argv
-    if "--print-manifest" in sys.argv:
+
+    auxiliary_modes = (
+        args.print_manifest,
+        args.emit_allowlist,
+        args.verify_candidate_repository_identity,
+        args.verify_repository_identity,
+    )
+
+    if args.development and args.candidate:
+        parser.error("development and candidate modes are mutually exclusive")
+
+    if sum(bool(mode) for mode in auxiliary_modes) > 1:
+        parser.error("identity/output-only modes are mutually exclusive")
+
+    if (args.development or args.candidate) and any(auxiliary_modes):
+        parser.error(
+            "semantic verification modes cannot be combined with "
+            "identity/output-only modes"
+        )
+
+    if args.require_origin and (
+        args.development
+        or args.candidate
+        or any(auxiliary_modes)
+    ):
+        parser.error("origin verification cannot be combined with another mode")
+
+    development = args.development
+
+    if args.print_manifest:
         print(MANIFEST_REL.as_posix())
         return 0
-    if "--emit-allowlist" in sys.argv:
-        print(json.dumps(emitted_allowlist(), indent=2) )
+
+    if args.emit_allowlist:
+        print(json.dumps(emitted_allowlist(), indent=2))
         return 0
-    identity_flags = {
-        "--verify-candidate-repository-identity",
-        "--verify-repository-identity",
-    } & set(sys.argv[1:])
+
+    identity_flags = set()
+    if args.verify_candidate_repository_identity:
+        identity_flags.add("--verify-candidate-repository-identity")
+    if args.verify_repository_identity:
+        identity_flags.add("--verify-repository-identity")
     if len(identity_flags) > 1:
         print("[FAIL] Repository identity")
         print("  -> REPOSITORY_IDENTITY_MODE_CONFLICT")

@@ -57,12 +57,20 @@ def test_restart_head_at_every_local_commit_boundary(tmp_path, stage, boundary):
     stages = [("assertion_commit", "PUBLICATION_ASSERTIONS.json"),
               ("ratification_commit", "RELEASE_RATIFICATIONS/Elpis2.2.31.json")]
     for current, path in stages:
-        journal.begin(current, {"parent": git(root, "rev-parse", "HEAD"), "path": path})
+        payload = b"{}\n"
+        journal.begin(
+            current,
+            {
+                "parent": git(root, "rev-parse", "HEAD"),
+                "path": path,
+                "sha256": hashlib.sha256(payload).hexdigest(),
+            },
+        )
         if current == stage and boundary == "intent":
             break
         p = root / path
         p.parent.mkdir(exist_ok=True)
-        p.write_text("{}\n")
+        p.write_bytes(payload)
         git(root, "add", path)
         git(root, "commit", "-qm", current)
         oid = git(root, "rev-parse", "HEAD")

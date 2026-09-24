@@ -71,11 +71,43 @@ def postpublication_errors(live: Path, sealed: Path, published: dict) -> list[st
     """Only one append and the current ratification may differ from the seal."""
     try:
         registry = "PUBLICATION_ASSERTIONS.json"
-        old = json.loads((sealed / registry).read_bytes())
-        new = json.loads((live / registry).read_bytes())
-        expected = dict(old, publication_assertions=old["publication_assertions"] + [published])
-        if new != expected:
+
+        def strict_json(raw: bytes, label: str):
+            def reject_duplicates(pairs):
+                value = {}
+                for key, item in pairs:
+                    if key in value:
+                        raise ValueError("DUPLICATE_JSON_KEY:" + key)
+                    value[key] = item
+                return value
+
+            return json.loads(
+                raw.decode("utf-8"),
+                object_pairs_hook=reject_duplicates,
+            )
+
+        old_raw = (sealed / registry).read_bytes()
+        new_raw = (live / registry).read_bytes()
+        old = strict_json(old_raw, registry)
+        new = strict_json(new_raw, registry)
+
+        old_canonical = (
+            json.dumps(old, indent=2, ensure_ascii=False) + "\n"
+        ).encode("utf-8")
+        if old_raw != old_canonical:
+            return ["SNAPSHOT_SEALED_ASSERTION_NONCANONICAL"]
+
+        expected = dict(
+            old,
+            publication_assertions=old["publication_assertions"] + [published],
+        )
+        expected_raw = (
+            json.dumps(expected, indent=2, ensure_ascii=False) + "\n"
+        ).encode("utf-8")
+
+        if new_raw != expected_raw:
             return ["SNAPSHOT_ASSERTION_DELTA_INVALID"]
+
         ratification = f"RELEASE_RATIFICATIONS/{published['release_tag']}.json"
         tracked = subprocess.run(["git", "--no-replace-objects", "-C", str(live),
                                   "ls-tree", "-z", "HEAD", "--", ratification], capture_output=True)
@@ -92,8 +124,25 @@ def postpublication_errors(live: Path, sealed: Path, published: dict) -> list[st
         }
         # The assertion-only closeout stage is also a valid snapshot. If a
         # ratification exists it must be the exact authority, never arbitrary data.
-        if (live / ratification).exists() and json.loads((live / ratification).read_bytes()) != record:
-            return ["SNAPSHOT_RATIFICATION_INVALID"]
+        if (live / ratification).exists():
+            ratification_raw = (live / ratification).read_bytes()
+            ratification_value = strict_json(
+                ratification_raw,
+                ratification,
+            )
+            expected_ratification_raw = (
+                json.dumps(
+                    record,
+                    indent=2,
+                    sort_keys=True,
+                )
+                + "\n"
+            ).encode("utf-8")
+            if (
+                ratification_value != record
+                or ratification_raw != expected_ratification_raw
+            ):
+                return ["SNAPSHOT_RATIFICATION_INVALID"]
         for path in (registry, ratification):
             if (live / path).is_symlink():
                 return ["SNAPSHOT_AUTHORITY_SYMLINK:" + path]

@@ -11,7 +11,51 @@ import os
 from pathlib import Path
 import re
 import shutil
+import stat
 import subprocess
+
+
+def _validate_trust_root_storage(root: Path, authority: Path) -> tuple[int, int, int, int]:
+    root = root.resolve()
+    authority = authority.resolve(strict=True)
+
+    info = authority.stat()
+
+    if not stat.S_ISREG(info.st_mode):
+        raise ValueError("ORIGIN_TRUST_ROOT_NOT_REGULAR_FILE")
+
+    if info.st_uid != os.geteuid():
+        raise ValueError("ORIGIN_TRUST_ROOT_OWNER_UNSAFE")
+
+    if info.st_mode & (stat.S_IWGRP | stat.S_IWOTH):
+        raise ValueError("ORIGIN_TRUST_ROOT_MODE_UNSAFE")
+
+    identity = (info.st_dev, info.st_ino)
+
+    # Path-external is insufficient: a hardlink outside the repository can
+    # alias repository-controlled storage. Reject any same-inode regular file
+    # anywhere inside the repository tree, including .git.
+    for directory, _directories, filenames in os.walk(root, followlinks=False):
+        base = Path(directory)
+        for filename in filenames:
+            candidate = base / filename
+            try:
+                candidate_info = candidate.stat(follow_symlinks=False)
+            except FileNotFoundError:
+                continue
+
+            if (
+                stat.S_ISREG(candidate_info.st_mode)
+                and (candidate_info.st_dev, candidate_info.st_ino) == identity
+            ):
+                raise ValueError("ORIGIN_TRUST_ROOT_IN_REPOSITORY_STORAGE")
+
+    return (
+        info.st_dev,
+        info.st_ino,
+        info.st_mode,
+        info.st_uid,
+    )
 
 
 def verify_tag(root: Path, oid: str, target: str, tag: str, allowed_signers: Path | None) -> dict:
@@ -20,6 +64,8 @@ def verify_tag(root: Path, oid: str, target: str, tag: str, allowed_signers: Pat
     authority = Path(allowed_signers).resolve(strict=True)
     if authority.is_relative_to(root.resolve()):
         raise ValueError("ORIGIN_TRUST_ROOT_IN_REPOSITORY")
+
+    authority_identity = _validate_trust_root_storage(root, authority)
     raw = authority.read_bytes()
     # Deliberately narrow v1 profile. No wildcard principals or options that
     # could silently broaden namespaces. Git verifies namespace 'git'.
@@ -74,6 +120,8 @@ def verify_tag(root: Path, oid: str, target: str, tag: str, allowed_signers: Pat
         "-c", "gpg.ssh.allowedSignersFile=" + str(authority),
         "verify-tag", oid)
     if authority.read_bytes() != raw:
+        raise ValueError("ORIGIN_TRUST_ROOT_CHANGED")
+    if _validate_trust_root_storage(root, authority) != authority_identity:
         raise ValueError("ORIGIN_TRUST_ROOT_CHANGED")
     return {"tag_object": oid, "allowed_signers_sha256": hashlib.sha256(raw).hexdigest(),
             "signature_format": "ssh-ed25519"}

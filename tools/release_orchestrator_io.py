@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import ssl
 import subprocess
 import sys
 import urllib.error
@@ -19,22 +20,170 @@ require = machine.require
 publication = machine.publication
 
 
+_SEALED_ENV_DROP = frozenset({
+    "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY",
+    "http_proxy", "https_proxy", "all_proxy", "no_proxy",
+    "SSL_CERT_FILE", "SSL_CERT_DIR",
+    "REQUESTS_CA_BUNDLE", "CURL_CA_BUNDLE",
+    "GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE",
+    "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+    "GIT_REPLACE_REF_BASE",
+})
+
+_SYSTEM_CA_FILES = (
+    "/etc/ssl/certs/ca-certificates.crt",
+    "/etc/ssl/cert.pem",
+    "/etc/pki/tls/certs/ca-bundle.crt",
+    "/etc/ssl/ca-bundle.pem",
+)
+
+
+def sealed_subprocess_env():
+    env = dict(os.environ)
+    for key in tuple(env):
+        if key in _SEALED_ENV_DROP or key.startswith("GIT_CONFIG_"):
+            env.pop(key, None)
+
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
+    env["GIT_TERMINAL_PROMPT"] = "0"
+    env["GH_PROMPT_DISABLED"] = "1"
+
+    # Ignore inherited system/global Git configuration. Repository-local
+    # configuration remains visible so it can be explicitly audited.
+    env["GIT_CONFIG_NOSYSTEM"] = "1"
+    env["GIT_CONFIG_SYSTEM"] = os.devnull
+    env["GIT_CONFIG_GLOBAL"] = os.devnull
+    return env
+
+
+def _system_tls_context():
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    context.check_hostname = True
+    context.verify_mode = ssl.CERT_REQUIRED
+
+    for candidate in _SYSTEM_CA_FILES:
+        if Path(candidate).is_file():
+            context.load_verify_locations(cafile=candidate)
+            return context
+
+    raise machine.ReleaseError("SYSTEM_CA_BUNDLE_UNAVAILABLE")
+
+
+def _direct_https_opener():
+    # Explicitly disable environment-derived proxy discovery.
+    return urllib.request.build_opener(
+        urllib.request.ProxyHandler({}),
+        urllib.request.HTTPSHandler(context=_system_tls_context()),
+    )
+
+
 class Runner:
     def command(self, argv: list[str], *, cwd: Path, data: bytes | None = None):
-        env = dict(os.environ, PYTHONDONTWRITEBYTECODE='1', GIT_TERMINAL_PROMPT='0', GH_PROMPT_DISABLED='1')
+        env = sealed_subprocess_env()
         return subprocess.run(argv, cwd=cwd, input=data, stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE, env=env, check=False)
 
     def http_json(self, url: str):
         try:
-            with urllib.request.urlopen(url, timeout=30) as response:
+            with _direct_https_opener().open(url, timeout=30) as response:
                 return json.load(response)
         except urllib.error.HTTPError as exc:
             if exc.code == 404:
                 return None
             raise machine.ReleaseError(f'HTTP_OBSERVATION_FAILED:{exc.code}:{url}') from exc
-        except (OSError, ValueError) as exc:
+        except (OSError, ValueError, ssl.SSLError) as exc:
             raise machine.ReleaseError(f'HTTP_OBSERVATION_FAILED:{url}') from exc
+
+
+def qualified_distribution_artifacts(report, version):
+    checks = report.get("checks")
+    require(
+        isinstance(checks, dict),
+        "QUALIFICATION_CHECKS_INVALID",
+    )
+
+    installed = checks.get("installed_artifact")
+    require(
+        isinstance(installed, dict),
+        "QUALIFICATION_INSTALLED_ARTIFACT_INVALID",
+    )
+
+    artifacts = installed.get("artifacts")
+    require(
+        isinstance(artifacts, list) and len(artifacts) == 2,
+        "QUALIFICATION_DISTRIBUTION_ARTIFACTS_INVALID",
+    )
+
+    normalized = []
+    filenames = set()
+    package_types = set()
+
+    for item in artifacts:
+        require(
+            isinstance(item, dict)
+            and set(item) == {
+                "filename",
+                "packagetype",
+                "sha256",
+            },
+            "QUALIFICATION_DISTRIBUTION_ARTIFACT_FIELDS_INVALID",
+        )
+
+        filename = item["filename"]
+        package_type = item["packagetype"]
+        sha256 = item["sha256"]
+
+        require(
+            isinstance(filename, str) and bool(filename),
+            "QUALIFICATION_DISTRIBUTION_FILENAME_INVALID",
+        )
+        require(
+            package_type in {"sdist", "bdist_wheel"},
+            "QUALIFICATION_DISTRIBUTION_TYPE_INVALID",
+        )
+        require(
+            isinstance(sha256, str)
+            and bool(publication.SHA256_RE.fullmatch(sha256)),
+            "QUALIFICATION_DISTRIBUTION_SHA256_INVALID",
+        )
+        require(
+            filename not in filenames,
+            "QUALIFICATION_DISTRIBUTION_FILENAME_DUPLICATE",
+        )
+
+        filenames.add(filename)
+        package_types.add(package_type)
+
+        prefix = "elpisai-" + version
+        if package_type == "sdist":
+            require(
+                filename == prefix + ".tar.gz",
+                "QUALIFICATION_SDIST_FILENAME_INVALID",
+            )
+        else:
+            require(
+                filename.startswith(prefix + "-")
+                and filename.endswith(".whl"),
+                "QUALIFICATION_WHEEL_FILENAME_INVALID",
+            )
+
+        normalized.append(
+            {
+                "filename": filename,
+                "packagetype": package_type,
+                "sha256": sha256,
+            }
+        )
+
+    require(
+        package_types == {"sdist", "bdist_wheel"},
+        "QUALIFICATION_DISTRIBUTION_TYPE_SET_INVALID",
+    )
+
+    return sorted(
+        normalized,
+        key=lambda item: item["filename"],
+    )
 
 
 class LiveBoundary:
@@ -51,7 +200,28 @@ class LiveBoundary:
         return result.stdout
 
     def git(self, *args, data=None):
-        return self.command(['git', *args], data=data).decode().strip()
+        return self.command(
+            ['git', '--no-replace-objects', '-c', 'core.hooksPath=/dev/null', *args],
+            data=data,
+        ).decode().strip()
+
+    def verify_git_transport_policy(self):
+        result = self.runner.command(
+            [
+                'git', '--no-replace-objects', 'config',
+                '--local', '--get-regexp',
+                r'^url\..*\.(insteadOf|pushInsteadOf)$',
+            ],
+            cwd=self.root,
+        )
+        require(
+            result.returncode in {0, 1},
+            'LOCAL_GIT_CONFIG_OBSERVATION_FAILED',
+        )
+        require(
+            result.returncode == 1 or not result.stdout.strip(),
+            'LOCAL_GIT_URL_REWRITE_FORBIDDEN',
+        )
 
     def private_directory(self):
         # Common-dir serializes linked worktrees as well as duplicate invocations.
@@ -146,6 +316,7 @@ class LiveBoundary:
                     'QUALIFICATION_ENVIRONMENT_CHANGED')
         require(self.git('rev-parse', '--show-toplevel') == str(self.root), 'REPOSITORY_ROOT_MISMATCH')
         require(self.git('rev-parse', '--is-shallow-repository') == 'false', 'REPOSITORY_HISTORY_INCOMPLETE')
+        self.verify_git_transport_policy()
         require(self.git('rev-parse', 'HEAD') == intent['candidate_sha'], 'LOCAL_HEAD_MISMATCH')
         require((self.root / 'VERSION').read_text().strip() == intent['version'], 'LOCAL_VERSION_MISMATCH')
         require(machine.tag_name(intent) not in publication._failed_tags(self.root), 'FAILED_RELEASE_FORBIDDEN')
@@ -237,10 +408,31 @@ class LiveBoundary:
             require(set(report['checks']) == {'root_tests', 'release_lifecycle', 'negative_mutations',
                                              'installed_artifact', 'native'}, 'QUALIFICATION_CHECKS_INCOMPLETE')
             for name, check in report['checks'].items():
-                require(set(check) == {'argv', 'exit_code', 'output_sha256'} and check['exit_code'] == 0 and
-                        isinstance(check['argv'], list) and bool(check['argv']) and
-                        all(isinstance(a, str) for a in check['argv']) and
-                        bool(publication.SHA256_RE.fullmatch(check['output_sha256'])), f'QUALIFICATION_NONPASS:{name}')
+                expected_fields = {
+                    'argv',
+                    'exit_code',
+                    'output_sha256',
+                }
+                if signed and name == 'installed_artifact':
+                    expected_fields.add('artifacts')
+                require(
+                    set(check) == expected_fields
+                    and check['exit_code'] == 0
+                    and isinstance(check['argv'], list)
+                    and bool(check['argv'])
+                    and all(isinstance(a, str) for a in check['argv'])
+                    and bool(
+                        publication.SHA256_RE.fullmatch(
+                            check['output_sha256']
+                        )
+                    ),
+                    f'QUALIFICATION_NONPASS:{name}',
+                )
+            if signed:
+                qualified_distribution_artifacts(
+                    report,
+                    intent['version'],
+                )
             return {'candidate_sha': intent['candidate_sha'], 'qualification_sha256': intent['qualification_sha256']}
         if state == 'SEALED_CANDIDATE':
             rel = f'manifests/{machine.tag_name(intent)}.RELEASE_MANIFEST.json'
@@ -266,13 +458,71 @@ class LiveBoundary:
         if state == 'GITHUB_RELEASE_PUBLISHED':
             return self.release(intent)
         if state == 'PYPI_EXTERNALLY_OBSERVED':
-            row = self.runner.http_json(f"https://pypi.org/pypi/elpisai/{intent['version']}/json")
+            row = self.runner.http_json(
+                f"https://pypi.org/pypi/elpisai/{intent['version']}/json"
+            )
             if row is None:
                 return None
-            files = [{**{k: f[k] for k in ('filename', 'packagetype', 'upload_time_iso_8601', 'yanked')},
-                      'sha256': f['digests']['sha256']} for f in row['urls']]
-            return {'project': row['info']['name'], 'version': row['info']['version'],
-                    'files': sorted(files, key=lambda f: f['filename'])}
+
+            files = [
+                {
+                    **{
+                        k: f[k]
+                        for k in (
+                            'filename',
+                            'packagetype',
+                            'upload_time_iso_8601',
+                            'yanked',
+                        )
+                    },
+                    'sha256': f['digests']['sha256'],
+                }
+                for f in row['urls']
+            ]
+            observed = {
+                'project': row['info']['name'],
+                'version': row['info']['version'],
+                'files': sorted(
+                    files,
+                    key=lambda f: f['filename'],
+                ),
+            }
+
+            if intent.get('schema') == machine.SIGNED_SCHEMA:
+                qualification_raw = self.qualification.read_bytes()
+                require(
+                    hashlib.sha256(qualification_raw).hexdigest()
+                    == intent['qualification_sha256'],
+                    'QUALIFICATION_DIGEST_MISMATCH',
+                )
+
+                qualification_report = json.loads(
+                    qualification_raw
+                )
+                expected_artifacts = (
+                    qualified_distribution_artifacts(
+                        qualification_report,
+                        intent['version'],
+                    )
+                )
+                observed_artifacts = sorted(
+                    [
+                        {
+                            'filename': item['filename'],
+                            'packagetype': item['packagetype'],
+                            'sha256': item['sha256'],
+                        }
+                        for item in observed['files']
+                    ],
+                    key=lambda item: item['filename'],
+                )
+
+                require(
+                    observed_artifacts == expected_artifacts,
+                    'PYPI_ARTIFACT_IDENTITY_MISMATCH',
+                )
+
+            return observed
         if state == 'PUBLICATION_RECEIPT_READY':
             receipt = machine.external_receipt(intent, evidence)
             return {'schema': machine.RECEIPT_SCHEMA, 'receipt_sha256': machine.digest(receipt), 'receipt': receipt}
