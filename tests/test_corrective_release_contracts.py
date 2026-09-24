@@ -14,6 +14,7 @@ import pytest
 from tools import full_release as full
 from tools import release_origin as origin
 from tools import release_orchestrator as machine
+from tools import release_orchestrator_io as boundary_io
 from tools import qualification_environment as environment
 from tools import digest_sink_census as census
 
@@ -204,3 +205,31 @@ def test_real_historical_unsigned_tag_is_not_origin_authenticated(tmp_path):
     with pytest.raises(ValueError, match="SSH_SIGNATURE_REQUIRED"):
         origin.verify_tag(ROOT, "049c72e92c53ac927d2bef1c0b4d52a0ce1df1f6",
                           "912921b78f9766494e137f9f472b59fc4fc53b17", "Elpis2.2.30", trust)
+
+
+@pytest.mark.parametrize("witness", ["absent", "actions", "release", "pypi"])
+def test_tag_reconciliation_collects_external_witnesses_without_replay(tmp_path, witness):
+    boundary = boundary_io.LiveBoundary(tmp_path, tmp_path / "unused")
+    boundary.remote_refs = lambda intent: {"refs/heads/main": "a" * 40}
+    requested = []
+    def api(endpoint):
+        requested.append(endpoint)
+        if "/releases/" in endpoint:
+            return {"id": 1} if witness == "release" else None
+        rows = [{"id": 1}] if witness == "actions" else []
+        return {"total_count": len(rows), "workflow_runs": rows}
+    boundary.api = api
+    boundary.runner = SimpleNamespace(http_json=lambda url: {"info": {}} if witness == "pypi" else None)
+    outcome = boundary.reconcile("ANNOTATED_TAG_CREATED", {"repository": "abraxis717/Elpis", "version": "2.2.31"}, {})
+    assert outcome["outcome"] == ("ABSENT_UNPROVEN" if witness == "absent" else "PREVIOUS_SIDE_EFFECT")
+    assert set(outcome["witnesses"]) == {"remote_refs", "release", "pypi", "actions"}
+    assert len(requested) == 2
+
+
+def test_reconciliation_cannot_accept_truncated_actions_census(tmp_path):
+    boundary = boundary_io.LiveBoundary(tmp_path, tmp_path / "unused")
+    boundary.remote_refs = lambda intent: {}
+    boundary.api = lambda endpoint: None if "/releases/" in endpoint else {"total_count": 1001, "workflow_runs": []}
+    boundary.runner = SimpleNamespace(http_json=lambda url: None)
+    with pytest.raises(machine.ReleaseError, match="CENSUS_INCOMPLETE"):
+        boundary.reconcile("ANNOTATED_TAG_CREATED", {"repository": "abraxis717/Elpis", "version": "2.2.31"}, {})

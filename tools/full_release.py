@@ -531,6 +531,8 @@ def validate_resume_head(root: Path, state: dict, journal: OuterJournal) -> None
             require(not stored, "RESUME_COMMIT_WITHOUT_JOURNAL:" + stage)
             break
         require(state.get("orchestrator_closed") is True, "RESUME_CLOSEOUT_BEFORE_ORCHESTRATOR")
+        require(events[0]["kind"] == "intent" and events[0]["data"] == {"parent": expected, "path": path},
+                "RESUME_INTENT_CONFLICT:" + stage)
         completed = next((e["data"].get("commit") for e in reversed(events) if e["kind"] == "complete"), None)
         if stored:
             require(stored == completed, "RESUME_STATE_JOURNAL_CONFLICT:" + stage)

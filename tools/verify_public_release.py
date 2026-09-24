@@ -1609,7 +1609,10 @@ def main() -> int:
     for flag in ("print-manifest", "emit-allowlist", "verify-candidate-repository-identity", "verify-repository-identity"):
         parser.add_argument("--" + flag, action="store_true")
     args = parser.parse_args()
-    if (args.development and args.candidate) or (args.development and args.require_origin):
+    if ((args.development and args.candidate)
+            or (args.require_origin and (args.development or args.candidate
+                or args.verify_candidate_repository_identity or args.verify_repository_identity
+                or args.print_manifest or args.emit_allowlist))):
         parser.error("development checks do not verify release origin")
     development = "--development" in sys.argv
     if "--print-manifest" in sys.argv:

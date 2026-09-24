@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import runpy
 import subprocess
+import sys
 import tarfile
 
 import pytest
@@ -122,3 +123,16 @@ def test_development_verdict_cannot_claim_public_release():
     ci = (ROOT / ".github/workflows/ci.yml").read_text()
     assert "python tools/verify_public_release.py --development" in ci
     assert "if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/')" in ci
+    proc = subprocess.run([sys.executable, str(ROOT / "tools/verify_public_release.py"), "--development"],
+                          cwd=ROOT, capture_output=True, text=True)
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert "development checks; no release-snapshot or origin claim" in proc.stdout
+    assert "public release verified" not in proc.stdout
+
+
+@pytest.mark.parametrize("mode", ["--development", "--candidate", "--verify-repository-identity", "--print-manifest"])
+def test_require_origin_cannot_be_silently_bypassed_by_another_mode(mode):
+    proc = subprocess.run([sys.executable, str(ROOT / "tools/verify_public_release.py"), mode, "--require-origin"],
+                          cwd=ROOT, capture_output=True, text=True)
+    assert proc.returncode != 0
+    assert "public release verified" not in proc.stdout
