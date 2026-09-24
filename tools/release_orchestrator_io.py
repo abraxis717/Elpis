@@ -21,6 +21,15 @@ publication = machine.publication
 
 
 _SEALED_ENV_DROP = frozenset({
+    "GIT_NAMESPACE",
+    "GIT_SHALLOW_FILE",
+    "GIT_PREFIX",
+    "GIT_IMPLICIT_WORK_TREE",
+    "GIT_GRAFT_FILE",
+    "GIT_CONFIG_PARAMETERS",
+    "GIT_CONFIG_COUNT",
+    "GIT_CONFIG",
+    "GIT_COMMON_DIR",
     "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY",
     "http_proxy", "https_proxy", "all_proxy", "no_proxy",
     "SSL_CERT_FILE", "SSL_CERT_DIR",
@@ -41,7 +50,13 @@ _SYSTEM_CA_FILES = (
 def sealed_subprocess_env():
     env = dict(os.environ)
     for key in tuple(env):
-        if key in _SEALED_ENV_DROP or key.startswith("GIT_CONFIG_"):
+        if (
+            key in _SEALED_ENV_DROP
+            or key.startswith("GIT_CONFIG")
+            or key.startswith("GIT_SSL_")
+            or key.startswith("GIT_HTTP_")
+            or key == "GIT_PROXY_COMMAND"
+        ):
             env.pop(key, None)
 
     env["PYTHONDONTWRITEBYTECODE"] = "1"
@@ -199,29 +214,80 @@ class LiveBoundary:
                 f"COMMAND_FAILED:{argv[0]}:{result.returncode}:{result.stderr.decode(errors='replace').strip()}")
         return result.stdout
 
+    def git_result(self, *args, data=None):
+        if args and args[0] in {
+            'ls-remote',
+            'push',
+            'fetch',
+        }:
+            self.verify_git_transport_policy()
+
+        return self.runner.command(
+            [
+                'git',
+                '--no-replace-objects',
+                '-c',
+                'core.hooksPath=/dev/null',
+                *args,
+            ],
+            cwd=self.root,
+            data=data,
+        )
+
+    def git_bytes(self, *args, data=None):
+        result = self.git_result(*args, data=data)
+        require(
+            result.returncode == 0,
+            'COMMAND_FAILED:git:'
+            + str(result.returncode)
+            + ':'
+            + result.stderr.decode(
+                errors='replace'
+            ).strip(),
+        )
+        return result.stdout
+
     def git(self, *args, data=None):
-        return self.command(
-            ['git', '--no-replace-objects', '-c', 'core.hooksPath=/dev/null', *args],
+        return self.git_bytes(
+            *args,
             data=data,
         ).decode().strip()
 
     def verify_git_transport_policy(self):
-        result = self.runner.command(
-            [
-                'git', '--no-replace-objects', 'config',
-                '--local', '--get-regexp',
+        checks = (
+            (
                 r'^url\..*\.(insteadOf|pushInsteadOf)$',
-            ],
-            cwd=self.root,
+                'EFFECTIVE_GIT_URL_REWRITE_FORBIDDEN',
+            ),
+            (
+                r'^(http\..*|remote\..*\.proxy|core\.gitProxy)$',
+                'EFFECTIVE_GIT_HTTPS_OVERRIDE_FORBIDDEN',
+            ),
         )
-        require(
-            result.returncode in {0, 1},
-            'LOCAL_GIT_CONFIG_OBSERVATION_FAILED',
-        )
-        require(
-            result.returncode == 1 or not result.stdout.strip(),
-            'LOCAL_GIT_URL_REWRITE_FORBIDDEN',
-        )
+
+        for pattern, diagnostic in checks:
+            result = self.runner.command(
+                [
+                    'git',
+                    '--no-replace-objects',
+                    'config',
+                    '--show-origin',
+                    '--show-scope',
+                    '--get-regexp',
+                    pattern,
+                ],
+                cwd=self.root,
+            )
+
+            require(
+                result.returncode in {0, 1},
+                'EFFECTIVE_GIT_CONFIG_OBSERVATION_FAILED',
+            )
+            require(
+                result.returncode == 1
+                or not result.stdout.strip(),
+                diagnostic,
+            )
 
     def private_directory(self):
         # Common-dir serializes linked worktrees as well as duplicate invocations.
@@ -271,7 +337,12 @@ class LiveBoundary:
     def local_tag(self, intent):
         ref = 'refs/tags/' + machine.tag_name(intent)
         # --quiet exit 1 is absence; all other errors fail closed.
-        result = self.runner.command(['git', 'show-ref', '--verify', '--quiet', ref], cwd=self.root)
+        result = self.git_result(
+            'show-ref',
+            '--verify',
+            '--quiet',
+            ref,
+        )
         if result.returncode == 1:
             return None
         require(result.returncode == 0, 'LOCAL_TAG_OBSERVATION_FAILED')
@@ -301,9 +372,15 @@ class LiveBoundary:
                 'GITHUB_RELEASE_DRAFT_OR_PRERELEASE')
         require(row.get('tag_name') == machine.tag_name(intent) and row.get('name') == machine.tag_name(intent),
                 'GITHUB_RELEASE_MISMATCH')
-        require(hashlib.sha256(row.get('body', '').encode()).hexdigest() == intent['notes_sha256'],
-                'GITHUB_RELEASE_NOTES_MISMATCH')
-        require(row.get('target_commitish') == intent['candidate_sha'], 'GITHUB_RELEASE_TARGET_MISMATCH')
+        require(
+            row.get('target_commitish')
+            == intent['candidate_sha'],
+            'GITHUB_RELEASE_TARGET_MISMATCH',
+        )
+        machine.validate_release_body(
+            intent,
+            row.get('body', ''),
+        )
         return {'repository': intent['repository'], 'release_id': row['id'],
                 'tag_name': row['tag_name'], 'published_at': row['published_at']}
 
@@ -329,11 +406,20 @@ class LiveBoundary:
         require(not any(row['release_tag'] == machine.tag_name(intent) for row in rows)
                 or 'PUBLICATION_RECEIPT_READY' in evidence, 'PREEXISTING_PUBLICATION_ASSERTION')
         # Only this release's exact appended assertion may dirty the checkout.
-        dirty = self.command(['git', 'status', '--porcelain', '--untracked-files=all']).decode().rstrip('\n')
+        dirty = self.git_bytes(
+            'status',
+            '--porcelain',
+            '--untracked-files=all',
+        ).decode().rstrip('\n')
         for line in dirty.splitlines():
             require(line[3:] == publication.REGISTRY_NAME and
                     'PUBLICATION_RECEIPT_READY' in evidence, f'WORKTREE_NOT_CLEAN:{line}')
-        committed = json.loads(self.command(['git', 'show', 'HEAD:' + publication.REGISTRY_NAME]))
+        committed = json.loads(
+            self.git_bytes(
+                'show',
+                'HEAD:' + publication.REGISTRY_NAME,
+            )
+        )
         old = committed['publication_assertions']
         require(rows == old or (rows[:-1] == old and rows[-1] == machine.expected_assertion(intent, evidence)),
                 'PUBLICATION_REGISTRY_PREFIX_CHANGED')
@@ -429,14 +515,22 @@ class LiveBoundary:
                     f'QUALIFICATION_NONPASS:{name}',
                 )
             if signed:
-                qualified_distribution_artifacts(
+                artifacts = qualified_distribution_artifacts(
                     report,
                     intent['version'],
+                )
+                require(
+                    artifacts
+                    == intent['distribution_artifacts'],
+                    'QUALIFICATION_DISTRIBUTION_IDENTITY_MISMATCH',
                 )
             return {'candidate_sha': intent['candidate_sha'], 'qualification_sha256': intent['qualification_sha256']}
         if state == 'SEALED_CANDIDATE':
             rel = f'manifests/{machine.tag_name(intent)}.RELEASE_MANIFEST.json'
-            raw = self.command(['git', 'show', intent['candidate_sha'] + ':' + rel])
+            raw = self.git_bytes(
+                'show',
+                intent['candidate_sha'] + ':' + rel,
+            )
             require(raw == (self.root / rel).read_bytes(), 'CHECKOUT_MANIFEST_DIFFERS_FROM_CANDIDATE')
             manifest = json.loads(raw)
             require(manifest['version'] == intent['version'] and manifest['release_tag'] == machine.tag_name(intent)
@@ -601,7 +695,9 @@ class LiveBoundary:
             notes = (self.root / 'RELEASE_NOTES' / (machine.tag_name(intent) + '.md')).read_text()
             result = self.api(f"repos/{intent['repository']}/releases", payload={
                 'tag_name': machine.tag_name(intent), 'target_commitish': intent['candidate_sha'],
-                'name': machine.tag_name(intent), 'body': notes, 'draft': False, 'prerelease': False,
+                'name': machine.tag_name(intent),
+                'body': machine.release_body(intent, notes),
+                'draft': False, 'prerelease': False,
                 'generate_release_notes': False})
             return {'release_id': result['id'], 'response': result}
         if state == 'PUBLICATION_ASSERTION_APPENDED':

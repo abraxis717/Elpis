@@ -18,6 +18,11 @@ import tempfile
 import tomllib
 from pathlib import Path
 
+try:
+    from tools import release_git
+except (ModuleNotFoundError, ImportError):
+    import release_git
+
 
 sys.dont_write_bytecode = True
 
@@ -498,11 +503,10 @@ def actual_files() -> set[str]:
     visible and fails manifest exactness.
     """
     if (REPO / ".git").exists():
-        proc = subprocess.run(
-            ["git", "-C", str(REPO), "ls-files", "-z"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
+        proc = release_git.run(
+            REPO,
+            "ls-files",
+            "-z",
         )
         if proc.returncode != 0:
             raise RuntimeError(
@@ -662,7 +666,11 @@ def _verify_v3_release_snapshot(compact, data):
                     errors.append("SNAPSHOT_MEMBERSHIP_MISMATCH:" + repr(sorted(difference)))
                 for rel in compact["publication_registry_exclusions"](data["publication_policy"]):
                     if rel in expected:
-                        raw = subprocess.run(["git", "--no-replace-objects", "-C", str(REPO), "show", "HEAD:" + rel], capture_output=True)
+                        raw = release_git.run(
+                            REPO,
+                            "show",
+                            "HEAD:" + rel,
+                        )
                         if raw.returncode or compact["_payload"](REPO, rel) != (b"F", raw.stdout):
                             errors.append("SNAPSHOT_AUTHORITY_CHANGED:" + rel)
             except (OSError, ValueError, RuntimeError) as exc:
@@ -693,11 +701,11 @@ def _verify_v3_release_snapshot(compact, data):
     if not _git_is_ancestor(peeled, "HEAD"):
         return ["SNAPSHOT_HEAD_NOT_DESCENDANT"]
 
-    proc = subprocess.run(
-        ["git", "-C", str(REPO), "archive", "--format=tar", peeled],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=False,
+    proc = release_git.run(
+        REPO,
+        "archive",
+        "--format=tar",
+        peeled,
     )
     if proc.returncode != 0:
         return [
@@ -1425,12 +1433,10 @@ def check_artifacts():
     return not errors, errors
 
 def _git_repository_command(args):
-    return subprocess.run(
-        ["git", "-C", str(REPO), *args],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+    return release_git.run(
+        REPO,
+        *args,
         text=True,
-        check=False,
     )
 
 

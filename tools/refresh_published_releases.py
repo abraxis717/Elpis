@@ -28,11 +28,15 @@ def _paths(root: Path) -> tuple[Path, Path]:
 
 
 def git(root: Path, *args: str) -> str:
-    proc = subprocess.run(
-        ["git", "-C", str(root), *args],
+    try:
+        from tools import release_git as _release_git
+    except ModuleNotFoundError:
+        import release_git as _release_git
+
+    proc = _release_git.run(
+        root,
+        *args,
         text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
     )
     if proc.returncode:
         raise ValueError(

@@ -12,6 +12,11 @@ try:
 except ImportError:
     import release_tree_digest as tree
 
+try:
+    from tools import release_git
+except (ModuleNotFoundError, ImportError):
+    import release_git
+
 
 def extract_git_archive(archive, destination: Path) -> None:
     """Extract only files, directories and contained symlinks on Python 3.11.0+.
@@ -109,8 +114,14 @@ def postpublication_errors(live: Path, sealed: Path, published: dict) -> list[st
             return ["SNAPSHOT_ASSERTION_DELTA_INVALID"]
 
         ratification = f"RELEASE_RATIFICATIONS/{published['release_tag']}.json"
-        tracked = subprocess.run(["git", "--no-replace-objects", "-C", str(live),
-                                  "ls-tree", "-z", "HEAD", "--", ratification], capture_output=True)
+        tracked = release_git.run(
+            live,
+            "ls-tree",
+            "-z",
+            "HEAD",
+            "--",
+            ratification,
+        )
         if tracked.returncode:
             return ["SNAPSHOT_HEAD_UNAVAILABLE"]
         if tracked.stdout and not (live / ratification).exists():

@@ -64,11 +64,12 @@ class TemporalityError(RuntimeError):
 
 
 def _git(root:Path,*args:str)->bytes:
-    p=subprocess.run(
-        ["git","-C",str(root),*args],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
+    try:
+        from tools import release_git as _release_git
+    except ModuleNotFoundError:
+        import release_git as _release_git
+
+    p=_release_git.run(root,*args)
     if p.returncode:
         raise TemporalityError(
             f"GIT_FAILED:{' '.join(args)}:"
@@ -310,29 +311,30 @@ def _write_once_history_errors(
     if not history:
         return [f"WRITE_ONCE_TEMPORALITY_FIRST_COMMIT_MISSING:{rel}"]
 
-    first_blob=subprocess.run(
-        ["git","-C",str(root),"show",f"{history[0]}:{rel}"],
-        stdout=subprocess.PIPE,stderr=subprocess.PIPE,
-    )
-    if first_blob.returncode:
+    try:
+        first_blob=_git(
+            root,"show",f"{history[0]}:{rel}"
+        )
+    except TemporalityError:
         return [
             f"WRITE_ONCE_TEMPORALITY_FIRST_BLOB_MISSING:{rel}:{history[0]}"
         ]
-    first_hash=_sha(first_blob.stdout)
+    first_hash=_sha(first_blob)
     errors=[]
     for commit in history:
-        p=subprocess.run(
-            ["git","-C",str(root),"show",f"{commit}:{rel}"],
-            stdout=subprocess.PIPE,stderr=subprocess.PIPE,
-        )
-        if p.returncode:
+        try:
+            observed_blob=_git(
+                root,"show",f"{commit}:{rel}"
+            )
+        except TemporalityError:
             errors.append(
                 f"WRITE_ONCE_TEMPORALITY_HISTORY_DELETED:{rel}:{commit}"
             )
-        elif _sha(p.stdout)!=first_hash:
+            continue
+        if _sha(observed_blob)!=first_hash:
             errors.append(
                 f"WRITE_ONCE_TEMPORALITY_HISTORY_MUTATED:{rel}:{commit}:"
-                f"{_sha(p.stdout)}:{first_hash}"
+                f"{_sha(observed_blob)}:{first_hash}"
             )
 
     path=root/rel

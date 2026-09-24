@@ -182,20 +182,80 @@ def test_restart_before_dispatch_is_safe_but_dispatched_absence_is_not(tmp_path,
 
 
 def test_signed_intent_binds_observed_object_and_signer_authority(tmp_path):
-    i = dict(intent(), schema=m.SIGNED_SCHEMA, version='2.2.31',
-             signed_tag_object='1' * 40, allowed_signers_sha256='2' * 64)
-    assert m.tag_identity(m.validate_intent(i))['tag_object'] == '1' * 40
+    artifacts = [
+        {
+            'filename': 'elpisai-2.2.31-py3-none-any.whl',
+            'packagetype': 'bdist_wheel',
+            'sha256': '4' * 64,
+        },
+        {
+            'filename': 'elpisai-2.2.31.tar.gz',
+            'packagetype': 'sdist',
+            'sha256': '5' * 64,
+        },
+    ]
+
+    i = dict(
+        intent(),
+        schema=m.SIGNED_SCHEMA,
+        version='2.2.31',
+        signed_tag_object='1' * 40,
+        allowed_signers_sha256='2' * 64,
+        distribution_artifacts=artifacts,
+    )
+
+    assert (
+        m.tag_identity(m.validate_intent(i))['tag_object']
+        == '1' * 40
+    )
+
     with pytest.raises(m.ReleaseError, match='MUST_BE_OBSERVED'):
         m.tag_bytes(i)
+
     path = tmp_path / 'journal.json'
     journal = m.Journal(path, i)
     journal.write('LOCAL_QUALIFIED', 'complete', {})
-    with pytest.raises(m.ReleaseError, match='JOURNAL_INTENT_CONFLICT'):
-        m.Journal(path, dict(i, signed_tag_object='3' * 40))
-    with pytest.raises(m.ReleaseError, match='JOURNAL_INTENT_CONFLICT'):
-        m.Journal(path, dict(i, allowed_signers_sha256='3' * 64))
-    with pytest.raises(m.ReleaseError, match='SIGNED_INTENT_REQUIRED'):
-        m.validate_intent(dict(intent(), version='2.2.31'))
+
+    with pytest.raises(
+        m.ReleaseError,
+        match='JOURNAL_INTENT_CONFLICT',
+    ):
+        m.Journal(
+            path,
+            dict(i, signed_tag_object='3' * 40),
+        )
+
+    with pytest.raises(
+        m.ReleaseError,
+        match='JOURNAL_INTENT_CONFLICT',
+    ):
+        m.Journal(
+            path,
+            dict(i, allowed_signers_sha256='3' * 64),
+        )
+
+    changed = [
+        dict(item)
+        for item in artifacts
+    ]
+    changed[0]['sha256'] = '6' * 64
+
+    with pytest.raises(
+        m.ReleaseError,
+        match='JOURNAL_INTENT_CONFLICT',
+    ):
+        m.Journal(
+            path,
+            dict(i, distribution_artifacts=changed),
+        )
+
+    with pytest.raises(
+        m.ReleaseError,
+        match='SIGNED_INTENT_REQUIRED',
+    ):
+        m.validate_intent(
+            dict(intent(), version='2.2.31')
+        )
 
 
 @pytest.mark.parametrize('state,kind', [(s, k) for s in m.STATES for k in ('returned', 'complete')

@@ -1,0 +1,118 @@
+{
+  "components/CNumPyCortex/tests/test_subprocess_policy.py": {
+    "ast_sha256": "658541c0a03c9960f2d1bb3b71c1b50d8d88a9ff994bb2a73712d30aa75e5775",
+    "reason": "Policy predicate input only: Git is asserted forbidden; no Git execution."
+  },
+  "components/FuryanLocusOracle/tests/run_science.py": {
+    "ast_sha256": "704663aba4754b1ba81aec4b0ef4df059dbd7d676e95503c8365cf61e420955f",
+    "reason": "Historical manual science runner tied to Elpis2.1.4 science branch; not invoked by mandatory tests or hosted workflows."
+  },
+  "components/Grid81DeterministicCanonicalPromotionPlanner/tests/test_cli.py": {
+    "ast_sha256": "117e0b4bd27c854cd6aeccfeeeb709b67c824d2ece2ed0e05fdadb7bd4b1a3e5",
+    "reason": "Dynamic cmd launches sys.executable -m elpis_grid81_promotion_planner.cli, not Git."
+  },
+  "components/Grid81DeterministicCanonicalPublisher/tests/reproduce_r0.py": {
+    "ast_sha256": "c853a9eca430d48b465b4b346110566b7d7f250e17544e6cdf5b802c619278b4",
+    "reason": "Historical manual reproducer; not collected or invoked by mandatory qualification."
+  },
+  "tests/test_canonical_assembly_verifier.py": {
+    "ast_sha256": "e23029e042857d746fd578bbb72422846894dc4881fd11967ebcef21df82928c",
+    "reason": "Nested git helper constructs only tmp_path/repo synthetic history."
+  },
+  "tests/test_compact_release_manifest_v3.py": {
+    "ast_sha256": "3f85351bc2bb7adf137eaf1c5647e769fd91a0b67b224d42925be637121f3ecb",
+    "reason": "Raw helper and local HEAD export target synthetic fixture roots; real historical-tag export uses release_git."
+  },
+  "tests/test_corrective_release_contracts.py": {
+    "ast_sha256": "096a1862755019006cacff74236edcaad385499db1bb5cf3e664e08b20a667bc",
+    "reason": "Git targets repository(tmp_path) only; dynamic commands run offline pip fixture checks."
+  },
+  "tests/test_full_release_execution_authority_r0.py": {
+    "ast_sha256": "3641f7a5f5b5fcd3def673b5f9727fa7f4855766000828e33def477235829e94",
+    "reason": "Raw Git constructs and observes isolated tmp_path Git-boundary controls, including intentional unprotected replacement-object control."
+  },
+  "tests/test_grid81_writer_successor_assembly_verifier_r0.py": {
+    "ast_sha256": "b562693bb98ccdb4a7146e1bf7b3f85b7954c2f29949bc374035461b1afe4b9e",
+    "reason": "Git init/add operate solely on tmp_path authority-tree fixture."
+  },
+  "tests/test_immutable_evidence_contract.py": {
+    "ast_sha256": "a0271e267d605d8c0074bb60bc9d495367c4532758632cf0da0432244dc969f6",
+    "reason": "Raw Git is restricted to isolated tmp_path fixtures; canonical committed-baseline read uses release_git."
+  },
+  "tests/test_isolated_driver_native_fixture.py": {
+    "ast_sha256": "deba41cb04da29e954cd0ffa45b85221396347a2fee11289b3da069f9cc9b406",
+    "reason": "Dynamic executable is cc, compiling a native fixture below tmp_path."
+  },
+  "tests/test_needle3_isolated_wheel_driver.py": {
+    "ast_sha256": "644a9c7ef16b9e183f5242156f3c673059bbe6afa5f5af7708f836fcab40e624",
+    "reason": "Dynamic executable is cc, compiling a native fixture below tmp_path."
+  },
+  "tests/test_physical_release_snapshot.py": {
+    "ast_sha256": "e0cb3b82562f50a77dd0d63441b5f3935bfa4f2c5975a6f21c8c70d484163ac4",
+    "reason": "Raw helper is used only on temporary clone after canonical clone construction through release_git."
+  },
+  "tests/test_publication_assertions_v2.py": {
+    "ast_sha256": "038933393c69737988cee22c6dd731a0dd498dcef356390c2075b176dcb1ca40",
+    "reason": "Raw Git targets synthetic seed/add_release fixture repositories; dynamic child vectors invoke the Python publication checker."
+  },
+  "tests/test_published_releases_registry.py": {
+    "ast_sha256": "65763bb69a46b3be7fddc1d56844dd86f4ed7a7cb443d433d0e95e38adf9b94b",
+    "reason": "Canonical _git helper forwards every operation to release_git.run; no raw Git sink."
+  },
+  "tests/test_release_execution_authority_r0.py": {
+    "ast_sha256": "e26cbf1af4cccd376fbf94c10ce0705ed04af68f4bab1a5e44ef7b953e55f5f8",
+    "reason": "Raw Git creates/configures only temporary real/evil boundary-test fixtures."
+  },
+  "tests/test_release_manifest_git_boundary.py": {
+    "ast_sha256": "828cc8ac295da3906e947fd0b4882fdb02f9042e2cc1843665bb9db3ec9637ec",
+    "reason": "Raw _git helper constructs isolated tmp_path fixture repositories."
+  },
+  "tests/test_release_orchestrator_io.py": {
+    "ast_sha256": "f8d884c053a7781bf5546a069906c747efe695550c7dc864da5cfe83f30e1496",
+    "reason": "Raw git helper targets synthetic seed(tmp_path) only; real boundary reads use the hardened Runner."
+  },
+  "tests/test_release_origin_trust_root_r0.py": {
+    "ast_sha256": "15ef34af93d43390e42aa0acc40c58bfe11604791138202fc78ddbe2d7f675de",
+    "reason": "Raw git helper constructs only temporary repositories/worktrees for signer-storage topology tests."
+  },
+  "tests/test_release_repository_identity.py": {
+    "ast_sha256": "4fde27232b0fbd8e24945ec65231f32b871a3ada6a6a356e1d84dbe1c38d3c5b",
+    "reason": "Raw Git operates solely on synthetic lifecycle fixture repos and their temporary shallow clones."
+  },
+  "tools/full_release.py": {
+    "ast_sha256": "b432807718ae2d9d822ab425fe529a23fad743b2a561ee009713b7777ff89e96",
+    "reason": "Established hardened release boundary: Git vectors disable replacements and use base_env; dynamic subprocess wrapper also launches qualification Python/build commands."
+  },
+  "tools/mutation_suite.py": {
+    "ast_sha256": "d9654d9525f55450ee7e5ceb3d61d9557826e8df9278aa4a4204a129d1cba1a2",
+    "reason": "Dynamic command launches sys.executable and the sealer in a throwaway copy; no raw Git."
+  },
+  "tools/qualify_allocator_budget.py": {
+    "ast_sha256": "12ed3e8c82c4e1b3b3bfc4580857deeb65652f5e58fdefca66dca43546cbff06",
+    "reason": "Historical --baseline-only Git source read; mandatory CI invocation omits --baseline and executes no Git."
+  },
+  "tools/release_git.py": {
+    "ast_sha256": "914f1642b22ede13d925da6d2bfc83cd38a192647f99df1d5f9b174622ddd66e",
+    "reason": "Shared hardened boundary itself, including compatible and streaming adapters."
+  },
+  "tools/release_orchestrator_io.py": {
+    "ast_sha256": "b5b582c19c0e7d399c0d23e4e029c59168c7d81bd0715395672bf56fa9625a2e",
+    "reason": "Established hardened Runner: Git vectors disable replacements, environment is sealed, transport configuration is audited."
+  },
+  "tools/release_origin.py": {
+    "ast_sha256": "8588dae05bb91bd5884e96069230e98d4fd715dab5f3d0c75c4903def0939583",
+    "reason": "Established origin-verification boundary: replacement objects disabled; selectors sanitized by _repository_git_env."
+  },
+  "tools/repository_hygiene.py": {
+    "ast_sha256": "ff24410489d29d216ac715db9445db2fe6aacc068f2a60cc724997dc18f81a4b",
+    "reason": "Optional tracked_only developer mode; mandatory hygiene tests invoke physical scanning without tracked_only and never reach raw Git."
+  },
+  "tools/setup.py": {
+    "ast_sha256": "dca815aa8c22ac878672b098da9661a6bda024fdc9248cfec679de8528fb6831",
+    "reason": "Dynamic commands are venv Python/pip or generated cmake build vectors; not Git."
+  },
+  "tools/verify_immutable_evidence.py": {
+    "ast_sha256": "5b75b13de7922cc179c1fbf0b474ca0032c526018126b18f7ab7d61433030472",
+    "reason": "Dynamic executable is __import__(sys).executable; children are publication/frozen-authority checkers whose Git reads use release_git."
+  }
+}

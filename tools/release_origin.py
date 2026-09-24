@@ -15,8 +15,128 @@ import stat
 import subprocess
 
 
+
+def _repository_git_env() -> dict[str, str]:
+    """Minimal environment for repository-location observations."""
+    env = dict(os.environ)
+
+    forbidden = {
+        "GIT_COMMON_DIR",
+        "GIT_CONFIG",
+        "GIT_CONFIG_COUNT",
+        "GIT_CONFIG_PARAMETERS",
+        "GIT_GRAFT_FILE",
+        "GIT_IMPLICIT_WORK_TREE",
+        "GIT_PREFIX",
+        "GIT_SHALLOW_FILE",
+        "GIT_NAMESPACE",
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "GIT_INDEX_FILE",
+        "GIT_OBJECT_DIRECTORY",
+        "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+        "GIT_REPLACE_REF_BASE",
+    }
+
+    for key in list(env):
+        if key in forbidden or key.startswith("GIT_CONFIG"):
+            env.pop(key, None)
+
+    env["GIT_NO_REPLACE_OBJECTS"] = "1"
+    return env
+
+
+def _repository_storage_roots(root: Path) -> tuple[Path, ...]:
+    """Return every physical filesystem root controlled by this checkout.
+
+    A linked worktree's visible checkout, per-worktree Git directory, and
+    common Git directory can live in different filesystem trees. Signer trust
+    authority must be independent of all of them.
+    """
+
+    root = root.resolve(strict=True)
+    env = _repository_git_env()
+
+    commands = (
+        ("worktree", ("rev-parse", "--show-toplevel")),
+        ("git_dir", ("rev-parse", "--absolute-git-dir")),
+        (
+            "git_common_dir",
+            (
+                "rev-parse",
+                "--path-format=absolute",
+                "--git-common-dir",
+            ),
+        ),
+    )
+
+    observed = []
+
+    for label, args in commands:
+        proc = subprocess.run(
+            [
+                "git",
+                "--no-replace-objects",
+                "-C",
+                str(root),
+                *args,
+            ],
+            capture_output=True,
+            text=True,
+            env=env,
+            check=False,
+        )
+
+        if proc.returncode != 0:
+            raise ValueError(
+                "ORIGIN_REPOSITORY_STORAGE_UNAVAILABLE:"
+                + label
+                + ":"
+                + (proc.stderr or "")[-1000:]
+            )
+
+        value = (proc.stdout or "").strip()
+
+        if not value:
+            raise ValueError(
+                "ORIGIN_REPOSITORY_STORAGE_INVALID:"
+                + label
+            )
+
+        candidate = Path(value).resolve(strict=True)
+
+        if not candidate.is_dir():
+            raise ValueError(
+                "ORIGIN_REPOSITORY_STORAGE_INVALID:"
+                + label
+            )
+
+        observed.append(candidate)
+
+    unique = []
+    for candidate in observed:
+        if candidate not in unique:
+            unique.append(candidate)
+
+    # If one storage root physically contains another, scanning the parent
+    # already covers the child. Keep only the minimal non-overlapping roots.
+    roots = []
+    for candidate in unique:
+        contained = any(
+            candidate != other
+            and candidate.is_relative_to(other)
+            for other in unique
+        )
+        if not contained:
+            roots.append(candidate)
+
+    if not roots:
+        raise ValueError("ORIGIN_REPOSITORY_STORAGE_INVALID")
+
+    return tuple(sorted(roots, key=lambda item: str(item)))
+
 def _validate_trust_root_storage(root: Path, authority: Path) -> tuple[int, int, int, int]:
-    root = root.resolve()
+    root = root.resolve(strict=True)
     authority = authority.resolve(strict=True)
 
     info = authority.stat()
@@ -32,23 +152,38 @@ def _validate_trust_root_storage(root: Path, authority: Path) -> tuple[int, int,
 
     identity = (info.st_dev, info.st_ino)
 
-    # Path-external is insufficient: a hardlink outside the repository can
-    # alias repository-controlled storage. Reject any same-inode regular file
-    # anywhere inside the repository tree, including .git.
-    for directory, _directories, filenames in os.walk(root, followlinks=False):
-        base = Path(directory)
-        for filename in filenames:
-            candidate = base / filename
-            try:
-                candidate_info = candidate.stat(follow_symlinks=False)
-            except FileNotFoundError:
-                continue
+    # Path-external is insufficient. A trust root outside the visible
+    # worktree may still hardlink repository-controlled storage in either
+    # the checkout, the linked-worktree Git directory, or the common Git
+    # directory. Scan every physical repository storage root.
+    for storage_root in _repository_storage_roots(root):
+        for directory, _directories, filenames in os.walk(
+            storage_root,
+            followlinks=False,
+        ):
+            base = Path(directory)
 
-            if (
-                stat.S_ISREG(candidate_info.st_mode)
-                and (candidate_info.st_dev, candidate_info.st_ino) == identity
-            ):
-                raise ValueError("ORIGIN_TRUST_ROOT_IN_REPOSITORY_STORAGE")
+            for filename in filenames:
+                candidate = base / filename
+
+                try:
+                    candidate_info = candidate.stat(
+                        follow_symlinks=False
+                    )
+                except FileNotFoundError:
+                    continue
+
+                if (
+                    stat.S_ISREG(candidate_info.st_mode)
+                    and (
+                        candidate_info.st_dev,
+                        candidate_info.st_ino,
+                    )
+                    == identity
+                ):
+                    raise ValueError(
+                        "ORIGIN_TRUST_ROOT_IN_REPOSITORY_STORAGE"
+                    )
 
     return (
         info.st_dev,
@@ -86,7 +221,7 @@ def verify_tag(root: Path, oid: str, target: str, tag: str, allowed_signers: Pat
         raise ValueError("ORIGIN_OBJECT_INVALID")
     def git(*args):
         p = subprocess.run(["git", "--no-replace-objects", "-C", str(root), *args],
-                           capture_output=True, env=dict(os.environ, GIT_NO_REPLACE_OBJECTS="1"))
+                           capture_output=True, env=_repository_git_env())
         if p.returncode:
             raise ValueError("ORIGIN_GIT_VERIFICATION_FAILED:" + p.stderr.decode(errors="replace"))
         return p.stdout

@@ -37,13 +37,24 @@ def test_full_release_terminal_state_is_git_private():
 
 def test_full_release_uses_real_installed_wheel_qualification():
     source = TOOL.read_text(encoding="utf-8")
+    builder = (
+        ROOT / "tools" / "release_distributions.py"
+    ).read_text(encoding="utf-8")
+
     assert "installed_artifact_check" in source
+    assert '"tools/release_distributions.py",' in source
     assert '"build",' in source
-    assert '"--no-isolation",' in source
+    assert '"--no-isolation",' in builder
     assert '"artifacts": artifacts' in source
     assert '"pip", "install", "--no-deps"' in source
     assert "INSTALLED_ARTIFACT_IMPORT_PASS" in source
-    for key in ("root_tests", "release_lifecycle", "negative_mutations", "installed_artifact", "native"):
+    for key in (
+        "root_tests",
+        "release_lifecycle",
+        "negative_mutations",
+        "installed_artifact",
+        "native",
+    ):
         assert f'"{key}"' in source
     assert "tools/run_mutation_suite_ci.py" in source
     assert "tools/run_inference_native_locus.py" in source
@@ -150,13 +161,25 @@ def test_lower_release_entrypoints_have_deterministic_direct_script_fallbacks():
 
 def test_installed_artifact_build_is_exported_from_git_tree():
     source = TOOL.read_text(encoding="utf-8")
+    builder = (
+        ROOT / "tools" / "release_distributions.py"
+    ).read_text(encoding="utf-8")
+
     block = source[
         source.index("def installed_artifact_check"):
         source.index("def qualification_checks")
     ]
-    assert '"git", "archive", "--format=tar"' in block
+
+    assert '"git"' in block
+    assert '"--no-replace-objects"' in block
+    assert '"archive"' in block
+    assert '"--format=tar"' in block
     assert "snapshot.extract_git_archive" in block
-    assert '"--no-isolation"' in block
+    assert '"tools/release_distributions.py",' in block
+    assert '"build",' in block
     assert '"SOURCE_DATE_EPOCH"' in block
     assert "proc = run(source, build_argv, env=build_env)" in block
     assert "proc = run(root, build_argv, env=env)" not in block
+
+    assert '"--no-isolation"' in builder
+    assert "canonicalize_sdist" in builder

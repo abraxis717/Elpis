@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from tools import release_git
+
 import io
 import json
 import os
@@ -50,15 +52,10 @@ def copy_repo(tmp_path: Path) -> Path:
     root = tmp_path / "repo"
     root.mkdir()
 
-    subprocess.run(
-        [
-            "git", "-C", str(REPO), "checkout-index", "--all",
-            f"--prefix={root}{os.sep}",
-        ],
-        check=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+    proc = release_git.run(
+        REPO, "checkout-index", "--all", f"--prefix={root}{os.sep}"
     )
+    proc.check_returncode()
 
     return root
 
@@ -136,18 +133,8 @@ def test_real_sealed_tree_verifies_without_reseal(tmp_path: Path) -> None:
         assert len(published) == 1
         row = published[0]
         assert row["peeled_object_type"] == "commit"
-        archive_proc = subprocess.run(
-            [
-                "git",
-                "-C",
-                str(REPO),
-                "archive",
-                "--format=tar",
-                row["peeled_commit"],
-            ],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
+        archive_proc = release_git.run(
+            REPO, "archive", "--format=tar", row["peeled_commit"]
         )
         assert archive_proc.returncode == 0, archive_proc.stderr.decode(
             "utf-8", "replace"

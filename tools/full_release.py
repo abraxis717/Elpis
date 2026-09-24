@@ -84,7 +84,18 @@ def run(root: Path, argv: list[str], *, env: dict[str, str] | None = None) -> su
 
 def git_raw(root: Path, *args: str) -> str:
     """Git machine output, including significant leading spaces and NULs."""
-    proc = run(root, ["git", "--no-replace-objects", *args], env=base_env())
+    if args and args[0] in {
+        "ls-remote",
+        "push",
+        "fetch",
+    }:
+        require_no_local_url_rewrite(root)
+
+    proc = run(
+        root,
+        ["git", "--no-replace-objects", *args],
+        env=base_env(),
+    )
     require(proc.returncode == 0, "GIT_NONPASS:" + " ".join(args) + ":" + (proc.stdout or "")[-3000:])
     return proc.stdout or ""
 
@@ -147,6 +158,8 @@ class OuterJournal:
         previous = journal_digest({"schema": JOURNAL_SCHEMA})
         active = None
         completed = set()
+        seen: dict[str, set[str]] = {}
+
         for seq, event in enumerate(self.data["events"]):
             require(
                 isinstance(event, dict)
@@ -163,19 +176,43 @@ class OuterJournal:
             kind = event["kind"]
             stage = event["stage"]
             require(isinstance(stage, str) and stage, "FULL_RELEASE_JOURNAL_STAGE_INVALID")
+            stage_seen = seen.setdefault(stage, set())
+            require(
+                kind not in stage_seen,
+                "FULL_RELEASE_JOURNAL_STAGE_EVENT_DUPLICATE",
+            )
+
             if kind == "intent":
-                require(active is None and stage not in completed, "FULL_RELEASE_JOURNAL_INTENT_ORDER")
+                require(
+                    active is None and stage not in completed and not stage_seen,
+                    "FULL_RELEASE_JOURNAL_INTENT_ORDER",
+                )
                 active = event
             elif kind == "returned":
-                require(active is not None and active["stage"] == stage, "FULL_RELEASE_JOURNAL_RETURN_ORDER")
+                require(
+                    active is not None
+                    and active["stage"] == stage
+                    and active["kind"] == "intent"
+                    and stage_seen == {"intent"},
+                    "FULL_RELEASE_JOURNAL_RETURN_ORDER",
+                )
                 active = event
             elif kind == "complete":
-                require(active is not None and active["stage"] == stage, "FULL_RELEASE_JOURNAL_COMPLETE_ORDER")
+                require(
+                    active is not None
+                    and active["stage"] == stage
+                    and active["kind"] == "returned"
+                    and stage_seen == {"intent", "returned"},
+                    "FULL_RELEASE_JOURNAL_COMPLETE_ORDER",
+                )
                 completed.add(stage)
                 active = None
             else:
                 raise FullReleaseError("FULL_RELEASE_JOURNAL_KIND_INVALID")
+
+            stage_seen.add(kind)
             previous = event["sha256"]
+
         return active
 
     def completed(self, stage: str) -> bool:
@@ -211,29 +248,90 @@ class OuterJournal:
         self.replay()
         atomic_json(self.path, self.data)
 
+    def event_data(self, stage: str, kind: str) -> Any | None:
+        rows = [
+            event["data"]
+            for event in self.data["events"]
+            if event["stage"] == stage
+            and event["kind"] == kind
+        ]
+        require(
+            len(rows) <= 1,
+            "FULL_RELEASE_JOURNAL_STAGE_EVENT_DUPLICATE",
+        )
+        return rows[0] if rows else None
+
     def begin(self, stage: str, data: Any) -> None:
+        original = self.event_data(stage, "intent")
         active = self.active()
+
         if active is not None:
-            require(active["stage"] == stage, "FULL_RELEASE_JOURNAL_OTHER_MUTATION_ACTIVE")
+            require(
+                active["stage"] == stage,
+                "FULL_RELEASE_JOURNAL_OTHER_MUTATION_ACTIVE",
+            )
+            require(
+                original is not None
+                and original == data,
+                "FULL_RELEASE_JOURNAL_INTENT_CONFLICT",
+            )
             return
+
         if self.completed(stage):
+            require(
+                original is not None
+                and original == data,
+                "FULL_RELEASE_JOURNAL_INTENT_CONFLICT",
+            )
             return
+
+        require(
+            original is None,
+            "FULL_RELEASE_JOURNAL_INTENT_ORDER",
+        )
         self.write(stage, "intent", data)
 
     def returned(self, stage: str, data: Any) -> None:
         active = self.active()
-        require(active is not None and active["stage"] == stage, "FULL_RELEASE_JOURNAL_NO_ACTIVE_INTENT")
+        require(
+            active is not None
+            and active["stage"] == stage,
+            "FULL_RELEASE_JOURNAL_NO_ACTIVE_INTENT",
+        )
+
         if active["kind"] == "returned":
+            require(
+                self.event_data(stage, "returned") == data,
+                "FULL_RELEASE_JOURNAL_RETURN_CONFLICT",
+            )
             return
+
         self.write(stage, "returned", data)
 
     def complete(self, stage: str, data: Any) -> None:
         if self.completed(stage):
+            require(
+                self.event_data(stage, "complete") == data,
+                "FULL_RELEASE_JOURNAL_COMPLETE_CONFLICT",
+            )
             return
+
         active = self.active()
-        require(active is not None and active["stage"] == stage, "FULL_RELEASE_JOURNAL_NO_ACTIVE_RETURN")
+        require(
+            active is not None
+            and active["stage"] == stage,
+            "FULL_RELEASE_JOURNAL_NO_ACTIVE_RETURN",
+        )
+
         if active["kind"] == "intent":
-            self.returned(stage, {"recovered": True, "observed": data})
+            self.returned(
+                stage,
+                {
+                    "recovered": True,
+                    "observed": data,
+                },
+            )
+
         self.write(stage, "complete", data)
 
 
@@ -264,23 +362,40 @@ def remote_url() -> str:
 
 
 def require_no_local_url_rewrite(root: Path) -> None:
-    proc = run(
-        root,
-        [
-            "git", "--no-replace-objects",
-            "config", "--local", "--get-regexp",
+    checks = (
+        (
             r"^url\..*\.(insteadOf|pushInsteadOf)$",
-        ],
-        env=base_env(),
+            "EFFECTIVE_GIT_URL_REWRITE_FORBIDDEN",
+        ),
+        (
+            r"^(http\..*|remote\..*\.proxy|core\.gitProxy)$",
+            "EFFECTIVE_GIT_HTTPS_OVERRIDE_FORBIDDEN",
+        ),
     )
-    require(
-        proc.returncode in {0, 1},
-        "LOCAL_GIT_CONFIG_OBSERVATION_FAILED",
-    )
-    require(
-        proc.returncode == 1 or not (proc.stdout or "").strip(),
-        "LOCAL_GIT_URL_REWRITE_FORBIDDEN",
-    )
+
+    for pattern, diagnostic in checks:
+        proc = run(
+            root,
+            [
+                "git",
+                "--no-replace-objects",
+                "config",
+                "--show-origin",
+                "--show-scope",
+                "--get-regexp",
+                pattern,
+            ],
+            env=base_env(),
+        )
+        require(
+            proc.returncode in {0, 1},
+            "EFFECTIVE_GIT_CONFIG_OBSERVATION_FAILED",
+        )
+        require(
+            proc.returncode == 1
+            or not (proc.stdout or "").strip(),
+            diagnostic,
+        )
 
 
 def committed_path_bytes(root: Path, commit: str, path: str) -> bytes:
@@ -407,7 +522,12 @@ def installed_artifact_check(
 
     archive = workspace / "source.tar"
     archive_argv = [
-        "git", "archive", "--format=tar", f"--output={archive}", "HEAD",
+        "git",
+        "--no-replace-objects",
+        "archive",
+        "--format=tar",
+        f"--output={archive}",
+        "HEAD",
     ]
     proc = run(root, archive_argv, env=env)
     chunks.append(proc.stdout or "")
@@ -438,11 +558,12 @@ def installed_artifact_check(
 
     build_argv = [
         sys.executable,
-        "-m",
+        "tools/release_distributions.py",
         "build",
-        "--no-isolation",
         "--outdir",
         str(dist),
+        "--version",
+        version,
     ]
     proc = run(source, build_argv, env=build_env)
     chunks.append(proc.stdout or "")
@@ -670,6 +791,35 @@ def validate_resume_head(root: Path, state: dict, journal: OuterJournal) -> None
         require(state["final_main"] == expected, "RESUME_FINAL_MAIN_CONFLICT")
 
 
+
+
+def reconcile_seal_journal(
+    journal: OuterJournal,
+    *,
+    intent: dict[str, Any],
+    observed: dict[str, Any],
+) -> None:
+    original = journal.event_data('seal_commit', 'intent')
+    require(
+        original is not None and original == intent,
+        'SEAL_COMMIT_INTENT_CONFLICT',
+    )
+
+    if journal.completed('seal_commit'):
+        require(
+            journal.event_data('seal_commit', 'returned') == observed,
+            'SEAL_COMMIT_RETURNED_CONFLICT',
+        )
+        require(
+            journal.event_data('seal_commit', 'complete') == observed,
+            'SEAL_COMMIT_COMPLETE_CONFLICT',
+        )
+        return
+
+    journal.begin('seal_commit', intent)
+    journal.returned('seal_commit', observed)
+    journal.complete('seal_commit', observed)
+
 def ensure_sealed(
     root: Path,
     state: dict[str, Any],
@@ -678,19 +828,35 @@ def ensure_sealed(
 ) -> dict[str, Any]:
     version = state["version"]
     development = state["development_sha"]
-    manifest_rel = Path(f"manifests/Elpis{version}.RELEASE_MANIFEST.json")
+    manifest_rel = Path(
+        f"manifests/Elpis{version}.RELEASE_MANIFEST.json"
+    )
     manifest = root / manifest_rel
+    seal_intent = {
+        "development_sha": development,
+        "manifest": manifest_rel.as_posix(),
+    }
 
     if "candidate_sha" in state:
-        raw = subprocess.run(
-            ["git", "show", f"{state['candidate_sha']}:{manifest_rel.as_posix()}"],
-            cwd=root,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
+        raw = committed_path_bytes(
+            root,
+            state["candidate_sha"],
+            manifest_rel.as_posix(),
         )
-        require(raw.returncode == 0, "SEALED_MANIFEST_NOT_IN_CANDIDATE")
-        require(sha256_bytes(raw.stdout) == state["manifest_sha256"], "SEALED_MANIFEST_STATE_MISMATCH")
+        require(
+            sha256_bytes(raw)
+            == state["manifest_sha256"],
+            "SEALED_MANIFEST_STATE_MISMATCH",
+        )
+        observed = {
+            "candidate_sha": state["candidate_sha"],
+            "manifest_sha256": state["manifest_sha256"],
+        }
+        reconcile_seal_journal(
+            journal,
+            intent=seal_intent,
+            observed=observed,
+        )
         validate_resume_head(root, state, journal)
         return state
 
@@ -702,22 +868,20 @@ def ensure_sealed(
             commit_paths(root, head) == [manifest_rel.as_posix()],
             "RECOVERED_SEAL_COMMIT_SCOPE_NONPASS",
         )
-        raw = subprocess.run(
-            ["git", "show", f"{head}:{manifest_rel.as_posix()}"],
-            cwd=root,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
+        raw = committed_path_bytes(
+            root,
+            head,
+            manifest_rel.as_posix(),
         )
-        require(raw.returncode == 0, "RECOVERED_SEAL_MANIFEST_MISSING")
-        active = journal.active()
-        require(
-            journal.completed("seal_commit")
-            or (active is not None and active["stage"] == "seal_commit"),
-            "SEAL_COMMIT_EXISTS_WITHOUT_JOURNAL_INTENT",
+        observed = {
+            "candidate_sha": head,
+            "manifest_sha256": sha256_bytes(raw),
+        }
+        reconcile_seal_journal(
+            journal,
+            intent=seal_intent,
+            observed=observed,
         )
-        observed = {"candidate_sha": head, "manifest_sha256": sha256_bytes(raw.stdout)}
-        journal.complete("seal_commit", observed)
         state.update(observed)
         atomic_json(state_path, state)
         clean_status(root)
@@ -726,7 +890,7 @@ def ensure_sealed(
     status = git(root, "status", "--porcelain", "--untracked-files=all")
     if not manifest.exists():
         require(not status, "WORKTREE_NOT_CLEAN_BEFORE_SEAL:" + status)
-        journal.begin("seal_commit", {"development_sha": development, "manifest": manifest_rel.as_posix()})
+        journal.begin("seal_commit", seal_intent)
         proc = run(
             root,
             [sys.executable, "tools/seal_release.py", "--version", version, "--schema", "v3"],
@@ -735,11 +899,12 @@ def ensure_sealed(
         require(proc.returncode == 0, "SEAL_NONPASS:" + (proc.stdout or "")[-5000:])
         status = git(root, "status", "--porcelain", "--untracked-files=all")
     else:
+        original = journal.event_data("seal_commit", "intent")
         require(
-            journal.active() is not None
-            and journal.active()["stage"] == "seal_commit",
-            "MANIFEST_EXISTS_WITHOUT_SEAL_JOURNAL_INTENT",
+            original is not None and original == seal_intent,
+            "MANIFEST_EXISTS_WITHOUT_MATCHING_SEAL_INTENT",
         )
+        journal.begin("seal_commit", seal_intent)
 
     require(
         status.splitlines() in (
@@ -749,7 +914,10 @@ def ensure_sealed(
         "SEAL_SCOPE_NONPASS:" + status,
     )
     git(root, "add", manifest_rel.as_posix())
-    proc = run(root, ["git", "commit", "-m", f"release: seal Elpis{version} v3 manifest"])
+    proc = authority_commit(
+        root,
+        f"release: seal Elpis{version} v3 manifest",
+    )
     require(proc.returncode == 0, "SEAL_COMMIT_NONPASS:" + (proc.stdout or "")[-5000:])
     candidate = git(root, "rev-parse", "HEAD")
     observed = {"candidate_sha": candidate, "manifest_sha256": sha256_bytes(manifest.read_bytes())}
@@ -796,8 +964,21 @@ def ensure_intent(root: Path, private: Path, state: dict[str, Any], state_path: 
         trust = os.environ.get("ELPIS_ALLOWED_SIGNERS")
         require(bool(oid), "SIGNED_TAG_OBJECT_REQUIRED_AFTER_QUALIFICATION")
         proof = origin.verify_tag(root, oid, state["candidate_sha"], f"Elpis{state['version']}", Path(trust) if trust else None)
-        intent.update(schema=orchestrator.SIGNED_SCHEMA, signed_tag_object=oid,
-                      allowed_signers_sha256=proof["allowed_signers_sha256"])
+        qualification_report = json.loads(
+            qualification_path.read_bytes()
+        )
+        distribution_artifacts = qualification_report[
+            "checks"
+        ]["installed_artifact"]["artifacts"]
+
+        intent.update(
+            schema=orchestrator.SIGNED_SCHEMA,
+            signed_tag_object=oid,
+            allowed_signers_sha256=
+                proof["allowed_signers_sha256"],
+            distribution_artifacts=
+                distribution_artifacts,
+        )
     intent_path = private / "intent.json"
     atomic_json(intent_path, intent)
     state["qualification_path"] = str(qualification_path)

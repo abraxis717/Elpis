@@ -5,6 +5,11 @@ The historical v2 implementation deliberately does not use this policy.
 """
 from __future__ import annotations
 
+try:
+    from tools import release_git
+except (ModuleNotFoundError, ImportError):
+    import release_git
+
 import hashlib
 import os
 from pathlib import Path, PurePosixPath
@@ -118,9 +123,7 @@ def physical_files(root: Path) -> set[str]:
 
 
 def _git(root: Path, *args: str) -> bytes:
-    proc = subprocess.run(
-        ["git", "-C", str(root), *args], capture_output=True, check=False,
-    )
+    proc = release_git.run(root, *args)
     if proc.returncode:
         raise ValueError("PUBLICATION_GIT_ERROR:" + proc.stderr.decode("utf-8", "replace").strip())
     return proc.stdout

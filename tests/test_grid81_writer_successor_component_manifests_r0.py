@@ -1,4 +1,5 @@
 from __future__ import annotations
+from tools import release_git
 
 import hashlib
 import json
@@ -43,11 +44,14 @@ def _sha_file(path: Path) -> str:
 
 
 def _tracked_inventory(component: Path):
-    names = subprocess.check_output(
-        ["git", "ls-files", component.as_posix()],
-        cwd=ROOT,
+    proc = release_git.run(
+        ROOT,
+        "ls-files",
+        component.as_posix(),
         text=True,
-    ).splitlines()
+    )
+    proc.check_returncode()
+    names = proc.stdout.splitlines()
     names = sorted(
         name for name in names
         if Path(name).name != "COMPONENT_MANIFEST.json"
@@ -190,10 +194,11 @@ def test_qualification_commits_are_ancestors_of_current_engineering_head():
             ).read_text(encoding="utf-8")
         )
         for commit in manifest["qualification_commits"]:
-            subprocess.run(
-                ["git", "merge-base", "--is-ancestor", commit, "HEAD"],
-                cwd=ROOT,
-                check=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
+            proc = release_git.run(
+                ROOT,
+                "merge-base",
+                "--is-ancestor",
+                commit,
+                "HEAD",
             )
+            assert proc.returncode == 0

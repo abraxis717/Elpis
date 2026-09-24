@@ -176,7 +176,28 @@ def test_workflow_and_local_builder_share_source_date_epoch():
     assert "SOURCE_DATE_EPOCH" in workflow
     assert "SOURCE_DATE_EPOCH" in local
     assert (
-        'git show -s --format=%ct "${RELEASE_TAG}^{}"'
+        'python tools/release_git_cli.py show -s --format=%ct "${RELEASE_TAG}^{}"'
         in workflow
     )
     assert '"--format=%ct"' in local
+
+
+def test_pypi_workflow_verifies_authority_before_upload():
+    workflow = Path(
+        ".github/workflows/pypi-publish.yaml"
+    ).read_text()
+
+    verify_at = workflow.index(
+        "- name: Verify exact qualified distribution authority"
+    )
+    upload_at = workflow.index(
+        "- name: Upload distributions for isolated publish job"
+    )
+    publish_at = workflow.index(
+        "- name: Publish package distributions to PyPI"
+    )
+
+    assert verify_at < upload_at < publish_at
+    assert "workflow_dispatch:" not in workflow
+    assert "github.event.release.body" in workflow
+    assert "tools/release_distributions.py verify" in workflow

@@ -1,3 +1,4 @@
+from tools import release_git
 import json
 import re
 import subprocess
@@ -8,9 +9,13 @@ TAG = re.compile(r"^Elpis\d+\.\d+\.\d+$")
 
 
 def _git(*args: str) -> str:
-    return subprocess.check_output(
-        ["git", *args], cwd=ROOT, text=True
-    ).strip()
+    proc = release_git.run(
+        ROOT,
+        *args,
+        text=True,
+    )
+    proc.check_returncode()
+    return proc.stdout.strip()
 
 
 def _tags(path: str, key: str) -> set[str]:

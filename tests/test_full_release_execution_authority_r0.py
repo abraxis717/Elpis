@@ -83,7 +83,7 @@ def test_local_url_rewrite_is_rejected(tmp_path):
 
     with pytest.raises(
         full_release.FullReleaseError,
-        match="LOCAL_GIT_URL_REWRITE_FORBIDDEN",
+        match="EFFECTIVE_GIT_URL_REWRITE_FORBIDDEN",
     ):
         full_release.require_no_local_url_rewrite(repo)
 
@@ -121,3 +121,81 @@ def test_authority_commit_disables_precommit_hook(tmp_path):
             repo, commit, "authority.json"
         ) == intended
     )
+
+
+
+def test_effective_url_rewrite_from_local_include_is_rejected(
+    tmp_path,
+):
+    repo = tmp_path / "repo"
+    _init(repo)
+
+    included = tmp_path / "included.gitconfig"
+    included.write_text(
+        '[url "file:///tmp/evil.git"]\n'
+        '    pushInsteadOf = https://github.com/abraxis717/Elpis.git\n'
+    )
+
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(repo),
+            "config",
+            "--local",
+            "include.path",
+            str(included),
+        ],
+        check=True,
+    )
+
+    old = subprocess.run(
+        [
+            "git",
+            "-C",
+            str(repo),
+            "config",
+            "--local",
+            "--get-regexp",
+            r"^url\..*\.(insteadOf|pushInsteadOf)$",
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+
+    assert old.returncode == 1
+    assert old.stdout == b""
+
+    with pytest.raises(
+        full_release.FullReleaseError,
+        match="EFFECTIVE_GIT_URL_REWRITE_FORBIDDEN",
+    ):
+        full_release.require_no_local_url_rewrite(repo)
+
+
+
+def test_full_release_rejects_effective_git_https_override(
+    tmp_path,
+):
+    repo = tmp_path / "repo"
+    _init(repo)
+
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(repo),
+            "config",
+            "--local",
+            "http.proxy",
+            "http://127.0.0.1:9",
+        ],
+        check=True,
+    )
+
+    with pytest.raises(
+        full_release.FullReleaseError,
+        match="EFFECTIVE_GIT_HTTPS_OVERRIDE_FORBIDDEN",
+    ):
+        full_release.require_no_local_url_rewrite(repo)

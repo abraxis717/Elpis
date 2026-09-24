@@ -51,11 +51,12 @@ def test_hosted_ci_has_independent_immutability_step():
 
 
 def test_public_release_embedded_gate_rejects_model_identity_mutation(tmp_path):
+    from tools import release_git
     repo=tmp_path/"repo"
-    subprocess.run(
-        ["git","clone","-q","--no-hardlinks",str(ROOT),str(repo)],
-        check=True,
+    proc = release_git.run(
+        ROOT, "clone", "-q", "--no-hardlinks", str(ROOT), str(repo),
     )
+    proc.check_returncode()
     shutil.copy2(PUBLIC, repo/"tools/verify_public_release.py")
 
     model=repo/"src/elpis_reference/model.py"

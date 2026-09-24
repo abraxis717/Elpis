@@ -71,11 +71,19 @@ def _self_hash(value: dict, field: str) -> str:
 
 
 def _tracked_inventory(root: Path, component_rel: Path) -> list[dict]:
-    names = subprocess.check_output(
-        ["git", "ls-files", component_rel.as_posix()],
-        cwd=root,
+    try:
+        from tools import release_git as _release_git
+    except ModuleNotFoundError:
+        import release_git as _release_git
+
+    proc = _release_git.run(
+        root,
+        "ls-files",
+        component_rel.as_posix(),
         text=True,
-    ).splitlines()
+    )
+    proc.check_returncode()
+    names = proc.stdout.splitlines()
     names = sorted(
         name for name in names
         if Path(name).name != "COMPONENT_MANIFEST.json"

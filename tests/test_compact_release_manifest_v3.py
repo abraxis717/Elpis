@@ -205,7 +205,10 @@ def test_git_archive_verifies_without_git_then_fails_after_mutation(tmp_path):
 
 @pytest.mark.requires_git
 def test_historical_v2_archive_verifies_without_migration(tmp_path):
-    archive = subprocess.check_output(["git", "-C", str(ROOT), "archive", "Elpis2.1.26"])
+    from tools import release_git
+    proc = release_git.run(ROOT, "archive", "Elpis2.1.26")
+    proc.check_returncode()
+    archive = proc.stdout
     with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
         tar.extractall(tmp_path, filter="data")
     ns = verifier(tmp_path, "2.1.26")

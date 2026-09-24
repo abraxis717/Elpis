@@ -1,4 +1,5 @@
 from __future__ import annotations
+from tools import release_git
 
 import hashlib
 import json
@@ -15,9 +16,10 @@ MANIFEST_SHA256 = "19b8e7aeb1589f2ec230290db41ad70171cb3c8430fa619dc8b900e990eab
 
 
 def _git(*args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["git", *args], cwd=ROOT, text=True,
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False
+    return release_git.run(
+        ROOT,
+        *args,
+        text=True,
     )
 
 

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from tools import release_git
 import hashlib, json
 from pathlib import Path
 import subprocess, sys
@@ -67,11 +68,13 @@ def test_bootstrap_provenance_is_frozen_and_baseline_is_committed():
     assert data["bootstrap_source_commit"]==bootstrap
     assert data["identity_generations"][0]["source_commit"]==bootstrap
 
-    committed=subprocess.check_output(
-        ["git","show","HEAD:tools/immutable_evidence_baseline_v1.json"],
-        cwd=ROOT,
+    proc=release_git.run(
+        ROOT,
+        "show",
+        "HEAD:tools/immutable_evidence_baseline_v1.json",
     )
-    assert committed==BASE.read_bytes()
+    proc.check_returncode()
+    assert proc.stdout==BASE.read_bytes()
 
 
 def test_dirty_baseline_is_not_ordinary_qualifiable(tmp_path):

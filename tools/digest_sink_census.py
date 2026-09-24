@@ -70,11 +70,12 @@ def canonical_ast(node: Any) -> str:
 
 
 def _git(root: Path, *args: str) -> bytes:
-    p = subprocess.run(
-        ["git", "-C", str(root), *args],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
+    try:
+        from tools import release_git as _release_git
+    except ModuleNotFoundError:
+        import release_git as _release_git
+
+    p = _release_git.run(root, *args)
     if p.returncode:
         raise CensusError(
             f"GIT_FAILED:{' '.join(args)}:"

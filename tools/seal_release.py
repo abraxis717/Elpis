@@ -35,6 +35,11 @@ CLAIMS NOT MADE
 """
 from __future__ import annotations
 
+try:
+    from tools import release_git
+except (ModuleNotFoundError, ImportError):
+    import release_git
+
 import argparse
 import hashlib
 import json
@@ -69,12 +74,7 @@ def tree_files(manifest_rel: Path) -> list[str]:
     # tree, never clone-local ignored/untracked residue. Git-less mutation
     # copies retain the historical physical-tree fallback.
     if (REPO / ".git").exists():
-        proc = subprocess.run(
-            ["git", "-C", str(REPO), "ls-files", "-z"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
-        )
+        proc = release_git.run(REPO, "ls-files", "-z")
         if proc.returncode != 0:
             raise RuntimeError(
                 "git ls-files failed while deriving release tree: "

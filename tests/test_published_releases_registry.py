@@ -1,4 +1,5 @@
 from __future__ import annotations
+from tools import release_git
 
 import hashlib
 import json
@@ -15,7 +16,13 @@ FAILED_RELEASES = ROOT / "FAILED_RELEASES.json"
 
 
 def _git(root: Path, *args: str) -> str:
-    return subprocess.check_output(["git", *args], cwd=root, text=True).strip()
+    proc = release_git.run(
+        root,
+        *args,
+        text=True,
+    )
+    proc.check_returncode()
+    return proc.stdout.strip()
 
 
 def _run_tool(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
@@ -141,9 +148,12 @@ def test_current_tagged_but_unpublished_state_is_valid_when_present():
         item["release_tag"]
         for item in json.loads(FAILED_RELEASES.read_text(encoding="utf-8"))["failed_releases"]
     }
-    exists = subprocess.run(
-        ["git", "show-ref", "--verify", "--quiet", f"refs/tags/{tag}"],
-        cwd=ROOT,
+    exists = release_git.run(
+        ROOT,
+        "show-ref",
+        "--verify",
+        "--quiet",
+        f"refs/tags/{tag}",
     ).returncode == 0
     if exists and tag not in published and tag not in failed:
         proc = _run_tool(ROOT, "--check")

@@ -13,9 +13,8 @@ def test_trusted_publisher_identity_and_oidc_boundary():
 
     assert "release:" in text
     assert "types: [published]" in text
-    assert "workflow_dispatch:" in text
-    assert "release_tag:" in text
-    assert "required: true" in text
+    assert "workflow_dispatch:" not in text
+    assert "release_tag:" not in text
     assert "name: pypi" in text
     assert "id-token: write" in text
     assert "pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33" in text
@@ -39,20 +38,21 @@ def test_publish_job_is_separate_from_build_job():
     assert "permissions: {}" in text
 
 
-def test_release_and_recovery_events_resolve_one_required_immutable_tag():
+def test_release_event_resolves_one_required_immutable_tag():
     text = _text()
-    assert "RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}" in text
+    assert "workflow_dispatch:" not in text
+    assert "RELEASE_TAG: ${{ github.event.release.tag_name }}" in text
     assert "ref: ${{ env.RELEASE_TAG }}" in text
     assert "fetch-depth: 0" in text
     assert 'test -n "${RELEASE_TAG}"' in text
     assert 'test "Elpis$(cat VERSION)" = "${RELEASE_TAG}"' in text
-    assert 'test "$(git rev-parse HEAD)" = "$(git rev-list -n 1 "${RELEASE_TAG}")"' in text
+    assert 'test "$(python tools/release_git_cli.py rev-parse HEAD)" = "$(python tools/release_git_cli.py rev-list -n 1 "${RELEASE_TAG}")"' in text
 
 
 def test_build_input_is_immutable_git_archive_not_mutable_checkout():
     text = _text()
 
-    assert 'git archive --format=tar "${RELEASE_TAG}"' in text
+    assert 'python tools/release_git_cli.py archive --format=tar "${RELEASE_TAG}"' in text
     assert '"${RUNNER_TEMP}/elpis-release-tree"' in text
     assert 'test ! -e "${release_tree}/.git"' in text
     assert 'cd "${RUNNER_TEMP}/elpis-release-tree"' in text
@@ -62,20 +62,35 @@ def test_build_input_is_immutable_git_archive_not_mutable_checkout():
     export_at = text.index("- name: Export immutable release tree")
     verify_at = text.index("- name: Verify exported public release")
     build_at = text.index("- name: Build distributions from immutable export")
+    authority_at = text.index(
+        "- name: Verify exact qualified distribution authority"
+    )
     check_at = text.index("- name: Check distributions")
-    assert identity_at < repo_identity_at < export_at < verify_at < build_at < check_at
+    upload_at = text.index(
+        "- name: Upload distributions for isolated publish job"
+    )
 
-    assert text.count("python -m build") == 1
     assert (
-        'python -m build --no-isolation --outdir '
-        '"${RUNNER_TEMP}/python-package-distributions"'
-    ) in text
+        identity_at
+        < repo_identity_at
+        < export_at
+        < verify_at
+        < build_at
+        < authority_at
+        < check_at
+        < upload_at
+    )
+
+    assert "python -m build" not in text
+    assert "tools/release_distributions.py build" in text
+    assert "tools/release_distributions.py verify" in text
+    assert "github.event.release.body" in text
 
 
 def test_malformed_release_event_identity_command_is_gone():
     text = _text()
     assert 'git rev-list -n 1 "${{ github.event.release.tag_name }})' not in text
-    assert '$(git rev-list -n 1 "${RELEASE_TAG}")' in text
+    assert '$(python tools/release_git_cli.py rev-list -n 1 "${RELEASE_TAG}")' in text
 
 
 def test_publish_job_still_consumes_only_uploaded_build_artifact():

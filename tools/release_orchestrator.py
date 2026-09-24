@@ -74,12 +74,183 @@ def digest(value: Any) -> str:
     return hashlib.sha256(canonical(value)).hexdigest()
 
 
+
+DISTRIBUTION_AUTHORITY_SCHEMA = "elpis.distribution-artifacts.v1"
+DISTRIBUTION_AUTHORITY_BEGIN = "<!-- ELPIS_DISTRIBUTION_ARTIFACTS_V1\n"
+DISTRIBUTION_AUTHORITY_END = "\n-->"
+
+
+def validate_distribution_artifacts(value, version):
+    require(
+        isinstance(value, list) and len(value) == 2,
+        "DISTRIBUTION_ARTIFACTS_INVALID",
+    )
+
+    rows = []
+    filenames = set()
+    types = set()
+
+    for item in value:
+        require(
+            isinstance(item, dict)
+            and set(item)
+            == {"filename", "packagetype", "sha256"},
+            "DISTRIBUTION_ARTIFACT_FIELDS_INVALID",
+        )
+
+        filename = item["filename"]
+        kind = item["packagetype"]
+        digest_value = item["sha256"]
+
+        require(
+            isinstance(filename, str)
+            and bool(filename),
+            "DISTRIBUTION_ARTIFACT_FILENAME_INVALID",
+        )
+        require(
+            kind in {"sdist", "bdist_wheel"},
+            "DISTRIBUTION_ARTIFACT_TYPE_INVALID",
+        )
+        require(
+            isinstance(digest_value, str)
+            and bool(
+                publication.SHA256_RE.fullmatch(
+                    digest_value
+                )
+            ),
+            "DISTRIBUTION_ARTIFACT_SHA256_INVALID",
+        )
+        require(
+            filename not in filenames,
+            "DISTRIBUTION_ARTIFACT_FILENAME_DUPLICATE",
+        )
+
+        filenames.add(filename)
+        types.add(kind)
+
+        prefix = "elpisai-" + version
+        if kind == "sdist":
+            require(
+                filename == prefix + ".tar.gz",
+                "DISTRIBUTION_SDIST_FILENAME_INVALID",
+            )
+        else:
+            require(
+                filename.startswith(prefix + "-")
+                and filename.endswith(".whl"),
+                "DISTRIBUTION_WHEEL_FILENAME_INVALID",
+            )
+
+        rows.append(
+            {
+                "filename": filename,
+                "packagetype": kind,
+                "sha256": digest_value,
+            }
+        )
+
+    require(
+        types == {"sdist", "bdist_wheel"},
+        "DISTRIBUTION_ARTIFACT_TYPE_SET_INVALID",
+    )
+
+    return sorted(
+        rows,
+        key=lambda item: item["filename"],
+    )
+
+
+def distribution_authority(intent):
+    return {
+        "schema": DISTRIBUTION_AUTHORITY_SCHEMA,
+        "version": intent["version"],
+        "files": validate_distribution_artifacts(
+            intent["distribution_artifacts"],
+            intent["version"],
+        ),
+    }
+
+
+def release_body(intent, notes):
+    if intent.get("schema") != SIGNED_SCHEMA:
+        return notes
+
+    authority = canonical(
+        distribution_authority(intent)
+    ).decode("utf-8").strip()
+
+    return (
+        notes
+        + "\n"
+        + DISTRIBUTION_AUTHORITY_BEGIN
+        + authority
+        + DISTRIBUTION_AUTHORITY_END
+        + "\n"
+    )
+
+
+def validate_release_body(intent, body):
+    require(
+        isinstance(body, str),
+        "GITHUB_RELEASE_BODY_INVALID",
+    )
+
+    if intent.get("schema") != SIGNED_SCHEMA:
+        require(
+            hashlib.sha256(body.encode()).hexdigest()
+            == intent["notes_sha256"],
+            "GITHUB_RELEASE_NOTES_MISMATCH",
+        )
+        return
+
+    separator = "\n" + DISTRIBUTION_AUTHORITY_BEGIN
+
+    require(
+        body.count(separator) == 1
+        and body.count(DISTRIBUTION_AUTHORITY_END) == 1,
+        "GITHUB_RELEASE_ARTIFACT_AUTHORITY_INVALID",
+    )
+
+    notes, remainder = body.split(separator, 1)
+    raw, suffix = remainder.split(
+        DISTRIBUTION_AUTHORITY_END,
+        1,
+    )
+
+    require(
+        suffix == "\n",
+        "GITHUB_RELEASE_ARTIFACT_AUTHORITY_INVALID",
+    )
+
+    require(
+        hashlib.sha256(notes.encode()).hexdigest()
+        == intent["notes_sha256"],
+        "GITHUB_RELEASE_NOTES_MISMATCH",
+    )
+
+    try:
+        observed = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise ReleaseError(
+            "GITHUB_RELEASE_ARTIFACT_AUTHORITY_INVALID:"
+            + str(exc)
+        ) from exc
+
+    require(
+        observed == distribution_authority(intent),
+        "GITHUB_RELEASE_ARTIFACT_AUTHORITY_MISMATCH",
+    )
+
 def validate_intent(value: dict) -> dict:
     signed = isinstance(value, dict) and value.get('schema') == SIGNED_SCHEMA
     require(isinstance(value, dict) and set(value) == {
         'schema', 'repository', 'version', 'candidate_sha', 'manifest_sha256',
         'main_before', 'tagger', 'qualification_sha256', 'notes_sha256',
-    } | ({'signed_tag_object', 'allowed_signers_sha256'} if signed else set()), 'INTENT_FIELDS_INVALID')
+    } | ({
+        'signed_tag_object',
+        'allowed_signers_sha256',
+        'distribution_artifacts',
+    } if signed else set()), 'INTENT_FIELDS_INVALID')
     require(value['schema'] in {SCHEMA, SIGNED_SCHEMA}, 'INTENT_SCHEMA_INVALID')
     require(value['repository'] == 'abraxis717/Elpis', 'REPOSITORY_MISMATCH')
     version = value['version']
@@ -91,6 +262,10 @@ def validate_intent(value: dict) -> dict:
     if signed:
         require(bool(publication.HEX_RE.fullmatch(value['signed_tag_object'])), 'SIGNED_TAG_OBJECT_INVALID')
         require(bool(publication.SHA256_RE.fullmatch(value['allowed_signers_sha256'])), 'SIGNERS_DIGEST_INVALID')
+        value['distribution_artifacts'] = validate_distribution_artifacts(
+            value['distribution_artifacts'],
+            value['version'],
+        )
     for field in ('candidate_sha', 'main_before'):
         require(isinstance(value[field], str) and bool(publication.HEX_RE.fullmatch(value[field])),
                 f'OBJECT_ID_INVALID:{field}')
@@ -310,6 +485,23 @@ class Orchestrator:
         elif state == 'PYPI_EXTERNALLY_OBSERVED':
             receipt = external_receipt(i, dict(evidence, PYPI_EXTERNALLY_OBSERVED=value))
             require(receipt['pypi'] == value, 'PYPI_NONCANONICAL')
+            if i.get('schema') == SIGNED_SCHEMA:
+                observed_artifacts = sorted(
+                    [
+                        {
+                            'filename': file['filename'],
+                            'packagetype': file['packagetype'],
+                            'sha256': file['sha256'],
+                        }
+                        for file in value['files']
+                    ],
+                    key=lambda item: item['filename'],
+                )
+                require(
+                    observed_artifacts
+                    == i['distribution_artifacts'],
+                    'PYPI_ARTIFACT_IDENTITY_MISMATCH',
+                )
             for file in value['files']:
                 require(timestamp(file['upload_time_iso_8601']) >= timestamp(
                     evidence['GITHUB_RELEASE_PUBLISHED']['published_at']), 'PYPI_PREDATES_RELEASE')

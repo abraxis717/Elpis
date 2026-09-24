@@ -13,6 +13,11 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Iterator
 
+try:
+    from tools import release_git
+except (ModuleNotFoundError, ImportError):
+    import release_git
+
 DEFAULT_ROOT = Path(__file__).resolve().parent.parent
 REGISTRY_NAME = "PUBLICATION_ASSERTIONS.json"
 LEGACY_NAME = "PUBLISHED_RELEASES.json"
@@ -83,10 +88,9 @@ def _read_bytes(path: Path) -> bytes:
 
 
 def _git(root: Path, *args: str, text: bool = True) -> str | bytes:
-    proc = subprocess.run(
-        ["git", "-C", str(root), *args],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+    proc = release_git.run(
+        root,
+        *args,
         text=text,
     )
     if proc.returncode:

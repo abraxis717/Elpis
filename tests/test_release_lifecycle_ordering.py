@@ -173,11 +173,11 @@ def test_tag_sensitive_workflows_restore_annotated_tag_objects() -> None:
     pypi = _text(PYPI)
 
     ci_fetch = (
-        'git fetch --force --no-tags origin '
+        'python tools/release_git_cli.py fetch --force --no-tags origin '
         '"refs/tags/${RELEASE_TAG}:refs/tags/${RELEASE_TAG}"'
     )
     ci_type = (
-        'test "$(git cat-file -t "refs/tags/${RELEASE_TAG}")" = "tag"'
+        'test "$(python tools/release_git_cli.py cat-file -t "refs/tags/${RELEASE_TAG}")" = "tag"'
     )
     ci_verify = "python tools/verify_public_release.py"
     assert ci_fetch in ci
@@ -185,11 +185,11 @@ def test_tag_sensitive_workflows_restore_annotated_tag_objects() -> None:
     assert ci.index(ci_fetch) < ci.index(ci_verify)
 
     reference_fetch = (
-        'git fetch --force --no-tags origin '
+        'python tools/release_git_cli.py fetch --force --no-tags origin '
         '"refs/tags/${release_tag}:refs/tags/${release_tag}"'
     )
     reference_type = (
-        'test "$(git cat-file -t "refs/tags/${release_tag}")" = "tag"'
+        'test "$(python tools/release_git_cli.py cat-file -t "refs/tags/${release_tag}")" = "tag"'
     )
     assert reference_fetch in reference
     assert reference_type in reference
@@ -198,11 +198,11 @@ def test_tag_sensitive_workflows_restore_annotated_tag_objects() -> None:
     )
 
     pypi_fetch = (
-        'git fetch --force --no-tags origin '
+        'python tools/release_git_cli.py fetch --force --no-tags origin '
         '"refs/tags/${RELEASE_TAG}:refs/tags/${RELEASE_TAG}"'
     )
     pypi_type = (
-        'test "$(git cat-file -t "refs/tags/${RELEASE_TAG}")" = "tag"'
+        'test "$(python tools/release_git_cli.py cat-file -t "refs/tags/${RELEASE_TAG}")" = "tag"'
     )
     strict = (
         "python tools/verify_public_release.py "

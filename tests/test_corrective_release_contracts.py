@@ -197,15 +197,84 @@ def test_origin_verifier_process_contract(tmp_path, monkeypatch, attack):
         payload += b"-----BEGIN SSH SIGNATURE-----\n" + encoded + b"\n-----END SSH SIGNATURE-----\n"
     def run(argv, **kwargs):
         calls.append(argv)
+
+        text_mode = bool(kwargs.get("text"))
+
+        def result(stdout, stderr="", returncode=0):
+            if text_mode:
+                if isinstance(stdout, bytes):
+                    stdout = stdout.decode(errors="replace")
+                if isinstance(stderr, bytes):
+                    stderr = stderr.decode(errors="replace")
+            else:
+                if isinstance(stdout, str):
+                    stdout = stdout.encode()
+                if isinstance(stderr, str):
+                    stderr = stderr.encode()
+
+            return SimpleNamespace(
+                returncode=returncode,
+                stdout=stdout,
+                stderr=stderr,
+            )
+
+        if (
+            "rev-parse" in argv
+            and (
+                "--show-toplevel" in argv
+                or "--absolute-git-dir" in argv
+                or "--git-common-dir" in argv
+            )
+        ):
+            # Storage-topology observation is not the subject of this
+            # synthetic verifier-process test. Model all repository
+            # storage queries as the existing synthetic repository.
+            return result(str(root) + "\n")
+
         if "verify-tag" in argv:
-            return SimpleNamespace(returncode=1 if attack in {"modified-signature", "invalid-signer"} else 0, stdout=b"", stderr=b"signature result")
-        return SimpleNamespace(returncode=0, stdout=b"tag\n" if "-t" in argv else payload, stderr=b"")
+            return result(
+                b"",
+                b"signature result",
+                1
+                if attack in {
+                    "modified-signature",
+                    "invalid-signer",
+                }
+                else 0,
+            )
+
+        return result(
+            b"tag\n" if "-t" in argv else payload
+        )
     monkeypatch.setattr(origin.subprocess, "run", run)
     monkeypatch.setattr(origin.shutil, "which", lambda name: "/usr/bin/ssh-keygen")
     if attack == "valid-boundary":
-        assert origin.verify_tag(root, "a" * 40, target, tag, trust)["signature_format"] == "ssh-ed25519"
-        assert "gpg.ssh.allowedSignersFile=" + str(trust) in calls[-1]
-        assert calls[-1][-2:] == ["verify-tag", "a" * 40]
+        assert origin.verify_tag(
+            root,
+            "a" * 40,
+            target,
+            tag,
+            trust,
+        )["signature_format"] == "ssh-ed25519"
+
+        verifier_calls = [
+            argv
+            for argv in calls
+            if "verify-tag" in argv
+        ]
+
+        assert len(verifier_calls) == 1
+
+        verifier = verifier_calls[0]
+
+        assert (
+            "gpg.ssh.allowedSignersFile=" + str(trust)
+            in verifier
+        )
+        assert verifier[-2:] == [
+            "verify-tag",
+            "a" * 40,
+        ]
     else:
         with pytest.raises(ValueError):
             origin.verify_tag(root, "a" * 40, target, tag, trust)

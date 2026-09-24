@@ -11,23 +11,36 @@ def test_224_release_artifacts_remain_preserved():
 
 def test_repaired_pypi_workflow_contract_is_current():
     text=(ROOT/".github/workflows/pypi-publish.yaml").read_text()
+
     for marker in (
         "  release:",
         "    types: [published]",
-        "  workflow_dispatch:",
-        "      release_tag:",
-        "        required: true",
-        "RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}",
+        "RELEASE_TAG: ${{ github.event.release.tag_name }}",
         "ref: ${{ env.RELEASE_TAG }}",
         'test "Elpis$(cat VERSION)" = "${RELEASE_TAG}"',
-        'test "$(git rev-parse HEAD)" = "$(git rev-list -n 1 "${RELEASE_TAG}")"',
+        'test "$(python tools/release_git_cli.py rev-parse HEAD)" = "$(python tools/release_git_cli.py rev-list -n 1 "${RELEASE_TAG}")"',
         'python tools/verify_public_release.py --verify-repository-identity',
-        'git archive --format=tar "${RELEASE_TAG}"',
+        'python tools/release_git_cli.py archive --format=tar "${RELEASE_TAG}"',
+        "tools/release_distributions.py",
         "      id-token: write",
         "pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33",
     ):
         assert marker in text, marker
-    assert 'git rev-list -n 1 "${{ github.event.release.tag_name }})' not in text
+
+    # Publication authority is the immutable GitHub release event only.
+    # Manual dispatch / caller-supplied tag fallback is forbidden because
+    # it would reopen ambiguity between qualified and published bytes.
+    assert "workflow_dispatch:" not in text
+    assert "inputs.release_tag" not in text
+    assert (
+        "github.event.release.tag_name ||"
+        not in text
+    )
+
+    assert (
+        'git rev-list -n 1 "${{ github.event.release.tag_name }})'
+        not in text
+    )
 
 def test_224_manifest_binds_contract_corrective():
     data=json.loads((ROOT/"manifests/Elpis2.2.4.RELEASE_MANIFEST.json").read_text())

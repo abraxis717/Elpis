@@ -23,8 +23,10 @@ def git(root, *args):
 
 @pytest.fixture
 def checkout(tmp_path):
+    from tools import release_git
     root = tmp_path / "repo"
-    git(ROOT, "clone", "--quiet", "--shared", str(ROOT), str(root))
+    proc = release_git.run(ROOT, "clone", "--quiet", "--shared", str(ROOT), str(root))
+    proc.check_returncode()
     git(root, "checkout", "--quiet", "--detach", BASE)
     git(root, "config", "user.name", "Fixture")
     git(root, "config", "user.email", "fixture@example.invalid")

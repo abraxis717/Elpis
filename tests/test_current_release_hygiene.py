@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from tools import release_git
+
 import hashlib
 import io
 import json
@@ -146,11 +148,7 @@ def test_current_manifest_and_published_registry_are_truthful_when_present():
                 assert published["peeled_object_type"] == "commit"
 
                 if (ROOT / ".git").exists():
-                    proc = subprocess.run(
-                        ["git", "-C", str(ROOT), "archive", "--format=tar", peeled],
-                        capture_output=True,
-                        check=False,
-                    )
+                    proc = release_git.run(ROOT, "archive", "--format=tar", peeled)
                     assert proc.returncode == 0, proc.stderr.decode("utf-8", "replace")
                     with tempfile.TemporaryDirectory() as td:
                         sealed_root = Path(td)
@@ -271,7 +269,7 @@ def test_repository_completeness_explicitly_separates_source_only_integrations()
     assert "env -u PYTHONPATH" in ci
     assert 'PYTHONPATH=""\n          python -m pytest -q -p no:cacheprovider tests/' not in ci
     assert 'INSTALL_SRC="$(mktemp -d)"' in ci
-    assert 'git archive HEAD | tar -x -C "$INSTALL_SRC"' in ci
+    assert 'python tools/release_git_cli.py archive HEAD | tar -x -C "$INSTALL_SRC"' in ci
     assert 'python -m pip install "$INSTALL_SRC[trm]" pytest==9.0.2' in ci
     assert (
         '      - name: Install repository-completeness dependencies\n'

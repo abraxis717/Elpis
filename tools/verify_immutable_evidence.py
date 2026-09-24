@@ -9,6 +9,11 @@ This is intentionally not a general "freeze the repository" mechanism.
 Contracts, tests, tools, docs and versioned policies remain mutable.
 """
 from __future__ import annotations
+
+try:
+    from tools import release_git
+except (ModuleNotFoundError, ImportError):
+    import release_git
 import argparse, ast, hashlib, json, subprocess, tomllib
 from pathlib import Path
 from typing import Any
@@ -24,7 +29,7 @@ def canonical_hash(x:Any)->str:
     return hbytes(json.dumps(x,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode())
 
 def git(root:Path,*args:str,check=True)->bytes:
-    p=subprocess.run(["git","-C",str(root),*args],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    p=release_git.run(root, *args)
     if check and p.returncode:
         raise GateError(f"GIT_FAILED:{' '.join(args)}:{p.stderr.decode(errors='replace')}")
     return p.stdout if p.returncode==0 else b""
@@ -33,8 +38,7 @@ def git_head(root:Path)->str:
     return git(root,"rev-parse","HEAD").decode().strip()
 
 def parent_baseline(root:Path)->dict|None:
-    p=subprocess.run(["git","-C",str(root),"show",f"HEAD^:tools/{BASELINE_NAME}"],
-                     stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    p=release_git.run(root, "show", f"HEAD^:tools/{BASELINE_NAME}")
     if p.returncode: return None
     return json.loads(p.stdout.decode())
 
@@ -178,10 +182,7 @@ def prefix_equal(old:list,new:list)->bool:
 WRITE_ONCE_RULE="FIRST_COMMITTED_BLOB_IMMUTABLE"
 
 def _git_history_for_path(root:Path,rel:str)->list[str]:
-    p=subprocess.run(
-        ["git","-C",str(root),"log","--format=%H","--reverse","--",rel],
-        stdout=subprocess.PIPE,stderr=subprocess.PIPE,
-    )
+    p=release_git.run(root, "log", "--format=%H", "--reverse", "--", rel)
     if p.returncode:
         raise GateError(
             f"WRITE_ONCE_GIT_HISTORY_ERROR:{rel}:"
@@ -190,10 +191,7 @@ def _git_history_for_path(root:Path,rel:str)->list[str]:
     return [line for line in p.stdout.decode().splitlines() if line]
 
 def _git_blob_at(root:Path,commit:str,rel:str)->bytes|None:
-    p=subprocess.run(
-        ["git","-C",str(root),"show",f"{commit}:{rel}"],
-        stdout=subprocess.PIPE,stderr=subprocess.PIPE,
-    )
+    p=release_git.run(root, "show", f"{commit}:{rel}")
     return p.stdout if p.returncode==0 else None
 
 def verify_write_once_path(
