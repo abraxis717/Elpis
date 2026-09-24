@@ -638,7 +638,7 @@ def run_case(name: str, mutate, expect: int, marker: str, verbose: bool) -> dict
                     "expected_exit": expect, "observed_exit": None, "marker_seen": False}
 
         proc = subprocess.run(
-            [sys.executable, str(root / VERIFIER_REL)],
+            [sys.executable, str(root / VERIFIER_REL), "--candidate"],
             capture_output=True, text=True, cwd=root,
         )
         observed = proc.returncode

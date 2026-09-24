@@ -162,6 +162,6 @@ def test_real_sealed_tree_verifies_without_reseal(tmp_path: Path) -> None:
     else:
         root = copy_repo(tmp_path)
 
-    proc = run(root, str(VERIFIER))
+    proc = run(root, str(VERIFIER), "--candidate")
 
     assert proc.returncode == 0, output(proc)

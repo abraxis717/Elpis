@@ -85,7 +85,7 @@ jobs:
           python-version: '3.11'
       - name: Verify external signer authority and physical snapshot
         env:
-          RELEASE_ALLOWED_SIGNERS: ${{ secrets.RELEASE_ALLOWED_SIGNERS }}
+          RELEASE_ALLOWED_SIGNERS: ${{ vars.RELEASE_ALLOWED_SIGNERS }}
         run: |
           test -n "$RELEASE_ALLOWED_SIGNERS"
           printf '%s\n' "$RELEASE_ALLOWED_SIGNERS" > "$RUNNER_TEMP/elpis-allowed-signers"

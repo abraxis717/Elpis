@@ -46,7 +46,7 @@ def test_exact_historical_checkout(checkout, ref):
 
 @pytest.mark.parametrize("attack", ["unstaged", "staged", "committed", "skip-worktree",
     "assume-unchanged", "untracked", "ignored", "hidden-delete", "symlink", "directory",
-    "nested-git", "executable", "ratification", "historical-registry"])
+    "nested-git", "executable", "ratification", "ratification-delete", "historical-registry"])
 def test_physical_attacks(checkout, attack):
     source = checkout / SOURCE
     if attack in {"skip-worktree", "assume-unchanged", "hidden-delete"}:
@@ -75,6 +75,8 @@ def test_physical_attacks(checkout, attack):
         source.chmod(source.stat().st_mode ^ 0o111)
     elif attack == "ratification":
         (checkout / "RELEASE_RATIFICATIONS/Elpis2.2.30.json").write_text("{}")
+    elif attack == "ratification-delete":
+        (checkout / "RELEASE_RATIFICATIONS/Elpis2.2.30.json").unlink()
     elif attack == "historical-registry":
         p = checkout / "PUBLISHED_RELEASES.json"
         p.write_bytes(p.read_bytes() + b"\n")
@@ -94,7 +96,7 @@ def test_tag_mutation_and_tag_deletion_fail(checkout):
 
 
 def test_assertion_only_closeout_is_valid(checkout):
-    (checkout / "RELEASE_RATIFICATIONS/Elpis2.2.30.json").unlink()
+    git(checkout, "checkout", "--quiet", "--detach", "6c370a83fd634cd11fb02a575b82eec5b7e13f0c")
     assert verify(checkout) == (True, [])
 
 

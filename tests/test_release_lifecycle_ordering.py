@@ -101,7 +101,7 @@ def test_ci_verify_job_is_bytecode_free() -> None:
     verify = blocks["verify"]
     assert "PYTHONDONTWRITEBYTECODE: '1'" in verify
     assert "PYTHONNOUSERSITE: '1'" in verify
-    assert "pip install pytest==9.0.2" in verify
+    assert "pip install --require-hashes --only-binary=:all: -r qualification/locks/test-tools-py311-py312.lock" in verify
 
 
 def test_policy_orders_push_before_tag_and_strict_tag_before_release() -> None:

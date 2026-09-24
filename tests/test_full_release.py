@@ -153,6 +153,7 @@ def test_installed_artifact_build_is_exported_from_git_tree():
         source.index("def qualification_checks")
     ]
     assert '"git", "archive", "--format=tar"' in block
-    assert "shutil.unpack_archive" in block
+    assert "snapshot.extract_git_archive" in block
+    assert '"--no-build-isolation"' in block
     assert "proc = run(source, build_argv, env=env)" in block
     assert "proc = run(root, build_argv, env=env)" not in block

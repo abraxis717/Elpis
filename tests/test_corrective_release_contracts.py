@@ -4,6 +4,9 @@ import base64
 import json
 from pathlib import Path
 import subprocess
+import sys
+import hashlib
+import zipfile
 from types import SimpleNamespace
 
 import pytest
@@ -103,6 +106,34 @@ def test_locks_are_exact_and_hash_bound(tmp_path):
     assert len(digest) == 64 and len(entries) == 6
 
 
+def test_pip_enforces_hashes_and_cannot_upgrade_locked_fixture(tmp_path):
+    def wheel(version):
+        path = tmp_path / f"audit_fixture-{version}-py3-none-any.whl"
+        prefix = f"audit_fixture-{version}.dist-info/"
+        with zipfile.ZipFile(path, "w") as archive:
+            archive.writestr(prefix + "METADATA", f"Metadata-Version: 2.1\nName: audit-fixture\nVersion: {version}\n")
+            archive.writestr(prefix + "WHEEL", "Wheel-Version: 1.0\nGenerator: test\nRoot-Is-Purelib: true\nTag: py3-none-any\n")
+            archive.writestr(prefix + "RECORD", "")
+        return path
+    old = wheel("1.0")
+    wheel("1.1")
+    lock = tmp_path / "fixture.lock"
+    report = tmp_path / "report.json"
+    command = [sys.executable, "-m", "pip", "install", "--dry-run", "--ignore-installed", "--no-index",
+               "--find-links", str(tmp_path), "--require-hashes", "--only-binary=:all:", "--report", str(report), "-r", str(lock)]
+    lock.write_text("audit-fixture==1.0\n")
+    rejected = subprocess.run(command, capture_output=True, text=True)
+    assert rejected.returncode != 0 and "Hashes are required" in rejected.stderr
+    lock.write_text("audit-fixture==1.0 --hash=sha256:" + hashlib.sha256(old.read_bytes()).hexdigest() + "\n")
+    passed = subprocess.run(command, capture_output=True, text=True)
+    assert passed.returncode == 0, passed.stderr
+    assert json.loads(report.read_text())["install"][0]["metadata"]["version"] == "1.0"
+    with zipfile.ZipFile(old, "a") as archive:
+        archive.writestr("injected.py", "pass\n")
+    rejected = subprocess.run(command, capture_output=True, text=True)
+    assert rejected.returncode != 0 and "DO NOT MATCH THE HASHES" in rejected.stderr
+
+
 def test_census_format_preserves_historical_fingerprints():
     # Historical registry equality is covered by the existing census suite.
     for expression in ["hashlib.sha256(x.encode())", "sha256(None)", "sha256(b'abc')", "sha256([x for x in y if x])", "sha256((lambda x: x)(1))"]:
@@ -133,7 +164,7 @@ def test_origin_malformed_signers(tmp_path, data):
         origin.verify_tag(root, "a" * 40, "b" * 40, "Elpis2.2.31", path)
 
 
-@pytest.mark.parametrize("attack", ["unsigned", "target", "name", "modified-signature", "invalid-signer", "valid-boundary"])
+@pytest.mark.parametrize("attack", ["unsigned", "target", "name", "modified-signature", "invalid-signer", "pgp-confusion", "valid-boundary"])
 def test_origin_verifier_process_contract(tmp_path, monkeypatch, attack):
     # Synthetic PUBLIC key bytes and injected Git results test argument binding;
     # this is explicitly not a cryptographic positive-control fixture.
@@ -147,7 +178,9 @@ def test_origin_verifier_process_contract(tmp_path, monkeypatch, attack):
     tag = "Elpis2.2.31"
     payload = f"object {target if attack != 'target' else 'c' * 40}\ntype commit\ntag {tag if attack != 'name' else 'Other'}\ntagger Test <test@example.invalid> 1 +0000\n\nmessage\n".encode()
     if attack != "unsigned":
-        payload += b"-----BEGIN SSH SIGNATURE-----\ninvalid-test-only\n"
+        payload += b"-----BEGIN SSH SIGNATURE-----\ninvalid-test-only\n-----END SSH SIGNATURE-----\n"
+    if attack == "pgp-confusion":
+        payload += b"-----BEGIN PGP SIGNATURE-----\n"
     def run(argv, **kwargs):
         calls.append(argv)
         if "verify-tag" in argv:
@@ -162,3 +195,12 @@ def test_origin_verifier_process_contract(tmp_path, monkeypatch, attack):
     else:
         with pytest.raises(ValueError):
             origin.verify_tag(root, "a" * 40, target, tag, trust)
+
+
+def test_real_historical_unsigned_tag_is_not_origin_authenticated(tmp_path):
+    trust = tmp_path / "signers"
+    key = base64.b64encode(b"\0\0\0\x0bssh-ed25519\0\0\0\x20" + b"a" * 32).decode()
+    trust.write_text("release@example.invalid ssh-ed25519 " + key + "\n")
+    with pytest.raises(ValueError, match="SSH_SIGNATURE_REQUIRED"):
+        origin.verify_tag(ROOT, "049c72e92c53ac927d2bef1c0b4d52a0ce1df1f6",
+                          "912921b78f9766494e137f9f472b59fc4fc53b17", "Elpis2.2.30", trust)

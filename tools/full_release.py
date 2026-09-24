@@ -22,6 +22,7 @@ import subprocess
 import sys
 import time
 import shutil
+import tarfile
 from typing import Any
 
 try:
@@ -359,11 +360,15 @@ def installed_artifact_check(
         proc.returncode == 0,
         "ARTIFACT_SOURCE_EXPORT_NONPASS:" + (proc.stdout or "")[-5000:],
     )
-    shutil.unpack_archive(str(archive), str(source))
+    import importlib
+    snapshot = importlib.import_module('tools.release_snapshot' if __package__ else 'release_snapshot')
+    with tarfile.open(archive) as stream:
+        snapshot.extract_git_archive(stream, source)
     archive.unlink()
 
     build_argv = [
         sys.executable, "-m", "pip", "wheel", ".", "--no-deps",
+        "--no-build-isolation",
         "--wheel-dir", str(dist),
     ]
     proc = run(source, build_argv, env=env)

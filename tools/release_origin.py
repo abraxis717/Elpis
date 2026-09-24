@@ -50,12 +50,16 @@ def verify_tag(root: Path, oid: str, target: str, tag: str, allowed_signers: Pat
     headers = payload.split(b"\n\n", 1)[0].splitlines()
     if headers[:3] != [f"object {target}".encode(), b"type commit", f"tag {tag}".encode()]:
         raise ValueError("ORIGIN_TAG_TARGET_OR_NAME_MISMATCH")
-    if b"-----BEGIN SSH SIGNATURE-----\n" not in payload:
+    if (payload.count(b"-----BEGIN SSH SIGNATURE-----\n") != 1
+            or payload.count(b"-----END SSH SIGNATURE-----\n") != 1
+            or not payload.endswith(b"-----END SSH SIGNATURE-----\n")
+            or b"-----BEGIN PGP SIGNATURE-----" in payload):
         raise ValueError("ORIGIN_SSH_SIGNATURE_REQUIRED")
     program = shutil.which("ssh-keygen")
     if not program:
         raise ValueError("ORIGIN_SSH_KEYGEN_UNAVAILABLE")
     git("-c", "gpg.format=ssh", "-c", "gpg.ssh.program=" + program,
+        "-c", "gpg.minTrustLevel=fully",
         "-c", "gpg.ssh.allowedSignersFile=" + str(authority),
         "-c", "gpg.ssh.revocationFile=", "verify-tag", oid)
     if authority.read_bytes() != raw:

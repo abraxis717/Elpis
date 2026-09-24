@@ -77,6 +77,12 @@ def postpublication_errors(live: Path, sealed: Path, published: dict) -> list[st
         if new != expected:
             return ["SNAPSHOT_ASSERTION_DELTA_INVALID"]
         ratification = f"RELEASE_RATIFICATIONS/{published['release_tag']}.json"
+        tracked = subprocess.run(["git", "--no-replace-objects", "-C", str(live),
+                                  "ls-tree", "-z", "HEAD", "--", ratification], capture_output=True)
+        if tracked.returncode:
+            return ["SNAPSHOT_HEAD_UNAVAILABLE"]
+        if tracked.stdout and not (live / ratification).exists():
+            return ["SNAPSHOT_RATIFICATION_MISSING"]
         canonical = (json.dumps(published, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False) + "\n").encode()
         record = {
             "schema": "elpis.release-ratification.v1", "version": published["version"],

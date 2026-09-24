@@ -65,7 +65,7 @@ before publishing the exact object. Never regenerate a different signature to
 recover a journaled object. Do not perform this ceremony until release approval.
 
 GitHub integration uses a protected `release-verification` environment with
-`RELEASE_ALLOWED_SIGNERS`, delivered into runner temporary space. Protect the
+public environment variable `RELEASE_ALLOWED_SIGNERS`, delivered into runner temporary space. Protect the
 environment, workflow changes and tag creation independently of PR content; use
 reviewers and prevent self-approval. The file is public-key authority, not a
 private signing key. CI configuration alone does not establish those external
