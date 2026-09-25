@@ -8,19 +8,19 @@ from tools import release_orchestrator as machine
 from tools import release_orchestrator_io as io
 
 
-VERSION = "2.2.33"
+VERSION = "2.2.34"
 
 
 def artifact_set(wheel_sha="a" * 64, sdist_sha="b" * 64):
     return [
         {
             "filename":
-                "elpisai-2.2.33-py3-none-any.whl",
+                "elpisai-2.2.34-py3-none-any.whl",
             "packagetype": "bdist_wheel",
             "sha256": wheel_sha,
         },
         {
-            "filename": "elpisai-2.2.33.tar.gz",
+            "filename": "elpisai-2.2.34.tar.gz",
             "packagetype": "sdist",
             "sha256": sdist_sha,
         },

@@ -2,7 +2,7 @@
 
 **A deterministic structural-reasoning architecture for bounded learned proposals, explicit authority, and falsifiable runtime composition.**
 
-**Release line: Elpis2.2.33**
+**Release line: Elpis2.2.34**
 
 Elpis is a systems-research project about a narrow question: can learned components contribute useful structural proposals while deterministic machinery retains ownership of representation, admissibility, authority, validation, and terminal action?
 
@@ -14,9 +14,9 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 ## Release Notes
 
-**Elpis2.2.33** is the corrective successor to the locally sealed, untagged Elpis2.2.32 qualification failure. It preserves the 2.2.32 write-once manifest as historical evidence and removes the lifecycle-stale preseal-only regression that rejected the manifest after sealing.
+**Elpis2.2.34** is the corrective successor to the sealed, signed, tagged, hosted-CI-failed Elpis2.2.33 release attempt. It preserves 2.2.33 as immutable failed evidence and separates development/candidate repository identity from ambient local tag-ref representation while retaining strict annotated-tag verification for release authority.
 
-See [`RELEASE_NOTES/Elpis2.2.33.md`](RELEASE_NOTES/Elpis2.2.33.md) and `docs/CORRECTIVE_SUCCESSOR_2_2_33.md`.
+See [`RELEASE_NOTES/Elpis2.2.34.md`](RELEASE_NOTES/Elpis2.2.34.md) and `docs/CORRECTIVE_SUCCESSOR_2_2_34.md`.
 
 ## Install and quick start
 

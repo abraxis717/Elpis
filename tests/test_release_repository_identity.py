@@ -102,6 +102,31 @@ def test_strict_mode_requires_release_tag_at_checked_out_head(
     assert ok, errors
 
 
+def test_incidental_lightweight_release_ref_is_ignored_without_tag_authority(
+    tmp_path: Path,
+) -> None:
+    repo, check, _, commits = _fixture(tmp_path)
+
+    _git(repo, "tag", "-d", "Elpis9.9.9")
+    _git(repo, "tag", "Elpis9.9.9", commits["release"])
+    _git(repo, "checkout", "-q", commits["release"])
+
+    ok, errors = check(
+        require_git=True,
+        observe_release_tag=False,
+    )
+    assert ok, errors
+
+    ok, errors = check(
+        require_git=True,
+        require_tag=True,
+        require_tag_at_head=True,
+        observe_release_tag=False,
+    )
+    assert not ok
+    assert "RELEASE_TAG_NOT_ANNOTATED:Elpis9.9.9" in errors
+
+
 def test_lightweight_release_tag_is_rejected_as_not_annotated(
     tmp_path: Path,
 ) -> None:

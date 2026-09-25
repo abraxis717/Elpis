@@ -389,6 +389,11 @@ RELEASE_IDENTITIES = {
         "primitive_closure_commit": "482d4064321392108b87124cd47343d9c748f5bc",
         "base_release_commit": "c911af22e01ee35c441d65e8dbcad18694bdcb2a",
     },
+    "2.2.34": {
+        # Corrective successor to tagged hosted-CI-failed 2.2.33.
+        "primitive_closure_commit": "482d4064321392108b87124cd47343d9c748f5bc",
+        "base_release_commit": "c911af22e01ee35c441d65e8dbcad18694bdcb2a",
+    },
 }
 RELEASE_MANIFEST_REL = Path(f"manifests/Elpis{RELEASE_VERSION}.RELEASE_MANIFEST.json")
 DISTRIBUTION_MANIFEST_REL = Path(f"manifests/Elpis{RELEASE_VERSION}.DISTRIBUTION_MANIFEST.json")
@@ -1503,6 +1508,7 @@ def check_repository_identity(
     require_git=False,
     require_tag=False,
     require_tag_at_head=False,
+    observe_release_tag=True,
 ):
     errors = []
 
@@ -1521,8 +1527,14 @@ def check_repository_identity(
 
     expected_tag = f"Elpis{RELEASE_VERSION}"
     expected_tag_ref = f"refs/tags/{expected_tag}"
-    tag_commit = _git_resolve_commit(expected_tag_ref)
-    tag_object = _git_resolve_tag_object(expected_tag_ref)
+    if require_tag:
+        observe_release_tag = True
+    if observe_release_tag:
+        tag_commit = _git_resolve_commit(expected_tag_ref)
+        tag_object = _git_resolve_tag_object(expected_tag_ref)
+    else:
+        tag_commit = None
+        tag_object = None
     head_commit = _git_resolve_commit("HEAD")
 
     if head_commit is None:
@@ -1698,7 +1710,9 @@ def main() -> int:
     checks = (
         *((("Elpis2 manifest", check_manifest),) if not development else ()),
         ("Package identity", check_package),
-        ("Repository identity", check_repository_identity),
+        ("Repository identity", lambda: check_repository_identity(
+            observe_release_tag=not (development or args.candidate)
+        )),
         ("Declared-text version", check_declared_text_version),
         ("Runtime boundary", check_runtime_boundary),
         ("Portable public boundary", check_public_boundary),

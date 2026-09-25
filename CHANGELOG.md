@@ -1,3 +1,11 @@
+## Elpis2.2.34 — tag-checkout repository-identity mode corrective successor
+
+- Preserve Elpis2.2.33 sealed commit `f38f4398f079f099f76f0dd8ec31cfd64c6836e2` and signed tag object `d8ffa46236a45da917b6077b0ba09f0a095b49e0` as immutable failed-release evidence.
+- Record tag CI run `36155836648` failure after main CI run `36154649515` passed.
+- Separate development/candidate repository identity from incidental local current-release tag refs.
+- Keep strict tagged repository identity fail-closed: lightweight tags remain invalid when tag authority is explicitly required.
+- Preserve the already-qualified 2.2.33 product/runtime payload otherwise unchanged.
+
 ## Elpis2.2.33 — sealed-qualification lifecycle corrective successor
 
 - Preserve locally sealed, untagged Elpis2.2.32 commit `830673bff4c35bafd93ab17c7fd9f0b3f71c10d6` and its write-once manifest as immutable failure evidence.

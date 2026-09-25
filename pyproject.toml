@@ -1,6 +1,6 @@
 [project]
 name = "elpisai"
-version = "2.2.33"
+version = "2.2.34"
 description = "Elpis structural-guidance primitive with an end-to-end validated-source runtime"
 readme = "README.md"
 requires-python = ">=3.11,<3.13"

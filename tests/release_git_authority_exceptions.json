@@ -76,7 +76,7 @@
     "reason": "Raw git helper constructs only temporary repositories/worktrees for signer-storage topology tests."
   },
   "tests/test_release_repository_identity.py": {
-    "ast_sha256": "4fde27232b0fbd8e24945ec65231f32b871a3ada6a6a356e1d84dbe1c38d3c5b",
+    "ast_sha256": "17f29e1474506c6a5a5610f71df1b6bd7df0fff2cc0a67ebe8b46fa28f954b3b",
     "reason": "Raw Git operates solely on synthetic lifecycle fixture repos and their temporary shallow clones."
   },
   "tools/full_release.py": {
