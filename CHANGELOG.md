@@ -1,3 +1,10 @@
+## Elpis2.2.33 — sealed-qualification lifecycle corrective successor
+
+- Preserve locally sealed, untagged Elpis2.2.32 commit `830673bff4c35bafd93ab17c7fd9f0b3f71c10d6` and its write-once manifest as immutable failure evidence.
+- Record sealed-candidate qualification failure class `STALE_PRESEAL_ONLY_HOSTED_MECHANICS_TEST_REJECTED_SEALED_MANIFEST`.
+- Replace the 2.2.32 hosted-mechanics preseal-only manifest-absence assertion with historical-evidence semantics so sealing no longer invalidates the test that authorized the seal.
+- Preserve the qualified 2.2.32 hosted workflow, credential delegation, release-boundary, runtime, and product payload behavior otherwise unchanged.
+
 ## Elpis2.2.32 — hosted release-mechanics corrective successor
 
 - Preserve sealed Elpis2.2.31 commit `90467893822422b24a88a449afdccf0e9dd80cf3` as immutable hosted-main qualification failure evidence; do not tag or publish Elpis2.2.31.

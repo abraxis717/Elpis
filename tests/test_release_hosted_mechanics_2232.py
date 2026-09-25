@@ -72,18 +72,18 @@ def test_hardened_pushes_delegate_only_credentials_to_external_gh():
     assert "verify_git_transport_policy" in boundary
 
 
-def test_successor_metadata_is_2232_and_failed_2231_is_preserved():
-    assert (ROOT / "VERSION").read_text().strip() == "2.2.32"
-    pyproject = (ROOT / "pyproject.toml").read_text(
-        encoding="utf-8"
-    )
-    assert 'version = "2.2.32"' in pyproject
-    assert 'version: "2.2.32"' in (
-        ROOT / "CITATION.cff"
-    ).read_text(encoding="utf-8")
+def test_2232_failed_release_evidence_is_preserved_after_sealing():
     assert (
         ROOT / "manifests/Elpis2.2.31.RELEASE_MANIFEST.json"
     ).is_file()
-    assert not (
-        ROOT / "manifests/Elpis2.2.32.RELEASE_MANIFEST.json"
-    ).exists()
+    manifest = ROOT / "manifests/Elpis2.2.32.RELEASE_MANIFEST.json"
+    assert manifest.is_file()
+    data = __import__("json").loads(manifest.read_text(encoding="utf-8"))
+    assert data["schema"] == "elpis.release-manifest.v3"
+    assert data["version"] == "2.2.32"
+    assert data["release_tag"] == "Elpis2.2.32"
+    current = tuple(
+        int(part)
+        for part in (ROOT / "VERSION").read_text().strip().split(".")
+    )
+    assert current >= (2, 2, 33)
