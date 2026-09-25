@@ -109,7 +109,8 @@ def test_outer_journal_hash_chain_and_completion(tmp_path):
 
 def test_full_release_delegates_remote_publication_to_existing_orchestrator():
     source = TOOL.read_text(encoding="utf-8")
-    assert "tools/release_orchestrator.py" in source
+    assert '"-m", "tools.release_orchestrator"' in source
+    assert 'sys.executable, "tools/release_orchestrator.py",' not in source
     assert "GITHUB_RELEASE_PUBLISHED" not in source
 
 

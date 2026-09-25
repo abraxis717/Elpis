@@ -91,9 +91,16 @@ def git_raw(root: Path, *args: str) -> str:
     }:
         require_no_local_url_rewrite(root)
 
+    git_argv = ["git", "--no-replace-objects"]
+    if args and args[0] == "push":
+        git_argv += [
+            "-c",
+            "credential.helper=!gh auth git-credential",
+        ]
+    git_argv.extend(args)
     proc = run(
         root,
-        ["git", "--no-replace-objects", *args],
+        git_argv,
         env=base_env(),
     )
     require(proc.returncode == 0, "GIT_NONPASS:" + " ".join(args) + ":" + (proc.stdout or "")[-3000:])
@@ -1209,6 +1216,7 @@ def ensure_final_push(
             [
                 "git", "--no-replace-objects",
                 "-c", "core.hooksPath=/dev/null",
+                "-c", "credential.helper=!gh auth git-credential",
                 "push", "--porcelain", "--no-follow-tags",
                 f"--force-with-lease=refs/heads/main:{candidate}",
                 remote_url(), f"{head}:refs/heads/main",
@@ -1310,7 +1318,7 @@ def main(argv: list[str] | None = None) -> int:
                 proc = run(
                     root,
                     [
-                        sys.executable, "tools/release_orchestrator.py",
+                        sys.executable, "-m", "tools.release_orchestrator",
                         "--intent", str(intent_path),
                         "--qualification", str(qualification_path),
                         "--execute",

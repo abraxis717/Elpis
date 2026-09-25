@@ -38,7 +38,7 @@ jobs:
 
       - run: python -m pip install --upgrade pip
 
-      - run: python -m pip install --require-hashes --only-binary=:all: -r qualification/locks/test-tools-py311-py312.lock
+      - run: 'python -m pip install --require-hashes --only-binary=:all: -r qualification/locks/test-tools-py311-py312.lock'
 
       - name: Install supported base dependency set
         run: python -m pip install -e .

@@ -12,6 +12,10 @@ on:
 permissions:
   contents: read
 
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  PYTHONNOUSERSITE: '1'
+
 jobs:
   deterministic-base:
     runs-on: ubuntu-latest

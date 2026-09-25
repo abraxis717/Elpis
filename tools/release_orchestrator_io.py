@@ -222,14 +222,21 @@ class LiveBoundary:
         }:
             self.verify_git_transport_policy()
 
-        return self.runner.command(
-            [
-                'git',
-                '--no-replace-objects',
+        argv = [
+            'git',
+            '--no-replace-objects',
+            '-c',
+            'core.hooksPath=/dev/null',
+        ]
+        if args and args[0] == 'push':
+            argv.extend([
                 '-c',
-                'core.hooksPath=/dev/null',
-                *args,
-            ],
+                'credential.helper=!gh auth git-credential',
+            ])
+        argv.extend(args)
+
+        return self.runner.command(
+            argv,
             cwd=self.root,
             data=data,
         )

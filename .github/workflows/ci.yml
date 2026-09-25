@@ -39,7 +39,7 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.11'
-      - run: python -m pip install --require-hashes --only-binary=:all: -r qualification/locks/test-tools-py311-py312.lock
+      - run: 'python -m pip install --require-hashes --only-binary=:all: -r qualification/locks/test-tools-py311-py312.lock'
       - name: Verify development checkout
         if: github.event_name != 'release' && !startsWith(github.ref, 'refs/tags/')
         run: python tools/verify_public_release.py --development
@@ -111,7 +111,7 @@ jobs:
         with:
           python-version: '3.11'
       - run: python tools/run_mutation_suite_ci.py
-      - run: python -m pip install --require-hashes --only-binary=:all: -r qualification/locks/test-tools-py311-py312.lock
+      - run: 'python -m pip install --require-hashes --only-binary=:all: -r qualification/locks/test-tools-py311-py312.lock'
       - run: python -m pytest -p no:cacheprovider tests/test_runtime_guard_mutations.py tests/test_release_sealer_guards.py tests/test_seal_release_mutations.py
       - run: python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
       - run: python -m pip install .
@@ -350,7 +350,7 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.11'
-      - run: python -m pip install --require-hashes --only-binary=:all: -r qualification/locks/test-tools-py311-py312.lock
+      - run: 'python -m pip install --require-hashes --only-binary=:all: -r qualification/locks/test-tools-py311-py312.lock'
       - name: Run secret scanner
         run: python tools/ci_secret_scan.py .
       - name: Run secret scanner tests
@@ -751,7 +751,7 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.11'
-      - run: python -m pip install --require-hashes --only-binary=:all: -r qualification/locks/test-tools-py311-py312.lock
+      - run: 'python -m pip install --require-hashes --only-binary=:all: -r qualification/locks/test-tools-py311-py312.lock'
       - name: Run ECS kernel tests
         run: PYTHONPATH=ECS/runtime python -m pytest -q -p no:cacheprovider ECS/tests
       - name: Run ECS deterministic qualification

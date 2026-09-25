@@ -80,7 +80,7 @@
     "reason": "Raw Git operates solely on synthetic lifecycle fixture repos and their temporary shallow clones."
   },
   "tools/full_release.py": {
-    "ast_sha256": "b432807718ae2d9d822ab425fe529a23fad743b2a561ee009713b7777ff89e96",
+    "ast_sha256": "ae66d950480ab8e450ba3084fc3d6a4dc94877a069736c6c2ce3e5db606b8630",
     "reason": "Established hardened release boundary: Git vectors disable replacements and use base_env; dynamic subprocess wrapper also launches qualification Python/build commands."
   },
   "tools/mutation_suite.py": {
@@ -96,7 +96,7 @@
     "reason": "Shared hardened boundary itself, including compatible and streaming adapters."
   },
   "tools/release_orchestrator_io.py": {
-    "ast_sha256": "b5b582c19c0e7d399c0d23e4e029c59168c7d81bd0715395672bf56fa9625a2e",
+    "ast_sha256": "6275b0adf3adf951c59b55f167dc321ddacd6a14927d91dc5ec54e4d611d2fa2",
     "reason": "Established hardened Runner: Git vectors disable replacements, environment is sealed, transport configuration is audited."
   },
   "tools/release_origin.py": {

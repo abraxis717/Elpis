@@ -1,3 +1,12 @@
+## Elpis2.2.32 — hosted release-mechanics corrective successor
+
+- Preserve sealed Elpis2.2.31 commit `90467893822422b24a88a449afdccf0e9dd80cf3` as immutable hosted-main qualification failure evidence; do not tag or publish Elpis2.2.31.
+- Correct invalid GitHub Actions YAML caused by unquoted hash-locked pip commands containing `--only-binary=:all:`.
+- Prevent reference-runtime development verification from creating and then rejecting `__pycache__` artifacts.
+- Launch the hardened release orchestrator through package-module import authority.
+- Delegate authenticated Git pushes explicitly to the external GitHub CLI credential provider while retaining sealed Git configuration and transport-policy checks.
+- Preserve the qualified Elpis2.2.31 runtime/product payload otherwise unchanged.
+
 ## Elpis2.2.31 — release authority corrective successor
 
 - Bind release verification to physical checkout content and separate development checks.
