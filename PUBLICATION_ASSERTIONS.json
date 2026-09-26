@@ -738,6 +738,93 @@
       "tag_object": "049c72e92c53ac927d2bef1c0b4d52a0ce1df1f6",
       "tag_object_type": "tag",
       "version": "2.2.30"
+    },
+    {
+      "github_actions": {
+        "pypi_publish": {
+          "conclusion": "success",
+          "event": "release",
+          "head_sha": "c65c28769f17bd68ac4c1c10ab334f35f93f46ff",
+          "run_id": 36180776580,
+          "workflow": "pypi-publish"
+        },
+        "release_event_ci": {
+          "conclusion": "success",
+          "event": "release",
+          "head_sha": "c65c28769f17bd68ac4c1c10ab334f35f93f46ff",
+          "run_id": 36180776464,
+          "workflow": "CI"
+        },
+        "tag_ci": {
+          "conclusion": "success",
+          "event": "push",
+          "head_sha": "c65c28769f17bd68ac4c1c10ab334f35f93f46ff",
+          "run_id": 36179914608,
+          "workflow": "CI"
+        },
+        "tag_component_attribution": {
+          "conclusion": "success",
+          "event": "push",
+          "head_sha": "c65c28769f17bd68ac4c1c10ab334f35f93f46ff",
+          "run_id": 36179914716,
+          "workflow": "Component attribution"
+        },
+        "tag_inference_native": {
+          "conclusion": "success",
+          "event": "push",
+          "head_sha": "c65c28769f17bd68ac4c1c10ab334f35f93f46ff",
+          "run_id": 36179914615,
+          "workflow": "inference-native-r0"
+        },
+        "tag_platform_matrix": {
+          "conclusion": "success",
+          "event": "push",
+          "head_sha": "c65c28769f17bd68ac4c1c10ab334f35f93f46ff",
+          "run_id": 36179914625,
+          "workflow": "platform-matrix"
+        },
+        "tag_reference_runtime": {
+          "conclusion": "success",
+          "event": "push",
+          "head_sha": "c65c28769f17bd68ac4c1c10ab334f35f93f46ff",
+          "run_id": 36179914524,
+          "workflow": "reference-runtime"
+        }
+      },
+      "github_release": {
+        "published_at": "2026-09-25T19:37:02Z",
+        "release_id": 396877498,
+        "repository": "abraxis717/Elpis",
+        "tag_name": "Elpis2.2.34"
+      },
+      "manifest_path": "manifests/Elpis2.2.34.RELEASE_MANIFEST.json",
+      "manifest_sha256": "519d0e7b140812263baaba10ff1d593028e6f90dab68a051f9d70115100efe96",
+      "peeled_commit": "c65c28769f17bd68ac4c1c10ab334f35f93f46ff",
+      "peeled_object_type": "commit",
+      "pypi": {
+        "files": [
+          {
+            "filename": "elpisai-2.2.34-py3-none-any.whl",
+            "packagetype": "bdist_wheel",
+            "sha256": "da94bdc0c2c1e1548956a774f91298aa20949cb251d9adc45196a73f2d548d8b",
+            "upload_time_iso_8601": "2026-09-25T19:39:48.074855Z",
+            "yanked": false
+          },
+          {
+            "filename": "elpisai-2.2.34.tar.gz",
+            "packagetype": "sdist",
+            "sha256": "4acc3f29e43cec370bdb15388433bc5252fa999d9414b69566e805b1c590930b",
+            "upload_time_iso_8601": "2026-09-25T19:39:49.825793Z",
+            "yanked": false
+          }
+        ],
+        "project": "elpisai",
+        "version": "2.2.34"
+      },
+      "release_tag": "Elpis2.2.34",
+      "tag_object": "2a88355aba31cc349e00174b5833487867adc221",
+      "tag_object_type": "tag",
+      "version": "2.2.34"
     }
   ],
   "publication_fact_authority": "explicit-observation-receipts",
