@@ -1,3 +1,12 @@
+## Elpis2.2.35 — qualified inactive ECS/Cadence slow-path integration
+
+- Add `CadenceECSProbe` as a bounded, research-only ECS history diagnostic with prequential next-event-kind prediction and fail-closed external donor binding.
+- Pin the external Cadence donor to commit `f12f1bb30286f5bc0b339853cabe94fc9fbb3ffe`, `cadence-net` 0.16.0, and the complete 44-file Python source digest `a408b7db453ccef348f6bc31d2f55f081d8e132a2b0907534343ffe202bf917f`; do not vendor or submodule the donor.
+- Add qualified inactive StateOfThought, EvolutionPathGate, and Runtime R4 source/provenance surfaces without admitting them into active R3/DSV41 inference.
+- Add fresh-process/hash-seed Cadence determinism and cross-invocation contamination isolation qualification.
+- Preserve ECS canonical history as the sole continuity authority; Cadence diagnostics remain detached and non-authoritative.
+- Preserve the existing active inference path and existing 16-component public assembly registry unchanged.
+
 ## Elpis2.2.34 — tag-checkout repository-identity mode corrective successor
 
 - Preserve Elpis2.2.33 sealed commit `f38f4398f079f099f76f0dd8ec31cfd64c6836e2` and signed tag object `d8ffa46236a45da917b6077b0ba09f0a095b49e0` as immutable failed-release evidence.

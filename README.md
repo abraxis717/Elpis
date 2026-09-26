@@ -2,7 +2,7 @@
 
 **A deterministic structural-reasoning architecture for bounded learned proposals, explicit authority, and falsifiable runtime composition.**
 
-**Release line: Elpis2.2.34**
+**Release line: Elpis2.2.35**
 
 Elpis is a systems-research project about a narrow question: can learned components contribute useful structural proposals while deterministic machinery retains ownership of representation, admissibility, authority, validation, and terminal action?
 
@@ -14,9 +14,11 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 ## Release Notes
 
-**Elpis2.2.34** is the corrective successor to the sealed, signed, tagged, hosted-CI-failed Elpis2.2.33 release attempt. It preserves 2.2.33 as immutable failed evidence and separates development/candidate repository identity from ambient local tag-ref representation while retaining strict annotated-tag verification for release authority.
+**Elpis2.2.35** adds a qualified, inactive ECS slow-path research tranche: a bounded `CadenceECSProbe` with an exact external Cadence donor boundary, qualified StateOfThought source, qualified EvolutionPathGate source, and inactive Runtime R4 guarded wiring.
 
-See [`RELEASE_NOTES/Elpis2.2.34.md`](RELEASE_NOTES/Elpis2.2.34.md) and `docs/CORRECTIVE_SUCCESSOR_2_2_34.md`.
+Active inference remains R3/DSV41. The new components do not gain token-path admission, mutation authority, selection authority, or automatic Darwinian fitness authority. Cadence remains external rather than vendored or submoduled, and the probe reconstructs fresh donor state from replay-validated ECS history for detached diagnostics only.
+
+See [`RELEASE_NOTES/Elpis2.2.35.md`](RELEASE_NOTES/Elpis2.2.35.md).
 
 ## Install and quick start
 

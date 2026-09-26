@@ -1,9 +1,10 @@
 # Release Notes
 
-Current: [`Elpis2.2.34.md`](Elpis2.2.34.md)
+Current: [`Elpis2.2.35.md`](Elpis2.2.35.md)
 
 Historical release notes:
 
+- [`Elpis2.2.35.md`](Elpis2.2.35.md)
 - [`Elpis2.2.34.md`](Elpis2.2.34.md)
 - [`Elpis2.2.33.md`](Elpis2.2.33.md)
 - [`Elpis2.2.32.md`](Elpis2.2.32.md)
