@@ -1,0 +1,118 @@
+{
+  "active_assembly": {
+    "canonical": 16,
+    "canonical_only": 0,
+    "public": 16
+  },
+  "architecture": {
+    "active_inference": "R3_DSV41_ZERO_WAIT",
+    "active_inference_waits_on_slow_lane": false,
+    "darwinian_dependency": false,
+    "ecs_dependency": false,
+    "fprm_dependency": false,
+    "r3_or_inference_imports_sot": 0,
+    "rrsi_dependency": false,
+    "runtime_r2_dependency": false,
+    "runtime_r4_dependency": false,
+    "slow_lane_import_crossings": 0,
+    "sot_fast_lane": "COMPLETED_EPOCH_OBSERVER_TO_FUTURE_DECODE_X_LATENT_ONLY",
+    "sot_global_lane": "IDENTITY_FIELDS_ONLY_NOT_IMPLEMENTED",
+    "stall_cycle_hop_guard": "HOST_OWNED_MAX_HOPS_8_CYCLE_WINDOW_4_TTL_2"
+  },
+  "base_commit": "90467893822422b24a88a449afdccf0e9dd80cf3",
+  "branch": "integration/inference-sot-r0",
+  "canonical_assembly_admission": false,
+  "fprm_invocations": 0,
+  "git_commit": false,
+  "git_push": false,
+  "git_tag": false,
+  "model_calls_outside_native_fixture": 0,
+  "public_registry_admission": false,
+  "qualification_digest": "b1644d206d5ace8f3a0b3ccd1a60ecf24bef24f0c71cf0bcde206fe2e1dd3799",
+  "qualification_runs": [
+    {
+      "junit": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 63
+      },
+      "label": "sot_native_hashseed_0",
+      "returncode": 0
+    },
+    {
+      "junit": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 63
+      },
+      "label": "sot_native_hashseed_717",
+      "returncode": 0
+    },
+    {
+      "junit": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 63
+      },
+      "label": "sot_native_hashseed_random",
+      "returncode": 0
+    },
+    {
+      "junit": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 33,
+        "tests": 63
+      },
+      "label": "sot_no_native",
+      "returncode": 0
+    },
+    {
+      "junit": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 138
+      },
+      "label": "runtime_r3_full",
+      "returncode": 0
+    },
+    {
+      "junit": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 27
+      },
+      "label": "root_component_scanners",
+      "returncode": 0
+    }
+  ],
+  "qualification_runtime": {
+    "numpy": "2.4.2",
+    "pytest": "9.0.2",
+    "python": "3.11.9",
+    "scipy": "1.17.1"
+  },
+  "runtime_admission": false,
+  "schema": "elpis.inference-sot-branch-settlement.v2",
+  "slow_path_source_mutated": false,
+  "source_authority": {
+    "component_source_sha256": {
+      "components/StateOfThought/pyproject.toml": "d862d2347f5e53072a5c75ac34705582d69c19e2e5dedb58a58e28fb154c34d8",
+      "components/StateOfThought/src/elpis_sot/__init__.py": "72946e36d0e2b760827f50c346fd3488ecd9ff2a6d14cf72aa59d3735f76b0f7",
+      "components/StateOfThought/src/elpis_sot/core.py": "46f44735c0e419a4259a49f514b7c53ce52fecbfdf9ed847338998c9a3b0df1d",
+      "components/StateOfThought/tests/test_core.py": "b42518edada00b16e583a50f1281a103fadf71aadfb81c006e85b26c2942c9b0"
+    },
+    "frozen_steering_contract_digest": "ac72e897a7109aaa922b0ea9d599eedb626d93509dc7a496e300e593d92c0955",
+    "implementer_apply_script_sha256": "05b06417e851f10f9f2be4cdb48447756016dfe17edb4cdb29b56be43b09fc5f",
+    "steering_profile_digest": "39d34de2b4225c398a8f35415ec4bd3e9d7037a38cfce5f425e41d41b2e201d4",
+    "uploaded_payload": "files(10).zip"
+  },
+  "state": "QUALIFIED_INACTIVE",
+  "status": "PASS_INFERENCE_SOT_BRANCH_SETTLEMENT_R2",
+  "tracked_source_mutated": false
+}

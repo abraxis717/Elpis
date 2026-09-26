@@ -1,0 +1,70 @@
+{
+  "active_assembly": {
+    "canonical": 16,
+    "canonical_only": 0,
+    "public": 16
+  },
+  "architecture": {
+    "active_inference": "BRANCH41_DSV41_R3_ZERO_WAIT",
+    "branch42_fprm": "SEPARATE_GRID81_SPECIALIST_PROPOSAL_ONLY",
+    "branch43_sot_fast": "COMPLETED_EPOCH_TO_FUTURE_DECODE_ONLY",
+    "branch43_sot_global": "ECS_DURABLE_TO_FUTURE_CONTEXT_OR_RRSI_ONLY",
+    "branch46c": "EVOLUTION_PATH_GATE_QUALIFIED_INACTIVE",
+    "branch46d": "R4_GUARDED_DARWINIAN_ATTEMPT_SLOW_PATH_ONLY_QUALIFIED_INACTIVE",
+    "rrsi_path_transition_receipt": "BINDS_POST_ATTEMPT_STRUCTURAL_RESULT_FOR_OUTER_EVOLUTION"
+  },
+  "base_commit": "90467893822422b24a88a449afdccf0e9dd80cf3",
+  "bound_source_sha256": {
+    "components/EvolutionPathGate/src/elpis_evolution_path_gate/path_gate.py": "5e561ef694a79f1d5bf1f58c810ce5d5e1408d8c53a0b1505e62f660441e1fa2",
+    "components/EvolutionPathGate/src/elpis_evolution_path_gate/selection.py": "1e73ecf14e250d7f8c092db9b8c7ce20bbc0ea13f17f1ac71a02d760d376fe34",
+    "runtime/R4/RUNTIME_MANIFEST.json": "4f84825c547c13161c7fbdd5367be1d6f65985efb6a7b0067896e7f9231093c8",
+    "runtime/R4/src/elpis_runtime_r4/wiring.py": "bbd2a20153b5c9646d48acb53f5e363c8a493b046f29f9eeec05e142ba1ffad8"
+  },
+  "branch": "integration/branch46-rrsi-integration-r0",
+  "canonical_assembly_changed": false,
+  "disposition": {
+    "additional_slow_path_bridge_required": false,
+    "branch46": "CLOSED_QUALIFIED_INACTIVE",
+    "reason": "Branch46C/D already implement the authorized direct RRSI episode seam: EvolutionPathGate immediately before Darwinian advance_episode and PathTransitionReceipt immediately after the structural attempt. Branch46E/F/G verified separation and source authority. No further cross-component wiring is authorized by current evidence."
+  },
+  "fast_lane_crossings": 0,
+  "fprm_invocations": 0,
+  "git_commit": false,
+  "git_push": false,
+  "git_tag": false,
+  "model_calls": 0,
+  "predecessors": {
+    "branch46c": {
+      "path": "manifests/BRANCH46C_EVOLUTION_PATH_GATE_PRODUCTION_EXTRACTION_R0.json",
+      "qualification_digest": "6c02d4e1970330cea0fc9772cca953457d1d3ec8d4c40de235743f64fc6c6ae3",
+      "sha256": "fc340a4621efd84555995f5ac5842ef0ed32566e22e69b53bfba764024a32bb6"
+    },
+    "branch46d": {
+      "path": "manifests/BRANCH46D_EVOLUTION_PATH_DARWINIAN_WIRING_R0.json",
+      "qualification_digest": "0567eeede0e9e325f704595fcf9d7c209476266a8a9e77e36683544133766345",
+      "sha256": "640021a1009d82c5da8a7c9cf0ad4a88c7c26a74f18b07049dd1476100ab1c41"
+    },
+    "branch46e": {
+      "path": "manifests/BRANCH46E_ACTIVE_INFERENCE_SLOW_UPDATE_SEPARATION_R1.json",
+      "qualification_digest": "469bb4cfc2790c7c5d1651adea472809b055f0a5f88425f26e2a7e3d8550a187",
+      "sha256": "9729b81f224be67ab9d10b82998f129ca3ef7ae97d2ad3bd986e4d0321c0dadb"
+    },
+    "branch46f": {
+      "path": "qualification/BRANCH46F_SLOW_PATH_AUTHORITY_CENSUS_R2/QUALIFICATION.json",
+      "qualification_digest": "cc8391b13241a4e86724b452df70718dea1353f776e90895792f37d7864704d3",
+      "sha256": "aca51737cb56d647a6a4193ef4c5415d9032738fe46107094bc15ac94fffecf4"
+    },
+    "branch46g": {
+      "path": "qualification/BRANCH46G_SLOW_PATH_SOURCE_AUTHORITY_EXTRACT_R0/SOURCE_AUTHORITY_MANIFEST.json",
+      "qualification_digest": "066ce55b4a15c968db69206d99074795603a2bb9bf567cd035589bd53a7e0048",
+      "sha256": "e0c38e6f7b612b496aef8d076b50ead8122a5d34be92d645a6c2c5b56064af6c"
+    }
+  },
+  "production_source_mutated_by_closure": false,
+  "qualification_digest": "495b8a3b1404441851b3a6e955025e5cd12cbf9b50fc54c5d811faf7aa1c5cd1",
+  "real_rsi_candidates_evaluated_by_closure": 0,
+  "runtime_admission_changed": false,
+  "schema": "elpis.branch46.final-closure.v0",
+  "scientific_worlds_executed": 0,
+  "status": "PASS_BRANCH46_FINAL_CLOSURE_R0"
+}

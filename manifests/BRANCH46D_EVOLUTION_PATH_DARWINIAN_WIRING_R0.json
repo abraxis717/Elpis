@@ -1,0 +1,34 @@
+{
+  "base_commit": "90467893822422b24a88a449afdccf0e9dd80cf3",
+  "branch": "integration/branch46-rrsi-integration-r0",
+  "canonical_assembly_changed": false,
+  "darwinian_attempts_in_qualification": "real deterministic reference attempts only",
+  "fprm_invocations": 0,
+  "git_commit": false,
+  "git_push": false,
+  "git_tag": false,
+  "predecessor": {
+    "branch46c_component_manifest_sha256": "1d1439b28809e8fe113bcbfb015db62f314acde7bc72c5986e70f94ba10180b8",
+    "branch46c_qualification_digest": "6c02d4e1970330cea0fc9772cca953457d1d3ec8d4c40de235743f64fc6c6ae3"
+  },
+  "public_registry_admission": false,
+  "qualification_digest": "0567eeede0e9e325f704595fcf9d7c209476266a8a9e77e36683544133766345",
+  "real_rsi_candidates_evaluated": 0,
+  "runtime_admission": false,
+  "runtime_r4_manifest_sha256": "4f84825c547c13161c7fbdd5367be1d6f65985efb6a7b0067896e7f9231093c8",
+  "schema": "elpis.branch46d.evolution-path-darwinian-wiring.v0",
+  "science_authorized": false,
+  "state": "QUALIFIED_INACTIVE",
+  "status": "PASS_BRANCH46D_EVOLUTION_PATH_DARWINIAN_WIRING_R0",
+  "tests": {
+    "ACTIVE R2 ASSEMBLY IMMUTABILITY": "PASS",
+    "BRANCH46C EVOLUTION PATH GATE REGRESSION": "PASS",
+    "BRANCH46D DISTRIBUTION BOUNDARY": "PASS",
+    "DARWINIAN EPISODE REGRESSION": "PASS",
+    "P0 COMPOSITION ROOT UNCHANGED": "PASS",
+    "R4 GUARDED DARWINIAN WIRING": "PASS",
+    "R4 STANDALONE WHEEL BUILD": "PASS",
+    "R4_WHEEL_CONTENT": "PASS",
+    "REPOSITORY COMPLETENESS": "PASS"
+  }
+}

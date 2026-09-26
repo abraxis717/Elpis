@@ -1,0 +1,18 @@
+{
+  "schema": "elpis.cadence-external-donor-authority.v1",
+  "donor_id": "cadence-net-0.16.0-f12f1bb",
+  "fork_repository": "https://github.com/abraxis717/cadence.git",
+  "upstream_repository": "https://github.com/muellerberndt/cadence",
+  "commit": "f12f1bb30286f5bc0b339853cabe94fc9fbb3ffe",
+  "distribution": "cadence-net",
+  "version": "0.16.0",
+  "license": "MIT",
+  "copyright": "Copyright (c) 2026 Bernhard Mueller",
+  "source_package_relative_path": "src/cadence",
+  "source_file_count": 44,
+  "source_digest": "a408b7db453ccef348f6bc31d2f55f081d8e132a2b0907534343ffe202bf917f",
+  "digest_domain": "elpis.cadence-python-source.v1",
+  "usage_class": "EXTERNAL_QUALIFICATION_DONOR",
+  "runtime_admission": false,
+  "root_distribution_inclusion": false
+}

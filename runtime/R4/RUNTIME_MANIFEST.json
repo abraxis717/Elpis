@@ -1,0 +1,35 @@
+{
+  "authority": {
+    "darwinian_episode_authority": false,
+    "heredity_authority": false,
+    "model_execution_authority": false,
+    "mutation_authority": false,
+    "path_precondition_authority": false,
+    "selection_authority": false,
+    "semantic_authority": false,
+    "token_authority": false
+  },
+  "canonical_assembly_admission": false,
+  "dependencies": [
+    "EvolutionPathGate",
+    "DarwinianMatrix",
+    "ECSContextProjector"
+  ],
+  "manifest_self_hash": "d34c3c54e30891eee306fb682f1c7be09423c51614c0c13c37efc5002f0db2c1",
+  "predecessor": {
+    "branch46c_component_manifest_sha256": "1d1439b28809e8fe113bcbfb015db62f314acde7bc72c5986e70f94ba10180b8",
+    "branch46c_qualification_digest": "6c02d4e1970330cea0fc9772cca953457d1d3ec8d4c40de235743f64fc6c6ae3"
+  },
+  "profile": "EVOLUTION_PATH_DARWINIAN_GUARDED_ATTEMPT_R0",
+  "public_registry_admission": false,
+  "qualification_disposition": "BRANCH46D_QUALIFIED_INACTIVE_DARWINIAN_WIRING",
+  "real_rsi_candidates_evaluated": 0,
+  "runtime_admission": false,
+  "runtime_id": "R4",
+  "schema": "elpis.runtime-r4-manifest.v0",
+  "source_content_digest": "7b6d9247ccecbbbbc1d083ede0335aaf2a3d46b17c8c17ba00865c2cf03b898a",
+  "source_files": {
+    "elpis_runtime_r4/__init__.py": "e5e766424c672df4c44b3b8de55acd560d013e0296ba00d40c448fd29e574212",
+    "elpis_runtime_r4/wiring.py": "bbd2a20153b5c9646d48acb53f5e363c8a493b046f29f9eeec05e142ba1ffad8"
+  }
+}

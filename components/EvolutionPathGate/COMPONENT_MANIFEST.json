@@ -1,0 +1,47 @@
+{
+  "active_or_optional_status": "INACTIVE",
+  "authority": {
+    "canonical_mutation_authority": false,
+    "child_workspace_materialization_authority": true,
+    "parent_mutation_authority": false,
+    "path_ledger_record_authority": true,
+    "path_precondition_authority": true,
+    "rrsi_selection_gate_authority": true,
+    "runtime_admission": false,
+    "semantic_authority": false,
+    "token_authority": false
+  },
+  "component_id": "EvolutionPathGate",
+  "dependencies": [
+    "DarwinianMatrix",
+    "ECSContextProjector"
+  ],
+  "display_name": "Evolution Path Gate",
+  "evidence_references": {
+    "phase1_architecture_digest": "31a36c22b90290201c0c14fed773198158e10eb95553961098c3695102995742",
+    "phase1_egress_digest": "fead878c60cf005062d5f55c75a6967a50dd64f9c800b820c7a0e4bfb84bd37e",
+    "phase1_ingress_digest": "679f7797df4073b923ce7adf4324a2139a0b231bfd0c9fe334d7043e82f3224b",
+    "phase1_placement_digest": "47d02c369bedbc8777636b85ea77e164cd18b6aa1fb3ed857a168ab6766b5c76",
+    "phase1_separation_digest": "1147d6583c84ffb9b31e5102357d10fa260a1cdb1a40d4aba0cc7846cfc8524b",
+    "phase2_mechanics_qualification_digest": "9be21d1133e1344c37baed9d4c15a2d6a4b9d5c0f750bc23160f87ead0e2f8c6",
+    "phase2_source_sha256": "2cab350ac9f1b862149150288a759dad246ea7d6a50a97ab6e45b69292552d33",
+    "phase3_heredity_policy_digest": "43c2b975bdaad46417249446251fc7e5bca55fa0f8fccb7877eee321bcc26dea",
+    "phase3_integration_digest": "b2333998e512a3f40c6da34670d89b2c02cf55684be4ca6a24e390caf3f1f6a0",
+    "phase3_precommit_digest": "14af051df798871268ada77ba2b8a9fa58d2ed4446a48a751567f1e7a765151a",
+    "phase3_selection_policy_digest": "16143933d6e399c38a41d3d0ce462a99bbe58ebb802a1e1ffbe25d5074236de3",
+    "phase4_mechanics_qualification_digest": "5fecb75d0b9cda2d4edef5a1eae68175cfefba4980abd02904ac54e326f9b8a6",
+    "phase4_source_sha256": "63cc8fed0b2f20a23e9c8dc8d918aeb7b6fb872b7889bd0b8a24343b049df2dd"
+  },
+  "manifest_self_hash": "18f5f02ecd82a932354e1deb147e2edcbb8055838ecd6f8f5d9b8b83ed6da7a7",
+  "public_interface_paths": [
+    "src/elpis_evolution_path_gate/__init__.py",
+    "src/elpis_evolution_path_gate/path_gate.py",
+    "src/elpis_evolution_path_gate/selection.py"
+  ],
+  "qualification_disposition": "BRANCH46C_QUALIFIED_INACTIVE_PRODUCTION_EXTRACTION",
+  "runtime_admission": false,
+  "schema_version": "1.0",
+  "source_content_digest": "93d8a02df4e578960c401c5fc3f61cf38d62890eecba11678d05bcbb8521d970",
+  "source_digest_algorithm": "sha256(canonical-json(path->sha256))",
+  "version": "0.1.0"
+}

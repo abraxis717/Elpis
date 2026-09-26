@@ -1,0 +1,30 @@
+{
+  "schema": "elpis.cadence-ecs-probe.v1",
+  "component_id": "CadenceECSProbe",
+  "profile": "ECS_COMMITTED_EVENT_KIND_PREQUENTIAL_R0",
+  "status": "RESEARCH_ONLY_INACTIVE",
+  "runtime_admission": false,
+  "scientific_qualification": false,
+  "token_path_dependency": false,
+  "mutation_authority": false,
+  "selection_authority": false,
+  "donor_authority": "CADENCE_DONOR_AUTHORITY.json",
+  "donor_commit": "f12f1bb30286f5bc0b339853cabe94fc9fbb3ffe",
+  "donor_source_digest": "a408b7db453ccef348f6bc31d2f55f081d8e132a2b0907534343ffe202bf917f",
+  "donor_digest_contract": "content_digest(elpis.cadence-python-source.v1, relative .py path -> raw bytes), all src/cadence Python files",
+  "donor_license": "MIT",
+  "dependencies": [
+    "ECSContextProjector",
+    "Cadence RecordPatchNet (external exact donor; qualification only)"
+  ],
+  "bounds": {
+    "events": 64,
+    "record_bytes": 1048576,
+    "hidden": 8,
+    "cells": 32,
+    "active": 4,
+    "max_observed_transitions": 63,
+    "max_backtracking_replays": 1008
+  },
+  "root_distribution_inclusion": false
+}

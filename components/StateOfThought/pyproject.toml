@@ -1,0 +1,16 @@
+[project]
+name = "elpis-state-of-thought"
+version = "0.0.0"
+requires-python = ">=3.11,<3.13"
+description = "Branch43 SoT R0: read-only completed-epoch observer and future-only X-latent steering proposals; inactive, no runtime admission"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

@@ -2,6 +2,24 @@
 
 This project includes or depends on third-party software.
 
+## Cadence external research donor
+
+`CadenceECSProbe` is qualified against an external exact Cadence donor pinned to
+`f12f1bb30286f5bc0b339853cabe94fc9fbb3ffe` from
+`https://github.com/abraxis717/cadence.git`. The donor identifies its upstream as
+`https://github.com/muellerberndt/cadence`, distribution `cadence-net` 0.16.0,
+and license MIT, copyright (c) 2026 Bernhard Mueller.
+
+Cadence source is not bundled in this Elpis repository, is not a dependency of
+the Elpis wheel, and is not part of active inference. The exact external Python
+source surface used by the research probe is bound by
+`components/CadenceECSProbe/CADENCE_DONOR_AUTHORITY.json`. The complete MIT
+license remains with the external donor. If a future Elpis distribution includes
+Cadence source or binaries, that distribution must retain the applicable MIT
+copyright and permission notice. The Elpis Apache-2.0 declaration does not
+replace Cadence's MIT terms. See
+`docs/integration/CADENCE_BOUNDARY_AUDIT_R0.md` for the boundary.
+
 ## Public TRM reference runtime
 
 - **Samsung SAIL Montreal TinyRecursiveModels** — MIT License. The inference-only modules under `src/elpis_reference/vendor/` are namespace adaptations of the pinned upstream source at commit `c01103738605ba39d1430519b1ee0c62f4c707f8d`. See `LICENSES/Samsung-TinyRecursiveModels-MIT.txt` and `docs/REFERENCE_RUNTIME_PROVENANCE.md`.

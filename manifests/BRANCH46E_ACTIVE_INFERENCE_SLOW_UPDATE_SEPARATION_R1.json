@@ -1,0 +1,143 @@
+{
+  "active_inference_source_mutated": false,
+  "architecture": {
+    "active_inference": {
+      "branch": 41,
+      "critical_path": [
+        "PREFILL",
+        "DECODE",
+        "NEXT_TOKEN"
+      ],
+      "forbidden_dependencies": [
+        "FPRM.Samsung_TRM",
+        "elpis_reference.feedback_refinement",
+        "elpis_runtime_r2",
+        "DarwinianMatrix",
+        "darwinian_matrix",
+        "elpis_evolution_path_gate",
+        "elpis_runtime_r4",
+        "elpis_ecs_anchor_spine"
+      ],
+      "roots": [
+        "src/elpis/inference",
+        "runtime/R3/src/elpis_runtime_r3"
+      ],
+      "zero_wait_on_slow_path": true
+    },
+    "branch46d_runtime_r4_classification": "SLOW_UPDATE_ONLY_QUALIFIED_INACTIVE",
+    "canonical_assembly_change": false,
+    "production_source_change": false,
+    "rejected_unexecuted_artifact": {
+      "disposition": "REJECTED_UNEXECUTED_ARCHITECTURE_DRIFT",
+      "name": "BRANCH46E_FPRM_TRAJECTORY_CONTROL_R0.tar.gz",
+      "sha256": "434ece478fb6e5f50dd135364470da9758b7302b8dc89d3651f6dec9b7f0de5b"
+    },
+    "runtime_admission_change": false,
+    "schema": "elpis.branch46e.active-inference-slow-update-separation.precommit.v0",
+    "slow_update": {
+      "branch42_recursive_refinement": true,
+      "darwinian": "EPISODE_ECOLOGY_EVALUATION_SELECTION",
+      "ecs": "DURABLE_GLOBAL_FUTURE_ONLY",
+      "fprm_role": "FROZEN_GRID81_SPECIALIST_PROPOSAL_ONLY",
+      "r2_profile": "SUDOKU_FEEDBACK_V1",
+      "rrsi": "OUTER_EVOLUTION_FUTURE_ONLY",
+      "token_path_dependency": false
+    },
+    "sot": {
+      "fast_local_application": "FUTURE_EPOCH_ONLY",
+      "global_path": "ECS_COMMIT_THEN_PROJECTOR_THEN_FUTURE_GLOBAL_CONTEXT_OR_RRSI",
+      "raw_sot_to_rrsi_sidechannel": false,
+      "same_epoch_feedback": false,
+      "source": "COMPLETED_INFERENCE_EPOCH_ONLY",
+      "token_wait": false
+    },
+    "status": "BRANCH46E_CORRECTIVE_PRECOMMIT"
+  },
+  "base_commit": "90467893822422b24a88a449afdccf0e9dd80cf3",
+  "bound_files": {
+    "components/TRMFractalSpine/registry/model_ports.toml": "0b7937cafa8e08762b3392a16684ad1c3d472e4a38740578c408a832f5e3a534",
+    "docs/ACTIVE_INFERENCE_SLOW_UPDATE_SEPARATION_R0.md": "8d172db1f0824e56da0b3316077b42457ecec92ef792f198abfe9547064deade",
+    "manifests/BRANCH46E_ACTIVE_INFERENCE_SLOW_UPDATE_SEPARATION_PRECOMMIT_R0.json": "f6f82569853ff8579d863702dd3acfc611ea29ab79c7bfb5840b664b4a09a4f0",
+    "runtime/R2/src/elpis_runtime_r2/wiring.py": "c579ae1f76d5e2d4534ab602c13713ba524aaec934a0e2a70ad300832b6c0328",
+    "runtime/R3/src/elpis_runtime_r3/r1_adapter.py": "cf1124a7469070eaeba3a2c6ca4c398237f12371a6a049760f074d76d764826e",
+    "runtime/R3/src/elpis_runtime_r3/speculative.py": "8d7cf6aef625efe222d02a1474c440d7a398bf8a5b151a8d7dee6fb5e3749468",
+    "runtime/R3/src/elpis_runtime_r3/transaction.py": "a88ea0dbced220ba22ccc29779b735b2bcd4febdc5ea33ecb1e4f2c45c1e4990",
+    "runtime/R4/RUNTIME_MANIFEST.json": "4f84825c547c13161c7fbdd5367be1d6f65985efb6a7b0067896e7f9231093c8",
+    "tests/test_branch46e_active_inference_slow_update_separation_r0.py": "99a0a612088b79884ca84281718825555cd2a037b3cb4eff76ddaa604ad4ec69"
+  },
+  "branch": "integration/branch46-rrsi-integration-r0",
+  "branch46c_mutated": false,
+  "branch46d_mutated": false,
+  "canonical_assembly_changed": false,
+  "fprm_invocations": 0,
+  "git_commit": false,
+  "git_push": false,
+  "git_tag": false,
+  "guarded_source_files": {
+    "components/ECSAnchorSpine/src/elpis_ecs_anchor_spine/__init__.py": "1c48bc5ed263dd08ee3f75e8c668f6cb2c77f24d20d6aa526c842b3dbccc91d7",
+    "components/ECSAnchorSpine/src/elpis_ecs_anchor_spine/adapters.py": "6a56a67ccf715003a130b323df6d863e49ef4136cd62306b380b413802c2895d",
+    "components/ECSAnchorSpine/src/elpis_ecs_anchor_spine/branch43_codec.py": "3bcd9c9f9875ace5a4f1668312f464510106aa989643d6999eb2d227629cdabb",
+    "components/ECSAnchorSpine/src/elpis_ecs_anchor_spine/contracts.py": "3022eda90d2071b29031d423e1b11120f873aac38f5f93e570b3d2e2d0884f6b",
+    "components/ECSAnchorSpine/src/elpis_ecs_anchor_spine/ecs_bridge.py": "ceb3324d55894cd86911998d4bfddeec8b501032cd7513e8fc0eaa4ed550c271",
+    "components/ECSAnchorSpine/src/elpis_ecs_anchor_spine/real_ecs_flow.py": "ccedaa8137fe86f879746d4eee8f6cb0e3183d10a0d9a618e9fde8c24487ca82",
+    "components/ECSAnchorSpine/src/elpis_ecs_anchor_spine/snapshot.py": "896b814f327aa3e2a05fc425d37c0b183abcbd81474785f963a3671806ac346f",
+    "components/ECSAnchorSpine/src/elpis_ecs_anchor_spine/spine.py": "f3a8a64a9301443ce092c79eb076fb001388c401076b240da180febf6827c443",
+    "components/ECSAnchorSpine/src/elpis_ecs_anchor_spine/topology.py": "3bf319e13fb924ca4720fbaa1b1de4e3a509378a3884375cc241804ef952758c",
+    "components/EvolutionPathGate/src/elpis_evolution_path_gate/__init__.py": "d5c7cbe8fbc14eb63772adca38ebc82b5b09f0b3b0a65bada822f968a0a4ff85",
+    "components/EvolutionPathGate/src/elpis_evolution_path_gate/canonical.py": "c8c2337eae41f70d7118830e6e69401574f8a57bcd0b55d53dccb0bf0012a7b9",
+    "components/EvolutionPathGate/src/elpis_evolution_path_gate/path_gate.py": "5e561ef694a79f1d5bf1f58c810ce5d5e1408d8c53a0b1505e62f660441e1fa2",
+    "components/EvolutionPathGate/src/elpis_evolution_path_gate/selection.py": "1e73ecf14e250d7f8c092db9b8c7ce20bbc0ea13f17f1ac71a02d760d376fe34",
+    "runtime/R2/src/elpis_runtime_r2/__init__.py": "5905e7b3eb8e967a6e98e6ef6ae38936315e6005406c4e668d3de692655e00a8",
+    "runtime/R2/src/elpis_runtime_r2/receipt.py": "45c5fc98271b1391d712e8b9735d3f7452f881005ed732bf57602ea4ba6d6577",
+    "runtime/R2/src/elpis_runtime_r2/wiring.py": "c579ae1f76d5e2d4534ab602c13713ba524aaec934a0e2a70ad300832b6c0328",
+    "runtime/R3/src/elpis_runtime_r3/__init__.py": "5e9b2ea35a0fb3a33d5b602025b156f61cd5524a56aabb66e458a4dca88110d0",
+    "runtime/R3/src/elpis_runtime_r3/r1_adapter.py": "cf1124a7469070eaeba3a2c6ca4c398237f12371a6a049760f074d76d764826e",
+    "runtime/R3/src/elpis_runtime_r3/speculative.py": "8d7cf6aef625efe222d02a1474c440d7a398bf8a5b151a8d7dee6fb5e3749468",
+    "runtime/R3/src/elpis_runtime_r3/transaction.py": "a88ea0dbced220ba22ccc29779b735b2bcd4febdc5ea33ecb1e4f2c45c1e4990",
+    "runtime/R4/src/elpis_runtime_r4.egg-info/PKG-INFO": "5831c9e2de922d4f54da6ed5253050c8c1ffbed01f9fdd478ac072857673a08e",
+    "runtime/R4/src/elpis_runtime_r4.egg-info/SOURCES.txt": "b98f8a2c48cd6df3ea79efd13ae24de73ff226c6cc9cceb3487e73e6b509cdda",
+    "runtime/R4/src/elpis_runtime_r4.egg-info/dependency_links.txt": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "runtime/R4/src/elpis_runtime_r4.egg-info/top_level.txt": "cb570895b4f14958067275998a5550a3dc64e37f47a9cbd4417384ce234d4d23",
+    "runtime/R4/src/elpis_runtime_r4/__init__.py": "e5e766424c672df4c44b3b8de55acd560d013e0296ba00d40c448fd29e574212",
+    "runtime/R4/src/elpis_runtime_r4/wiring.py": "bbd2a20153b5c9646d48acb53f5e363c8a493b046f29f9eeec05e142ba1ffad8",
+    "src/elpis/inference/ASSET_TRUST.md": "7c5424547c728ebca415d96720f20605872f18ad288e6ee99b5ab438a152b85d",
+    "src/elpis/inference/__init__.py": "837aaa03dc85aadb89c2ff5a3e4e31f4f5e797ad6926c50229f3395c1cd0c407",
+    "src/elpis/inference/asset_authority.py": "0043ea23de7b0ba3d30a72b98d56ed886edeb007ac42d58912af52c5dfdfe109",
+    "src/elpis/inference/asset_boundary.py": "4e2a6dc8eb28e082de1436b1a9ae7ae7435fa8852aa4d6c0821ac00f8593d76e",
+    "src/elpis/inference/associative.py": "8c228f388a7fdd9a0f3776bb30705b6bad5dd850e212bdee42b9774241e1f079",
+    "src/elpis/inference/context.py": "795348da94f149bc176ea23de66e7846b10abdf34ffff140899cb61affed6ec0",
+    "src/elpis/inference/contracts.py": "0c89fe60e2d40a0467478b263e801746920fd8d10c5c06d72b7a1f9619527439",
+    "src/elpis/inference/experts.py": "6dcedb0c3f4faf09c596becde67dee1cdd8365069bcca0be3c462f6d0cd794eb",
+    "src/elpis/inference/file_assets.py": "3801e36906002f5601f750532306ebe6c1dbc4bd33f15ad0d12da70328ecefa6",
+    "src/elpis/inference/fixtures.py": "11bd1ab6dabfc08f40f87a24b5f3b39f7758a37215cca59f243b3e0b406e36de",
+    "src/elpis/inference/global_context.py": "56c8e15d81f7aa6d7f58cacef8406ebc76a8315e04de0b809f620a910c6629bc",
+    "src/elpis/inference/neural.py": "3d35099e42413a741cea1956b9db99ff3519c66bab8742338a9fe6631543b6bf",
+    "src/elpis/inference/prefetch.py": "0e9a6877223f7a4216a67340f50435e0c7e12f200908575286513bd42fd4ff41",
+    "src/elpis/inference/raw_sha256.py": "9eeb4729ab20af74bbe5186162c2dbba73de9cd4c3b62862bd639b0436a7d377",
+    "src/elpis/inference/rows.py": "ee2084ede73a1640e30749f21f900ea544895ef3d93247cea720530a7b27bbf3",
+    "src/elpis/inference/structural.py": "1b9fd3099f491bf26f72b8efeb08053b7ebeeebfd71f78248f3d614b179ce9ce",
+    "src/elpis/inference/synthetic_file_assets.py": "3e151a995170555f1b7ca79836db32c8ff3ff9e2fc7d3cc1a335871bcc055cd8"
+  },
+  "native_fixture_inference_qualification_executed": true,
+  "predecessors": {
+    "branch46c_qualification_digest": "6c02d4e1970330cea0fc9772cca953457d1d3ec8d4c40de235743f64fc6c6ae3",
+    "branch46d_qualification_digest": "0567eeede0e9e325f704595fcf9d7c209476266a8a9e77e36683544133766345"
+  },
+  "qualification_digest": "469bb4cfc2790c7c5d1651adea472809b055f0a5f88425f26e2a7e3d8550a187",
+  "real_checkpoint_model_calls": 0,
+  "rejected_unexecuted_artifact_sha256": "434ece478fb6e5f50dd135364470da9758b7302b8dc89d3651f6dec9b7f0de5b",
+  "runtime_admission_changed": false,
+  "runtime_r2_fprm_semantics_changed": false,
+  "runtime_r3_semantics_changed": false,
+  "schema": "elpis.branch46e.active-inference-slow-update-separation.closure.r1",
+  "scientific_worlds_executed": 0,
+  "status": "PASS_BRANCH46E_ACTIVE_INFERENCE_SLOW_UPDATE_SEPARATION_R1",
+  "tests": {
+    "ACTIVE R2 ASSEMBLY IMMUTABILITY": "PASS",
+    "ARCHITECTURE SEPARATION GUARD": "PASS",
+    "BRANCH46C RRSI GATE REGRESSION": "PASS",
+    "BRANCH46D SLOW UPDATE REGRESSION": "PASS",
+    "R2 BOUNDED FPRM WIRING REGRESSION": "PASS",
+    "R3 EXACT NATIVE INFERENCE LOCUS": "PASS"
+  }
+}

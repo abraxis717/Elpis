@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "elpis-evolution-path-gate"
+version = "0.1.0"
+description = "Deterministic RRSI path assertion, selection, and heredity mechanics"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["elpis_evolution_path_gate*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
