@@ -80,9 +80,18 @@ def test_forward_direct_sha256_registry_is_explicit_nonhistorical_raw_bytes():
     data = json.loads(forward.read_text(encoding="utf-8"))
     assert data["schema"] == "elpis.direct-sha256-sink-forward.v1"
     assert data["baseline_commit"] == "b7606061417db38a1f36a0db5a565cfe3bf2906e"
-    assert len(data["sinks"]) == 1
-    entry = data["sinks"][0]
-    assert entry["path"] == "src/elpis/inference/raw_sha256.py"
-    assert entry["qualname"] == "raw_sha256"
+    assert len(data["sinks"]) == 2
+    entries = {(x["path"], x["qualname"]): x for x in data["sinks"]}
+    entry = entries[("src/elpis/inference/raw_sha256.py", "raw_sha256")]
     assert entry["category"] == "RAW_BYTES_DIGEST"
     assert entry["structured_markers"] == []
+
+    epg = entries[(
+        "components/EvolutionPathGate/src/elpis_evolution_path_gate/canonical.py",
+        "sha256_file",
+    )]
+    assert epg["category"] == "RAW_BYTES_DIGEST"
+    assert epg["structured_markers"] == []
+    assert epg["fingerprint"] == 'a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800'
+    assert epg["occurrence"] == 0
+    assert epg["call"] == 'hashlib.sha256()'

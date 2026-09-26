@@ -2,7 +2,7 @@
 
 **A deterministic structural-reasoning architecture for bounded learned proposals, explicit authority, and falsifiable runtime composition.**
 
-**Release line: Elpis2.2.35**
+**Release line: Elpis2.2.36**
 
 Elpis is a systems-research project about a narrow question: can learned components contribute useful structural proposals while deterministic machinery retains ownership of representation, admissibility, authority, validation, and terminal action?
 
@@ -14,11 +14,21 @@ Elpis therefore presents itself as a falsifiable research artifact rather than a
 
 ## Release Notes
 
-**Elpis2.2.35** adds a qualified, inactive ECS slow-path research tranche: a bounded `CadenceECSProbe` with an exact external Cadence donor boundary, qualified StateOfThought source, qualified EvolutionPathGate source, and inactive Runtime R4 guarded wiring.
+**Elpis2.2.36** carries the first publishable release of the qualified ECS/Cadence slow-path research tranche developed on the 2.2.35 candidate line, while preserving the existing active R3/DSV41 inference path.
 
-Active inference remains R3/DSV41. The new components do not gain token-path admission, mutation authority, selection authority, or automatic Darwinian fitness authority. Cadence remains external rather than vendored or submoduled, and the probe reconstructs fresh donor state from replay-validated ECS history for detached diagnostics only.
+The main addition is `CadenceECSProbe`: a bounded, research-only observer over complete replay-validated ECS history. For each committed-event transition, the probe predicts the next event kind before that event is revealed, then permits local donor repair only after the observed target arrives. Its output is detached diagnostic evidence only. It is not probability, semantic truth, fitness, mutation authority, selection authority, runtime authority, or token-path authority.
 
-See [`RELEASE_NOTES/Elpis2.2.35.md`](RELEASE_NOTES/Elpis2.2.35.md).
+Cadence remains an external donor rather than vendored code or a Git submodule. The donor boundary is pinned to commit `f12f1bb30286f5bc0b339853cabe94fc9fbb3ffe`, distribution `cadence-net` 0.16.0, and the complete 44-file Python-source digest `a408b7db453ccef348f6bc31d2f55f081d8e132a2b0907534343ffe202bf917f`.
+
+The release also includes the qualified-but-inactive `StateOfThought` and `EvolutionPathGate` source surfaces plus inactive Runtime R4 guarded wiring. `StateOfThought` is restricted to `completed inference epoch -> request-local proposal -> future epoch/block only`; it cannot steer the same epoch or become a synchronous token-path dependency. `EvolutionPathGate` and Runtime R4 remain outside active inference and do not gain automatic Darwinian fitness, mutation, selection, or execution authority.
+
+ECS canonical committed history remains the sole continuity authority. Every Cadence probe invocation reconstructs fresh donor state from replay-valid ECS history, so no hidden Cadence state survives between invocations and no imagined continuation can become factual ECS evidence.
+
+Qualification for this tranche includes the external Cadence CPU donor baseline at 821 passed, 52 optional-backend skips, one documented upstream xfail, and zero failures; `StateOfThought` under hash seeds 0, 717, and 845813583; the exact native R3 locus at 227/227 with zero skips; deterministic same-history Cadence report identity across fresh processes; cross-invocation contamination isolation; and inspection confirming no synchronous import/call/wait dependency from active R3/DSV41 inference into the new inactive paths.
+
+Elpis2.2.35 contained this engineering payload but was never tagged or published. Its hosted main qualification failed because the materialized write-once `Elpis2.2.35.RELEASE_MANIFEST.json` introduced the historical `/full_elpis_runtime_admission` declaration before `tools/runtime_admission_temporality_v1.json` had been regenerated from immutable write-once authority. Elpis2.2.36 preserves that failed candidate as immutable evidence and corrects the release-authority derivation so current and future write-once manifest declarations are registered before hosted qualification.
+
+See [`RELEASE_NOTES/Elpis2.2.36.md`](RELEASE_NOTES/Elpis2.2.36.md).
 
 ## Install and quick start
 

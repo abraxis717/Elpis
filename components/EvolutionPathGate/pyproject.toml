@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "elpis-evolution-path-gate"
-version = "0.1.0"
+version = "0.1.1"
 description = "Deterministic RRSI path assertion, selection, and heredity mechanics"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = ["elpisai>=2.2.34,<3"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

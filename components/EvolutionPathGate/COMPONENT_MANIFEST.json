@@ -32,7 +32,7 @@
     "phase4_mechanics_qualification_digest": "5fecb75d0b9cda2d4edef5a1eae68175cfefba4980abd02904ac54e326f9b8a6",
     "phase4_source_sha256": "63cc8fed0b2f20a23e9c8dc8d918aeb7b6fb872b7889bd0b8a24343b049df2dd"
   },
-  "manifest_self_hash": "18f5f02ecd82a932354e1deb147e2edcbb8055838ecd6f8f5d9b8b83ed6da7a7",
+  "manifest_self_hash": "57654cdb3c05ccc0b8237d057cbb9895c70deebc4b3dd7e3b67557d06bd0ae29",
   "public_interface_paths": [
     "src/elpis_evolution_path_gate/__init__.py",
     "src/elpis_evolution_path_gate/path_gate.py",
@@ -41,7 +41,7 @@
   "qualification_disposition": "BRANCH46C_QUALIFIED_INACTIVE_PRODUCTION_EXTRACTION",
   "runtime_admission": false,
   "schema_version": "1.0",
-  "source_content_digest": "93d8a02df4e578960c401c5fc3f61cf38d62890eecba11678d05bcbb8521d970",
+  "source_content_digest": "55f5a59df5d2e4c9f645ac493ea94e400a55a917332f651348e932309eb2d500",
   "source_digest_algorithm": "sha256(canonical-json(path->sha256))",
-  "version": "0.1.0"
+  "version": "0.1.1"
 }

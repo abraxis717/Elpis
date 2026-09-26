@@ -1,24 +1,23 @@
 from __future__ import annotations
 
 import hashlib
-import json
 from pathlib import Path
+
+from elpis.canonical_identity import (
+    canonical_json_bytes as _canonical_json_bytes,
+    content_digest,
+)
 
 
 def canonical_json_bytes(obj: object) -> bytes:
-    return json.dumps(
-        obj,
-        sort_keys=True,
-        separators=(",", ":"),
-        ensure_ascii=False,
-        allow_nan=False,
-    ).encode("utf-8")
+    return _canonical_json_bytes(obj)
 
 
 def domain_digest(domain: str, payload: object) -> str:
-    return hashlib.sha256(
-        domain.encode("utf-8") + b"\x00" + canonical_json_bytes(payload)
-    ).hexdigest()
+    # Elpis2.2.36 integration: structured identities are owned by
+    # Canonical Identity v1. EPG payloads are JSON-compatible, so this
+    # preserves the extracted Branch46C digest bytes.
+    return content_digest(domain, payload)
 
 
 def require_digest(value: str) -> None:

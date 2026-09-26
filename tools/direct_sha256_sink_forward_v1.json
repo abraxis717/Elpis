@@ -3,6 +3,18 @@
   "schema": "elpis.direct-sha256-sink-forward.v1",
   "sinks": [
     {
+      "call": "hashlib.sha256()",
+      "category": "RAW_BYTES_DIGEST",
+      "fingerprint": "a30cd0828d592bc4439ebcb8d84cc3f6d3c46acc5de8945b38cb3153f56bc800",
+      "justification": "Elpis2.2.36 integration authority: streaming SHA-256 over file bytes only; structured EvolutionPathGate identities use elpis.canonical_identity.content_digest",
+      "lineno": 31,
+      "obvious_raw_bytes": false,
+      "occurrence": 0,
+      "path": "components/EvolutionPathGate/src/elpis_evolution_path_gate/canonical.py",
+      "qualname": "sha256_file",
+      "structured_markers": []
+    },
+    {
       "call": "hashlib.sha256(bytes(data))",
       "category": "RAW_BYTES_DIGEST",
       "fingerprint": "8138944ee80eab00ba6e727ce19262dbead0134a74adf675a52c721907f6e835",

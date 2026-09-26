@@ -1,3 +1,15 @@
+## Elpis2.2.36 — ECS/Cadence slow-path research tranche + release-authority correction
+
+- Carry the first publishable release of the qualified ECS/Cadence research tranche developed on the untagged, unpublished 2.2.35 candidate line.
+- Add `CadenceECSProbe` as a bounded research-only observer over complete replay-validated ECS history with prequential next-event-kind diagnostics and post-observation donor repair only.
+- Pin the external Cadence donor to commit `f12f1bb30286f5bc0b339853cabe94fc9fbb3ffe`, `cadence-net` 0.16.0, and complete 44-file Python-source digest `a408b7db453ccef348f6bc31d2f55f081d8e132a2b0907534343ffe202bf917f`; keep the donor external rather than vendored or submoduled.
+- Add qualified inactive `StateOfThought`, `EvolutionPathGate`, and Runtime R4 guarded source/provenance surfaces while preserving active R3/DSV41 token inference unchanged.
+- Preserve ECS canonical committed history as the sole continuity authority; Cadence is reconstructed fresh from replay-valid history and returns detached diagnostics only.
+- Preserve the existing 16-component public assembly registry and grant no new runtime, mutation, selection, execution, or automatic Darwinian fitness authority.
+- Record bounded qualification: Cadence donor CPU 821 passed / 52 optional-backend skips / 1 upstream xfail / 0 failures; StateOfThought multi-seed fresh-process qualification; native R3 locus 227/227 zero-skip; fresh-process Cadence determinism and cross-invocation contamination isolation.
+- Preserve failed Elpis2.2.35 candidate `4eeaf8e5b20fc468012f98812b3cec31ab8bd85a` and manifest SHA-256 `4a6450c922220bb7be57d29337163c1c43876aa98f9a7ee45efa08738ba6adbb` as immutable untagged/unpublished evidence.
+- Correct the hosted root-suite failure caused by stale `tools/runtime_admission_temporality_v1.json` after the 2.2.35 write-once manifest materialized; regenerate temporality authority from immutable write-once release-manifest authority before successor hosted qualification.
+
 ## Elpis2.2.35 — qualified inactive ECS/Cadence slow-path integration
 
 - Add `CadenceECSProbe` as a bounded, research-only ECS history diagnostic with prequential next-event-kind prediction and fail-closed external donor binding.

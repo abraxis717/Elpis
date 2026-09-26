@@ -190,13 +190,23 @@ def frozen_steering_contract():
     }
 
 
+# The ac72... value is historical Branch43 provenance and remains
+# externally visible. New production code does not recompute that
+# unframed structured SHA-256. The reconstructed body is separately
+# integrity-bound under Canonical Identity v1.
+FROZEN_STEERING_CONTRACT_CANONICAL_IDENTITY = (
+    'd9385850b2a5f128c18bdd6de5bee5f38fe79224a01db10501ebc973551b0022'
+)
+
+
 def frozen_steering_contract_digest():
-    # Authority convention: plain SHA-256 over canonical JSON, no domain frame.
-    return hashlib.sha256(canonical_json_bytes(frozen_steering_contract())).hexdigest()
+    return STEERING_CONTRACT_DIGEST
 
 
-if frozen_steering_contract_digest() != STEERING_CONTRACT_DIGEST:
-    raise RuntimeError('SoT steering constants diverge from the frozen steering contract')
+if (content_digest('elpis.sot.frozen-steering-contract.r0',
+                   frozen_steering_contract()) !=
+        FROZEN_STEERING_CONTRACT_CANONICAL_IDENTITY):
+    raise RuntimeError('SoT steering constants diverge from the canonical frozen-contract binding')
 
 
 # ------------------------------------------------------------ pure kernels
