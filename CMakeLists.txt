@@ -1,9 +1,14 @@
 cmake_minimum_required(VERSION 3.20)
-project(elpis LANGUAGES C)
+project(elpis LANGUAGES C CXX)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 option(
@@ -24,8 +29,15 @@ if(ELPIS_ENABLE_TSAN AND (ELPIS_ENABLE_ASAN OR ELPIS_ENABLE_UBSAN))
 endif()
 
 if(ELPIS_ENABLE_ASAN OR ELPIS_ENABLE_UBSAN OR ELPIS_ENABLE_TSAN)
-  if(NOT CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    message(FATAL_ERROR "Sanitizers require GCC or Clang.")
+  if(NOT (
+      CMAKE_C_COMPILER_ID MATCHES "GNU|Clang"
+      AND
+      CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang"
+  ))
+    message(
+      FATAL_ERROR
+      "Sanitizers require GCC- or Clang-compatible C/C++ compilers."
+    )
   endif()
 
   if(ELPIS_ENABLE_TSAN)
@@ -58,5 +70,6 @@ find_package(Threads REQUIRED)
 include(native/elpis.cmake)
 
 add_subdirectory(native/substrate)
+add_subdirectory(native/structure)
 add_subdirectory(native/ECS)
 add_subdirectory(native/continuity)
