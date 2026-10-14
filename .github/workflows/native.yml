@@ -1,0 +1,31 @@
+name: Native mechanics
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  gcc-debug:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Native dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake libsqlite3-dev libpcre2-dev
+      - name: Configure and build
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build --parallel 4
+      - name: Full native mechanics suite
+        run: ctest --test-dir build --output-on-failure --parallel 2
+  asan-ubsan:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Native dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake libsqlite3-dev libpcre2-dev
+      - name: Configure
+        run: cmake -S . -B build-asan -DCMAKE_BUILD_TYPE=Debug -DELPIS_ENABLE_ASAN=ON -DELPIS_ENABLE_UBSAN=ON
+      - name: Build memory targets
+        run: cmake --build build-asan --target test_ecs_memory test_ecs_memory_capability test_ecs_memory_snapshot test_ecs_memory_concurrency --parallel 4
+      - name: Test memory under sanitizers
+        run: ctest --test-dir build-asan -R '^ECS\.test_ecs_memory' --output-on-failure
