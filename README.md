@@ -13,6 +13,9 @@ a trained language model, or an independently qualified production runtime.
   P6 adds single-owner FMS cold-root mechanics and bounded crash-orphan
   cleanup; see `docs/FMS_COLD_ROOT.md`.
 - `native/structure/`: native HACF and structural primitives.
+  P8 adds explicitly operator-provisioned fixed-capacity native HGRAM
+  storage and association cells. No learning or runtime write authority;
+  see `docs/HGRAM_FIXED_CAPACITY.md`.
   P5 additionally publishes an immutable C snapshot-manifest writer with
   content-addressed creation; see `docs/SNAPSHOT_IMMUTABLE.md`.
   Includes an opt-in C ABI entry point for no-retry exact-vector residency

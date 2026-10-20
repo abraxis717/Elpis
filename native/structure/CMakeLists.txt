@@ -281,3 +281,30 @@ semantic_test(test_grid81_compiler grid81/test_grid81_compiler.c)
 semantic_test(test_structural_observation observation/test_structural_observation.c)
 
 # ---------------------------------------------------------------------------
+
+# HACF's one user-provisioned, physically preallocated associative-state file.
+# The initializer runs only on explicit operator invocation. No inference-time
+# initialization, append, resize or persistent metadata sidecars.
+target_sources(elpis_cascade PRIVATE ${HACF}/src/kernel/hgram_store.c)
+elpis_add_test(structure test_hgram_store
+  SOURCES ${HACF}/tests/kernel/test_hgram_store.c
+  LIBS elpis_cascade TIMEOUT 45)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  add_executable(elpis_hgram_init ${HACF}/src/kernel/hgram_init.c)
+  elpis_warnings(elpis_hgram_init)
+  target_link_libraries(elpis_hgram_init PRIVATE elpis_cascade)
+endif()
+
+# R1 direct, operator-gated fixed association mechanics. Never a runtime writer.
+elpis_add_test(structure test_hgram_assoc
+  SOURCES ${HACF}/tests/kernel/test_hgram_assoc.c
+  LIBS elpis_cascade TIMEOUT 45)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  # Test-only mutation trap: proves every association write stays inside the
+  # provisioned extent (portable, unlike host st_blocks accounting).
+  target_compile_definitions(test_hgram_assoc PRIVATE HGRAM_WRITE_TRAP=1)
+  target_link_options(test_hgram_assoc PRIVATE
+    "-Wl,--wrap=pwrite" "-Wl,--wrap=write" "-Wl,--wrap=ftruncate" "-Wl,--wrap=fallocate"
+    "-Wl,--wrap=posix_fallocate" "-Wl,--wrap=open" "-Wl,--wrap=openat" "-Wl,--wrap=__openat_2"
+    "-Wl,--wrap=renameat" "-Wl,--wrap=unlinkat")
+endif()

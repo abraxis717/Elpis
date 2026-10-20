@@ -16,6 +16,10 @@ Present:
   P6 adds POSIX FMS cold-root exclusive ownership and crash orphan cleanup,
   plus a public-only C test-fixture correction. See `docs/FMS_COLD_ROOT.md`.
 * `native/structure/`: HACF and structural facilities.
+  P8 adds operator-only fixed-capacity HGRAM storage (five DEV native files
+  plus one public-compatible CMake registration). The exported writer
+  requires external authorization; no inference admission or learning policy
+  is published. See `docs/HGRAM_FIXED_CAPACITY.md`.
   P5 adds immutable semantic snapshot-manifest publication mechanics in C;
   this is storage/identity logic only, not admission or continuity authority.
   See `docs/SNAPSHOT_IMMUTABLE.md`.
