@@ -10,6 +10,8 @@ The publication repository `abraxis717/Elpis` is distinct from `Elpis_DEV`.
 Present:
 
 * `native/substrate/`: bounded native substrate.
+  P6 adds POSIX FMS cold-root exclusive ownership and crash orphan cleanup,
+  plus a public-only C test-fixture correction. See `docs/FMS_COLD_ROOT.md`.
 * `native/structure/`: HACF and structural facilities.
   P5 adds immutable semantic snapshot-manifest publication mechanics in C;
   this is storage/identity logic only, not admission or continuity authority.
