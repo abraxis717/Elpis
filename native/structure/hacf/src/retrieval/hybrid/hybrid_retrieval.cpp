@@ -160,10 +160,13 @@ static int set_error(elpis_hybrid_retriever *r, int status, int cause, const cha
 }
 
 static int retrieve_impl(elpis_hybrid_retriever *r, const elpis_hybrid_query *q,
-                         elpis_retrieval_bundle **out) {
+                         elpis_retrieval_bundle **out, uint32_t residency) {
     if (!q || !out || !q->text || !q->vector || q->dimensions != ELPIS_EMBEDDING_DIM)
         return set_error(r, ELPIS_HYBRID_E_INVAL, 0, "invalid query");
     *out = nullptr;
+    if (residency != ELPIS_HYBRID_RESIDENCY_NOWAIT &&
+        residency != ELPIS_HYBRID_RESIDENCY_BOUNDED_WAIT)
+        return set_error(r, ELPIS_HYBRID_E_INVAL, 0, "invalid residency choice");
     size_t qlen = strnlen(q->text, 65536);
     if (qlen == 0 || qlen > 65535 || !elpis_vector_all_finite(q->vector, q->dimensions))
         return set_error(r, ELPIS_HYBRID_E_INVAL, 0, "query text or vector rejected");
@@ -196,7 +199,10 @@ static int retrieve_impl(elpis_hybrid_retriever *r, const elpis_hybrid_query *q,
     vq.ns_filter = q->namespace_filter;
     vq.authority_filter = q->authority_filter;
     uint32_t dn = 0;
-    int vrc = elpis_vector_index_search(r->index, &vq, dense.data(), &dn);
+    /* The only policy-dependent operation: share all fusion and identity law. */
+    int vrc = residency == ELPIS_HYBRID_RESIDENCY_BOUNDED_WAIT
+                  ? elpis_vector_index_search(r->index, &vq, dense.data(), &dn)
+                  : elpis_vector_index_search_nowait(r->index, &vq, dense.data(), &dn);
     if (vrc != ELPIS_VEC_OK) {
         const elpis_vec_error *e = elpis_vector_index_last_error(r->index);
         return set_error(r, ELPIS_HYBRID_E_VECTOR, e ? e->status : vrc,
@@ -472,7 +478,20 @@ int elpis_hybrid_retrieve(elpis_hybrid_retriever *r, const elpis_hybrid_query *q
                           elpis_retrieval_bundle **out) {
     if (!r) return ELPIS_HYBRID_E_INVAL;
     try {
-        return retrieve_impl(r, q, out);
+        return retrieve_impl(r, q, out, ELPIS_HYBRID_RESIDENCY_BOUNDED_WAIT);
+    } catch (...) {
+        if (out) *out = nullptr;
+        return set_error(r, ELPIS_HYBRID_E_INTERNAL, 0, "unhandled internal exception");
+    }
+}
+
+int elpis_hybrid_retrieve_with_residency(elpis_hybrid_retriever *r,
+                                         const elpis_hybrid_query *q,
+                                         uint32_t residency,
+                                         elpis_retrieval_bundle **out) {
+    if (!r) return ELPIS_HYBRID_E_INVAL;
+    try {
+        return retrieve_impl(r, q, out, residency);
     } catch (...) {
         if (out) *out = nullptr;
         return set_error(r, ELPIS_HYBRID_E_INTERNAL, 0, "unhandled internal exception");

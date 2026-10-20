@@ -13,6 +13,9 @@ a trained language model, or an independently qualified production runtime.
   P6 adds single-owner FMS cold-root mechanics and bounded crash-orphan
   cleanup; see `docs/FMS_COLD_ROOT.md`.
 - `native/structure/`: native HACF and structural primitives.
+  P9 adds opt-in hybrid retrieval residency selection with public V1 query
+  layout and legacy bounded-wait semantics preserved; see
+  `docs/HYBRID_RESIDENCY_COMPAT.md` (DEV migration debt explicitly tracked).
   P8 adds explicitly operator-provisioned fixed-capacity native HGRAM
   storage and association cells. No learning or runtime write authority;
   see `docs/HGRAM_FIXED_CAPACITY.md`.

@@ -52,6 +52,11 @@ typedef struct elpis_hybrid_policy {
     uint32_t reserved[5];
 } elpis_hybrid_policy;
 
+/* These selection values match DEV's residency policy without adopting its
+ * larger query struct. Existing ABI v1 callers keep their binary layout. */
+#define ELPIS_HYBRID_RESIDENCY_NOWAIT       0u
+#define ELPIS_HYBRID_RESIDENCY_BOUNDED_WAIT 1u
+
 typedef struct elpis_hybrid_query {
     const char  *text;             /* NUL-terminated, nonempty, <= 65535 bytes */
     const float *vector;
@@ -82,8 +87,18 @@ const elpis_hybrid_error *elpis_hybrid_retriever_last_error(const elpis_hybrid_r
  * with integer division. Primary order is higher fused key then lower chunk
  * digest. Graph context is appended seed-rank first and never expands beyond
  * one hop. */
+/* Legacy ABI v1 entry point: retains its original bounded-residency retry.
+ * No field is added to elpis_hybrid_query; no existing semantics are changed. */
 int elpis_hybrid_retrieve(elpis_hybrid_retriever *r, const elpis_hybrid_query *q,
                           elpis_retrieval_bundle **out);
+/* Explicit opt-in residency mode; both modes use the same deterministic
+ * retrieval body. NOWAIT means no retry/wait for another residency transition,
+ * NOT no I/O: a COLD shard may still be synchronously promoted by this call.
+ * It does not guarantee nonblocking mutex acquisition. */
+int elpis_hybrid_retrieve_with_residency(elpis_hybrid_retriever *r,
+                                        const elpis_hybrid_query *q,
+                                        uint32_t residency,
+                                        elpis_retrieval_bundle **out);
 
 const char *elpis_hybrid_strerror(int status);
 
