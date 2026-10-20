@@ -15,6 +15,9 @@ Present:
   `native/ECS/` publication tree; its K1 ABI remains the publication-era law.
 * `native/ECS_C/memory/`: model-free typed memory source moved byte-for-byte
   from that tree, independently tested and with LEARN/FAST unqualified.
+* `native/pipeline/ingress/`: standalone Regex lexical V1/V2 and execution
+  mechanics, without query ingress, proposal publication, HACF integration
+  or independent cognition/semantic authority. See `docs/REGEX_INGRESS.md`.
 
 Retired from this publication branch:
 
