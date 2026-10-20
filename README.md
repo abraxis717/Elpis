@@ -8,6 +8,9 @@ a trained language model, or an independently qualified production runtime.
 
 - `native/substrate/`: native execution and bounded-storage substrate.
 - `native/structure/`: native HACF and structural primitives.
+  Includes an opt-in C ABI entry point for no-retry exact-vector residency
+  search (`elpis_vector_index_search_nowait`). Synchronous cold promotion
+  remains possible; see `docs/VECTOR_RESIDENCY.md`.
 - `native/pipeline/ingress/`: bounded Regex V1/V2 lexical ingress and a native execution adapter; no HACF query bridge or semantic/continuity authority. Requires PCRE2 (`libpcre2-8`) and `pkg-config`.
 - `native/ECS_G/`: geometric ECS mathematics, executor, K1 and FMS adapters.
 - `native/ECS_C/memory/`: independent, model-free typed memory mechanics.
