@@ -8,6 +8,8 @@ a trained language model, or an independently qualified production runtime.
 
 - `native/substrate/`: native execution and bounded-storage substrate.
 - `native/structure/`: native HACF and structural primitives.
+  P5 additionally publishes an immutable C snapshot-manifest writer with
+  content-addressed creation; see `docs/SNAPSHOT_IMMUTABLE.md`.
   Includes an opt-in C ABI entry point for no-retry exact-vector residency
   search (`elpis_vector_index_search_nowait`). Synchronous cold promotion
   remains possible; see `docs/VECTOR_RESIDENCY.md`.

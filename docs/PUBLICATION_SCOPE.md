@@ -11,6 +11,9 @@ Present:
 
 * `native/substrate/`: bounded native substrate.
 * `native/structure/`: HACF and structural facilities.
+  P5 adds immutable semantic snapshot-manifest publication mechanics in C;
+  this is storage/identity logic only, not admission or continuity authority.
+  See `docs/SNAPSHOT_IMMUTABLE.md`.
   P4 adds the ABI-additive exact-vector `elpis_vector_index_search_nowait`
   native entry point (three DEV files) without changing the hybrid query
   struct or importing the DEV retrieval bridge. See
