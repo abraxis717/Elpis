@@ -1,47 +1,95 @@
-# Publication scope: native ECS memory mechanics R0
+# Publication scope: independent native mechanics; continuity retired
 
-**Classification:** mechanically tested source component / no runtime authority / no semantic, cognitive, or production release claim. The `Elpis` repository is distinct from `Elpis_DEV`.
+**Classification:** selected mechanically testable native components. No
+production continuity authority, composite ECS runtime, cognition/semantic
+qualification, trained-model release, or end-to-end AI capability is claimed.
+The publication repository `abraxis717/Elpis` is distinct from `Elpis_DEV`.
 
-## Frozen source identity
+## Physical source inventory after this correction
 
-This slice was copied **byte-for-byte** (no source-law edits) from the public development repository `abraxis717/Elpis_DEV`, pinned to Git commit `81b738ec8b9d63cb6cba7d13f98f569129561218`. The same eight source/test files have Git blob identities identical to the files at DEV commit `b2cb96307797eb065eddb7debd8e3b883f190128`, whose CI run #220 passed all 14 jobs. That DEV result is **not** a substitute for testing the publication build.
+Present:
 
-* `native/ECS/include/elpis/ecs_memory.h` — memory C ABI and capability contract.
-* `native/ECS/src/ecs_memory.c` — deterministic bounded evidence storage and gated recurrent law.
-* `native/ECS/tests/ecs_memory_test_util.h` — deterministic fixture helper.
-* `native/ECS/tests/test_ecs_memory.c` — mechanics.
-* `native/ECS/tests/test_ecs_memory_capability.c` — admission and refusal.
-* `native/ECS/tests/test_ecs_memory_snapshot.c` — snapshot and corrupt-input checks.
-* `native/ECS/tests/test_ecs_memory_concurrency.c` — concurrency boundary.
-* `native/ECS/tests/test_ecs_memory_alloc.c` — allocation discipline (non-sanitized Linux linker wrappers).
+* `native/substrate/`: bounded native substrate.
+* `native/structure/`: HACF and structural facilities.
+* `native/ECS/`: the original publication layout containing geometric ECS
+  primitives and the independent model-free typed memory component.
 
-The source header references DEV's composite and scientific records; these are **provenance/continuation references** and do not imply those facilities are present in this publication branch.
+Retired from this publication branch:
 
-## Precisely supported claims
+* `native/continuity/`: old standalone continuity code, its header, build,
+  tests and deterministic historical vectors. Git history preserves it at
+  publication commit `100c31616e051f679c0017fc123e633dfc502099`.
 
-* Mechanically bounded, native C11 model-free data representation with explicit typed observation and identity fields.
-* OBSERVE, exact read-only LOOKUP, INSPECT and snapshot/restore have reproducible native tests.
-* Recurrent LEARN and FAST are capability-gated and unqualified. Setting the bit does not constitute scientific or deployment admission.
-* CONSOLIDATE/SLOW is unavailable. All state on this publication branch remains free-standing and has **no managed writer, composite continuity, durable checkpoint publication, or canonical runtime execution authority**.
-* The donor-inspired residual mathematics is not a trained model. Fixed hash-derived feature codes do not establish semantics, meaning, robust generalization or intelligence.
+**Not imported:** `native/ECS_C/authority/`, `native/runtime/`, the current
+`native/ECS_G` / `native/ECS_C` split, RuntimeCore's native host, Python
+facades, model runtimes, and all private or frozen qualification materials.
+No source from DEV's current ECS_C authority is copied or relicensed here.
 
-## Scientific limitation
+## Existing memory-source provenance
 
-The independent DEV MF-R0 synthetic study recorded H1/H2/H3/H5 PASS and **H4 NONPASS**: byte-matched exact keyed storage outperformed the recurrent FAST memory at retention under interference. These results are **not reproduced or qualified by this publication slice**. The present staged code must not claim superior memory retention, broad semantic reasoning or continuity.
+The independent ECS memory component was copied byte-for-byte from public
+`abraxis717/Elpis_DEV` at commit
+`81b738ec8b9d63cb6cba7d13f98f569129561218`, with original independent
+source/test Git blob identities matching the DEV source at
+`b2cb96307797eb065eddb7debd8e3b883f190128`:
 
-## Deferred / not copied
+* `native/ECS/include/elpis/ecs_memory.h`
+* `native/ECS/src/ecs_memory.c`
+* `native/ECS/tests/ecs_memory_test_util.h`
+* `native/ECS/tests/test_ecs_memory.c`
+* `native/ECS/tests/test_ecs_memory_capability.c`
+* `native/ECS/tests/test_ecs_memory_snapshot.c`
+* `native/ECS/tests/test_ecs_memory_concurrency.c`
+* `native/ECS/tests/test_ecs_memory_alloc.c`
 
-* New composite envelope `ELPISEC1`, continuity v3 and RuntimeCore (these form a dependent authority transition; never copy part of the set).
-* Python runtime facade, codec and inference.
-* Research laboratories, private/unreleased evidence, checkpoint data, pretrained weights and donor training runtime.
-* DEV-only canonical qualification statements, whose frozen historical evidence does not live in this repository.
+This is historical provenance for the memory component, not a claim that the
+publication branch is synchronized with all of DEV.
 
-## Publication qualification
+## Mechanical and scientific bounds
 
-A pre-merge local gate builds and runs the entire existing publication native suite, then compiles and executes the ECS memory tests under ASan+UBSan. New `.github/workflows/native.yml` repeats those two independent qualification lanes for pushes and pull requests; a green CI job is a prerequisite for merge, not proof of cognitive efficacy. The staged source files are verified by their Git blob identities against the pinned DEV commit before compilation. Publication's original CMake and source variants are **not overwritten**; the memory targets are appended to the publication-native build.
+* Bounded native typed observations, exact LOOKUP, INSPECT and
+  snapshot/restore are independently exercised by the native memory tests.
+* Recurrent memory LEARN/FAST is capability-gated and **not scientifically
+  admitted**. Setting an option bit does not qualify it. CONSOLIDATE/SLOW is
+  not provided.
+* The independent DEV MF-R0 synthetic study reported H1/H2/H3/H5 PASS and
+  **H4 NONPASS**: keyed exact storage outperformed recurrent FAST retention
+  under interference. Those findings are not requalified here.
+* No published component in this branch manages an authenticated continuity
+  store, writes a composite checkpoint, or authorizes cognition publication.
+* The DEV ECS_C authority uses a fixed five-file physical storage envelope,
+  no append history, and fixed recovery work, but **none of its code or tests
+  is part of this publication change**.
 
-Every status is scoped: passing mechanics tests means the component functions under the tested contract, not that the whole Elpis architecture is scientifically or operationally complete.
+## Development continuity context — not publication qualification
 
-## Provenance
+Development PR
+[#64](https://github.com/abraxis717/Elpis_DEV/pull/64) retired the
+standalone continuity implementation under RuntimeCore ABI v7. ECS_C now owns
+continuity and memory; ECS_G owns geometry; RuntimeCore composes the two.
+DEV's ECS_C Recovery Q0 RUN PASS applies to its exact source commit
+`117b41ad8a1a1fd25963489d4b29a66b284c4632` under ABI v6 only. That
+qualification does **not** transfer to ABI v7 or to this publication branch.
+This branch neither embeds the DEV instrument nor republishes its immutable
+evidence. Process-death results are not power-loss durability results.
 
-Mathematical inspiration and frozen reference family: `eelbaz/mLattice`, MIT, source commit `873dfcab5c9fc29a5d974f74c2a1ab6511c026e1`. The applicable MIT notice is preserved in `LICENSES/MULATTICE_MIT.txt`. The development repository records derivation and adversarial comparisons. No donor model, learned tensors or weights are included.
+The DEV ECS_C Rust crate currently specifies `license = "UNLICENSED"`.
+Consequently the crate is not silently included in this Apache-2.0 publication
+or granted a new license. An explicit licensing/provenance decision is required
+before any selective successor-source publication.
+
+## Publication mechanical verification
+
+The publication's own native CI builds the source in this repository and runs
+its CTest suite, with an independent sanitizing memory-test lane. The CMake
+build must no longer include `native/continuity`; no replacement continuity
+library is declared or linked. A green publication CI run establishes only
+mechanics of the included components; it does not inherit DEV qualification.
+
+## Historical provenance and attribution
+
+Mathematical inspiration/reference family: `eelbaz/mLattice`, MIT license,
+source commit `873dfcab5c9fc29a5d974f74c2a1ab6511c026e1`. The relevant
+MIT attribution is retained in `LICENSES/MULATTICE_MIT.txt`. The present
+change does not upload model weights, training data, private sources,
+experiments, authority records, keys or frozen qualification evidence.

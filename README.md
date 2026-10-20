@@ -1,19 +1,61 @@
-# Elpis — Native foundation (publication development)
+# Elpis — native foundation (development publication)
 
-This repository contains the independent native ECS mathematical/runtime foundation, HACF structural substrate, and minimal continuity mechanisms. The code is a **development publication**, not a released AI system, language model, or demonstrated generally intelligent agent.
+This is a **selected native source publication**, not a mirror of
+[`Elpis_DEV`](https://github.com/abraxis717/Elpis_DEV), a packaged AI agent,
+a trained language model, or an independently qualified production runtime.
 
-The mechanically tested model-free ECS memory API is under `native/ECS/include/elpis/ecs_memory.h` and `native/ECS/src/ecs_memory.c`. In this publication stage it is **free-standing and non-authoritative**: OBSERVE, read-only LOOKUP, INSPECT, and snapshot/restore mechanics can be tested independently. The recurrent LEARN / FAST capability is **not scientifically qualified**; it must not be treated as admitted or integrated into a cognitive runtime. Do not grant it by enabling the capability bit in production. CONSOLIDATE / SLOW is absent from canonical memory.
+## Published in this repository
 
-This publication slice does **not** include the composite ECS envelope, managed RuntimeCore, or continuity v3 described by newer DEV work; those require a separately reviewed, versioned end-to-end integration. See `docs/PUBLICATION_SCOPE.md` for exact source provenance, exclusions and validation commands.
+- `native/substrate/`: native execution and bounded-storage substrate.
+- `native/structure/`: native HACF and structural primitives.
+- `native/ECS/`: publication-era geometric ECS mathematics and an independent,
+  model-free typed memory API. This older directory layout must **not** be
+  mistaken for the current development ownership split.
 
-## Native build and tests
+The memory API is `native/ECS/include/elpis/ecs_memory.h` with implementation in
+`native/ECS/src/ecs_memory.c`. OBSERVE, read-only LOOKUP, INSPECT, and
+snapshot/restore have standalone mechanical tests. Its recurrent LEARN/FAST
+capability remains **scientifically unqualified** and must not be enabled as
+production authority. CONSOLIDATE/SLOW is not provided.
 
-Requirements: CMake >= 3.20, C/C++ compiler, Rust/Cargo, SQLite3 development headers, POSIX/Linux toolchain as applicable.
+## Continuity retirement (publication correction, October 2026)
+
+The earlier `native/continuity/` Rust crate was a **standalone historical
+continuity mechanism**, not the current Elpis continuity authority. It has
+been removed from this publication branch and its build, with its historical
+source preserved in Git commit
+[`100c316`](https://github.com/abraxis717/Elpis/commit/100c31616e051f679c0017fc123e633dfc502099).
+
+In development, `ECS_C` now owns continuity and memory, `ECS_G` owns geometry,
+and RuntimeCore composes them. Standalone continuity was retired at RuntimeCore
+ABI v7; see the audited development PR
+[#64](https://github.com/abraxis717/Elpis_DEV/pull/64).
+**That ECS_C authority, RuntimeCore, and native operator host are not part of
+this publication slice.** Their absence is deliberate, not a compatibility
+promise. In particular, this repository currently publishes **no integrated
+continuity or recoverable-cognition runtime**.
+
+The ECS_C authority implementation in DEV presently declares
+`license = "UNLICENSED"`. This publication change does not redistribute or
+relicense that implementation. Any later source publication requires an
+explicit license and scope review, plus independent build and CI evidence.
+
+## Build and mechanical tests
+
+Requires CMake >= 3.20, C/C++ toolchain, Rust/Cargo where a retained target
+requires it, SQLite3 and other dependencies of the native targets.
 
 ```sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
-cmake --build build --parallel
-ctest --test-dir build --output-on-failure
+cmake --build build --parallel 4
+ctest --test-dir build --output-on-failure --parallel 2
 ```
 
-All tests are mechanics only; no cognitive, semantic, trained-model, scientific or production-continuity qualification is claimed. Root licensing is Apache-2.0; the mathematical donor's separate MIT attribution is retained in `LICENSES/MULATTICE_MIT.txt`.
+Build/test success concerns only the published source and its mechanical
+contracts. It does **not** qualify general intelligence, semantic reasoning,
+trained inference, recurrent memory superiority, power-loss durability, or a
+continuity authority. Source provenance and exclusions are recorded in
+[`docs/PUBLICATION_SCOPE.md`](docs/PUBLICATION_SCOPE.md).
+
+Root source license: Apache-2.0, subject to separately retained attribution
+and licensing such as `LICENSES/MULATTICE_MIT.txt`.
