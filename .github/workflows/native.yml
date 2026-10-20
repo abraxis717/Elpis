@@ -28,4 +28,4 @@ jobs:
       - name: Build memory targets
         run: cmake --build build-asan --target test_ecs_memory test_ecs_memory_capability test_ecs_memory_snapshot test_ecs_memory_concurrency --parallel 4
       - name: Test memory under sanitizers
-        run: ctest --test-dir build-asan -R '^ECS\.test_ecs_memory' --output-on-failure
+        run: ctest --test-dir build-asan -R '^ECS_C\.test_ecs_memory' --no-tests=error --output-on-failure

@@ -11,8 +11,10 @@ Present:
 
 * `native/substrate/`: bounded native substrate.
 * `native/structure/`: HACF and structural facilities.
-* `native/ECS/`: the original publication layout containing geometric ECS
-  primitives and the independent model-free typed memory component.
+* `native/ECS_G/`: geometric ECS code moved byte-for-byte from the historical
+  `native/ECS/` publication tree; its K1 ABI remains the publication-era law.
+* `native/ECS_C/memory/`: model-free typed memory source moved byte-for-byte
+  from that tree, independently tested and with LEARN/FAST unqualified.
 
 Retired from this publication branch:
 
@@ -21,9 +23,11 @@ Retired from this publication branch:
   publication commit `100c31616e051f679c0017fc123e633dfc502099`.
 
 **Not imported:** `native/ECS_C/authority/`, `native/runtime/`, the current
-`native/ECS_G` / `native/ECS_C` split, RuntimeCore's native host, Python
+DEV geometric K1 upgrades and ECS_C continuity authority, RuntimeCore's native host, Python
 facades, model runtimes, and all private or frozen qualification materials.
 No source from DEV's current ECS_C authority is copied or relicensed here.
+The independent physical ECS_G/ECS_C memory split is now present; it does not
+imply that the later DEV numerical/runtime upgrades have been imported.
 
 ## Existing memory-source provenance
 
@@ -33,14 +37,14 @@ The independent ECS memory component was copied byte-for-byte from public
 source/test Git blob identities matching the DEV source at
 `b2cb96307797eb065eddb7debd8e3b883f190128`:
 
-* `native/ECS/include/elpis/ecs_memory.h`
-* `native/ECS/src/ecs_memory.c`
-* `native/ECS/tests/ecs_memory_test_util.h`
-* `native/ECS/tests/test_ecs_memory.c`
-* `native/ECS/tests/test_ecs_memory_capability.c`
-* `native/ECS/tests/test_ecs_memory_snapshot.c`
-* `native/ECS/tests/test_ecs_memory_concurrency.c`
-* `native/ECS/tests/test_ecs_memory_alloc.c`
+* `native/ECS_C/memory/include/elpis/ecs_memory.h`
+* `native/ECS_C/memory/src/ecs_memory.c`
+* `native/ECS_C/memory/tests/ecs_memory_test_util.h`
+* `native/ECS_C/memory/tests/test_ecs_memory.c`
+* `native/ECS_C/memory/tests/test_ecs_memory_capability.c`
+* `native/ECS_C/memory/tests/test_ecs_memory_snapshot.c`
+* `native/ECS_C/memory/tests/test_ecs_memory_concurrency.c`
+* `native/ECS_C/memory/tests/test_ecs_memory_alloc.c`
 
 This is historical provenance for the memory component, not a claim that the
 publication branch is synchronized with all of DEV.
