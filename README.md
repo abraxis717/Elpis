@@ -7,6 +7,9 @@ a trained language model, or an independently qualified production runtime.
 ## Published in this repository
 
 - `native/substrate/`: native execution and bounded-storage substrate.
+  P7 adds an opt-in resident-only FMS pin (no cold promotion or waiting
+  for an in-flight move). It does not guarantee mutex nonblocking;
+  see `docs/FMS_RESIDENT_ONLY.md`.
   P6 adds single-owner FMS cold-root mechanics and bounded crash-orphan
   cleanup; see `docs/FMS_COLD_ROOT.md`.
 - `native/structure/`: native HACF and structural primitives.

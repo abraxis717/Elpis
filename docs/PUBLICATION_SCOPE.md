@@ -10,6 +10,9 @@ The publication repository `abraxis717/Elpis` is distinct from `Elpis_DEV`.
 Present:
 
 * `native/substrate/`: bounded native substrate.
+  P7 adds additive native FMS resident-only acquisition (two DEV source
+  paths, FMS ABI v2 unchanged), with the independent regression probe
+  excluded from publication. See `docs/FMS_RESIDENT_ONLY.md`.
   P6 adds POSIX FMS cold-root exclusive ownership and crash orphan cleanup,
   plus a public-only C test-fixture correction. See `docs/FMS_COLD_ROOT.md`.
 * `native/structure/`: HACF and structural facilities.
