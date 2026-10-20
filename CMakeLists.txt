@@ -71,4 +71,5 @@ include(native/elpis.cmake)
 
 add_subdirectory(native/substrate)
 add_subdirectory(native/structure)
-add_subdirectory(native/ECS)
+add_subdirectory(native/ECS_G)
+add_subdirectory(native/ECS_C)

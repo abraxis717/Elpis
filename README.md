@@ -8,12 +8,13 @@ a trained language model, or an independently qualified production runtime.
 
 - `native/substrate/`: native execution and bounded-storage substrate.
 - `native/structure/`: native HACF and structural primitives.
-- `native/ECS/`: publication-era geometric ECS mathematics and an independent,
-  model-free typed memory API. This older directory layout must **not** be
-  mistaken for the current development ownership split.
+- `native/ECS_G/`: geometric ECS mathematics, executor, K1 and FMS adapters.
+- `native/ECS_C/memory/`: independent, model-free typed memory mechanics.
+  This component has **no** published continuity authority yet. The original
+  mixed `native/ECS/` tree has been retired without changing numerical laws.
 
-The memory API is `native/ECS/include/elpis/ecs_memory.h` with implementation in
-`native/ECS/src/ecs_memory.c`. OBSERVE, read-only LOOKUP, INSPECT, and
+The memory API is `native/ECS_C/memory/include/elpis/ecs_memory.h` with implementation in
+`native/ECS_C/memory/src/ecs_memory.c`. OBSERVE, read-only LOOKUP, INSPECT, and
 snapshot/restore have standalone mechanical tests. Its recurrent LEARN/FAST
 capability remains **scientifically unqualified** and must not be enabled as
 production authority. CONSOLIDATE/SLOW is not provided.
