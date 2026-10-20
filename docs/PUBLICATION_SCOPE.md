@@ -16,6 +16,10 @@ Present:
   P6 adds POSIX FMS cold-root exclusive ownership and crash orphan cleanup,
   plus a public-only C test-fixture correction. See `docs/FMS_COLD_ROOT.md`.
 * `native/structure/`: HACF and structural facilities.
+  P9 adds an ABI-V1-compatible opt-in hybrid residency API; the two-file
+  adapter is NOT an exact DEV import. Query layout and legacy behavior stay
+  intact; DEV alignment is outstanding and documented in
+  `docs/HYBRID_RESIDENCY_COMPAT.md`. No new retrieval authority is claimed.
   P8 adds operator-only fixed-capacity HGRAM storage (five DEV native files
   plus one public-compatible CMake registration). The exported writer
   requires external authorization; no inference admission or learning policy
