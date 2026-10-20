@@ -7,6 +7,8 @@ a trained language model, or an independently qualified production runtime.
 ## Published in this repository
 
 - `native/substrate/`: native execution and bounded-storage substrate.
+  P6 adds single-owner FMS cold-root mechanics and bounded crash-orphan
+  cleanup; see `docs/FMS_COLD_ROOT.md`.
 - `native/structure/`: native HACF and structural primitives.
   P5 additionally publishes an immutable C snapshot-manifest writer with
   content-addressed creation; see `docs/SNAPSHOT_IMMUTABLE.md`.
