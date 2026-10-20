@@ -8,6 +8,7 @@ a trained language model, or an independently qualified production runtime.
 
 - `native/substrate/`: native execution and bounded-storage substrate.
 - `native/structure/`: native HACF and structural primitives.
+- `native/pipeline/ingress/`: bounded Regex V1/V2 lexical ingress and a native execution adapter; no HACF query bridge or semantic/continuity authority. Requires PCRE2 (`libpcre2-8`) and `pkg-config`.
 - `native/ECS_G/`: geometric ECS mathematics, executor, K1 and FMS adapters.
 - `native/ECS_C/memory/`: independent, model-free typed memory mechanics.
   This component has **no** published continuity authority yet. The original
