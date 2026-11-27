@@ -32,7 +32,7 @@ First-party Apache-2.0 licensing authorized within owner rights. Source export i
 
 ## Contributors and licensing
 
-- [@abraxis717](https://github.com/abraxis717) (Alpharius) — Elpis development and HexaFlake computational implementation.
+- [@abraxis717](https://github.com/abraxis717) ([X](https://x.com/abraxis717)) — Elpis development and HexaFlake computational implementation.
 - [@Akitti](https://x.com/Akitti) — contributor to Elpis through the original HexaFlake concept and geometric architecture.
 
 Geodome derives from [HexaFlake](https://github.com/abraxis717/HexaFlake). See [contributors](CONTRIBUTORS.md), [native licensing and provenance](LICENSES/NATIVE_PROVENANCE.md) and [NOTICE](NOTICE).
