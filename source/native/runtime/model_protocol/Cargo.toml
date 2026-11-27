@@ -1,0 +1,17 @@
+[package]
+license = "Apache-2.0"
+name = "cr6_host_candidate"
+version = "0.1.0"
+edition = "2021"
+autobins = false
+publish = false
+[[bin]]
+name = "elpis_cognitive_host"
+path = "src/host_main.rs"
+test = false
+bench = false
+[dependencies]
+elpis_runtime = { path = "..", features = ["cognitive-native"] }
+elpis_ecs_c_session = { path = "../../ECS_C/session", default-features = false }
+[profile.release]
+panic = "abort"

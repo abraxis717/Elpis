@@ -1,0 +1,27 @@
+[package]
+name = "elpis_runtime"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.89"
+description = "Elpis standalone volatile cognitive RuntimeCore (DEV-only)."
+license = "Apache-2.0"
+publish = false
+
+# The authority is embedded as a Rust crate (one implementation): the volatile ECS_C session, without its C ABI
+# (RuntimeCore never re-exports it). ABI v8 retired the durable ECS_C authority (docs/ELPIS_MISSION.md, Amendment 3).
+[dependencies]
+elpis_ecs_c_session = { path = "../ECS_C/session", default-features = false }
+
+[features]
+default = ["cognitive-native"]
+cognitive-native = ["elpis_ecs_c_session/embedded-ffi"]
+
+[lib]
+name = "elpis_runtime"
+crate-type = ["rlib"]
+doctest = false
+
+[profile.release]
+panic = "abort"
+debug = false
+

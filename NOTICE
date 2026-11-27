@@ -1,0 +1,28 @@
+Elpis native cognitive substrate - CR7 publication candidate
+
+First-party code is licensed under Apache-2.0 to the extent of the owner's
+licensing rights. Existing third-party terms and attribution are preserved.
+
+Geodome: HexaFlake, pinned revision 4e5fe56670c61a0d8906770b03033658c3087c3a.
+Preserve LICENSES/hexaflake/LICENSE and LICENSES/hexaflake/NOTICE in full.
+The latter records Akitti's original geometric concept and architecture,
+Elpis implementation contributions, and inherited CPython attribution.
+The CPython text is retained at LICENSES/hexaflake/licenses/CPython.txt.
+HCA88.c is not in this candidate's compilation closure.
+
+CGC: https://github.com/abraxis717/CGC, pinned revision
+0895c2bc732a377b5a5f0d063ae13cc72684ec9a. See LICENSES/cgc/LICENSE.
+
+Historical Elpis notices and provenance are retained under docs/provenance/CR6/
+and LICENSES/. Their historical descriptions do not assert inclusion of retired
+implementations in the current build. No contributor rights are assigned or
+extinguished by this NOTICE.
+
+Contributor attribution (native Geodome / HexaFlake)
+-------------------------------------------------
+@Akitti (https://x.com/Akitti): contributor to HexaFlake and Elpis;
+original HexaFlake concept and geometric architecture.
+@abraxis717 (https://github.com/abraxis717), also known as Alpharius:
+computational implementation and experimental development.
+HexaFlake upstream: https://github.com/abraxis717/HexaFlake
+See CONTRIBUTORS.md and LICENSES/NATIVE_PROVENANCE.md.
